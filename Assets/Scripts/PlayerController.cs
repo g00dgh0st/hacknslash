@@ -24,9 +24,7 @@ public class PlayerController : MonoBehaviour {
   private float groundCheckDistance = 0.4f;
   [SerializeField] private LayerMask groundCheckLayer;
 
-  private bool isRolling = false;
   private bool isGrounded = true;
-  private bool isAttacking = false;
   private Vector3 moveVector;
   private MovementState movementState;
 
