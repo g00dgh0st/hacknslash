@@ -2,10 +2,6 @@
 using System.Collections.Generic;
 using UnityEngine;
 
-public enum MovementState {
-  Grounded
-}
-
 public class PlayerController : MonoBehaviour {
   private Animator anim;
   private Camera mainCam;
@@ -16,13 +12,14 @@ public class PlayerController : MonoBehaviour {
   private float airTurnDampMultiplier = 0.05f;
   private float moveSpeed = 5f;
   private float rollSpeed = 10f;
-  private float jumpSpeed = 12f;
+  private float jumpSpeed = 18f;
   private float fallMultiplier = 1.5f;
   private float groundCheckDistance = 0.4f;
   [SerializeField] private LayerMask groundCheckLayer;
 
   private bool isRolling = false;
   private bool isGrounded = true;
+  private bool isAttacking = false;
   private Vector3 moveVector;
 
   void Awake() {
@@ -35,21 +32,30 @@ public class PlayerController : MonoBehaviour {
     float h = Input.GetAxis("Horizontal");
     float v = Input.GetAxis("Vertical");
 
-    if (CheckGrounded()) {
+    ApplyGravity();
 
+    // if airborne
+
+    if (isGrounded) {
+      // grounded locomotion
       if (isRolling) {
         HandleRolling();
       } else {
-        // grounded locomotion
+        // TODO: state management
+        CheckAttacking();
         if (Input.GetMouseButtonDown(1)) {
-          StartRoll();
+          StartRoll(GetMoveDirectionByCamera(h, v));
+        } else if (Input.GetMouseButtonDown(0)) {
+          isAttacking = true;
+          anim.SetTrigger("attack");
+        } else if (!isAttacking) {
+          if (Input.GetButtonDown("Jump")) {
+            StartJump();
+          } else {
+            HandleMoving(GetMoveDirectionByCamera(h, v));
+          }
         }
 
-        if (Input.GetButtonDown("Jump")) {
-          StartJump();
-        }
-
-        HandleMoving(GetMoveDirectionByCamera(h, v));
       }
     } else {
       // air control
@@ -59,6 +65,31 @@ public class PlayerController : MonoBehaviour {
     MakeMove();
   }
 
+  void OnAnimatorMove() {
+    if (isAttacking) {
+      // attack animations atm
+      controller.Move(anim.deltaPosition);
+    }
+  }
+
+  private bool ApplyGravity() {
+    if (controller.isGrounded) {
+      anim.SetBool("grounded", true);
+      isGrounded = true;
+      moveVector = Physics.gravity * Time.deltaTime;
+      return true;
+    } else if (moveVector.y <= 0 && Physics.Raycast(transform.position, Vector3.down, groundCheckDistance, groundCheckLayer)) {
+      anim.SetBool("grounded", true);
+      isGrounded = true;
+      moveVector = Vector3.down * groundCheckDistance / Time.deltaTime;
+      return true;
+    }
+    anim.SetBool("grounded", false);
+    isGrounded = false;
+    moveVector += Physics.gravity * Time.deltaTime * (moveVector.y <= 0 ? fallMultiplier : 1f);
+    return false;
+  }
+
   // Apply all movement at once, so there is only one Move call
   void MakeMove() {
     controller.Move(moveVector * Time.deltaTime);
@@ -66,6 +97,7 @@ public class PlayerController : MonoBehaviour {
 
   private void HandleRolling() {
     moveVector += transform.forward * rollSpeed;
+    anim.ResetTrigger("roll");
   }
 
   private void HandleMoving(Vector3 moveInput) {
@@ -84,13 +116,20 @@ public class PlayerController : MonoBehaviour {
     transform.rotation = Quaternion.Lerp(transform.rotation, targetDirection, turnDamped * multiplier);
   }
 
+  private void CheckAttacking() {
+    AnimatorStateInfo info = anim.GetCurrentAnimatorStateInfo(0);
+    isAttacking = info.IsTag("Combat");
+    if (!isAttacking) anim.ResetTrigger("attack");
+  }
+
   void StartJump() {
     anim.SetTrigger("jump");
     moveVector += Vector3.up * jumpSpeed;
   }
 
-  void StartRoll() {
+  void StartRoll(Vector3 rollDirection) {
     anim.SetTrigger("roll");
+    HandleTurning(rollDirection, 100f);
   }
 
   private Vector3 GetMoveDirectionByCamera(float horizontalAxis, float verticalAxis) {
@@ -106,21 +145,6 @@ public class PlayerController : MonoBehaviour {
 
     //this is the direction in the world space we want to move:
     return forward * verticalAxis + right * horizontalAxis;
-  }
-
-  private bool CheckGrounded() {
-    if (controller.isGrounded) {
-      anim.SetBool("grounded", true);
-      moveVector = Physics.gravity * Time.deltaTime;
-      return true;
-    } else if (moveVector.y <= 0 && Physics.Raycast(transform.position, Vector3.down, groundCheckDistance, groundCheckLayer)) {
-      anim.SetBool("grounded", true);
-      moveVector = Vector3.down * groundCheckDistance / Time.deltaTime;
-      return true;
-    }
-    anim.SetBool("grounded", false);
-    moveVector += Physics.gravity * Time.deltaTime * (moveVector.y <= 0 ? fallMultiplier : 1f);
-    return false;
   }
 
   // Animation Event
