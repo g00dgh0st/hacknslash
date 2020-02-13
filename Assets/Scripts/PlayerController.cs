@@ -13,6 +13,7 @@ public class PlayerController : MonoBehaviour {
   private Animator anim;
   private Camera mainCam;
   private CharacterController controller;
+  private AnimStateBehaviour animStateBehavior;
 
   private float locomotionDampen = 0.2f;
   private float turnDamped = 0.5f;
@@ -32,10 +33,17 @@ public class PlayerController : MonoBehaviour {
     controller = GetComponent<CharacterController>();
     anim = GetComponent<Animator>();
     mainCam = Camera.main;
+    animStateBehavior = anim.GetBehaviour<AnimStateBehaviour>();
   }
 
   void Start() {
     movementState = MovementState.Locomotion;
+
+    // animStateBehavior.onAnimationStateChange = (AnimationEvent ae) => {
+    //   if (!ae.isEntering && ae.tagHash == Animator.StringToHash("Attacking.Exit")) {
+    //     movementState = MovementState.Locomotion;
+    //   }
+    // };
   }
 
   void Update() {
@@ -75,16 +83,16 @@ public class PlayerController : MonoBehaviour {
     Vector3 moveInput = GetInputDirectionByCamera();
     HandleTurning(moveInput);
 
-    if (Input.GetButtonDown("Roll")) {
+    if (Input.GetButtonDown("Jump")) {
       StartRoll(moveInput);
       return;
     }
 
-    if (Input.GetButtonDown("Jump")) {
-      HandleMoving(moveInput);
-      StartJump(moveInput);
-      return;
-    }
+    // if (Input.GetButtonDown("Jump")) {
+    //   HandleMoving(moveInput);
+    //   StartJump(moveInput);
+    //   return;
+    // }
 
     if (Input.GetButtonDown("Fire")) {
       StartAttack(moveInput);
@@ -118,7 +126,13 @@ public class PlayerController : MonoBehaviour {
   }
 
   private void HandleAttacking() {
-    CheckAttacking();
+    AnimatorStateInfo info = anim.GetCurrentAnimatorStateInfo(0);
+    AnimatorTransitionInfo transInfo = anim.GetAnimatorTransitionInfo(0);
+    if (Time.time - startAttackTime > 0.3f && !info.IsTag("Attacking") && !transInfo.IsName("Attacking")) {
+      movementState = MovementState.Locomotion;
+      anim.ResetTrigger("attack");
+      return;
+    }
 
     Vector3 moveInput = GetInputDirectionByCamera();
 
@@ -141,15 +155,6 @@ public class PlayerController : MonoBehaviour {
 
   private void ContinueAttack(Vector3 moveInput) {
     anim.SetTrigger("attack");
-  }
-
-  private void CheckAttacking() {
-    AnimatorStateInfo info = anim.GetCurrentAnimatorStateInfo(0);
-    AnimatorTransitionInfo transInfo = anim.GetAnimatorTransitionInfo(0);
-    if (Time.time - startAttackTime > 0.3f && !info.IsTag("Attacking") && !transInfo.IsName("Attacking")) {
-      movementState = MovementState.Locomotion;
-      anim.ResetTrigger("attack");
-    }
   }
 
   void StartRoll(Vector3 rollDirection) {
