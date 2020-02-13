@@ -75,7 +75,7 @@ public class PlayerController : MonoBehaviour {
     Vector3 moveInput = GetInputDirectionByCamera();
     HandleTurning(moveInput);
 
-    if (Input.GetMouseButtonDown(1)) {
+    if (Input.GetButtonDown("Roll")) {
       StartRoll(moveInput);
       return;
     }
@@ -86,7 +86,7 @@ public class PlayerController : MonoBehaviour {
       return;
     }
 
-    if (Input.GetMouseButtonDown(0)) {
+    if (Input.GetButtonDown("Fire")) {
       StartAttack(moveInput);
       return;
     }
@@ -102,7 +102,7 @@ public class PlayerController : MonoBehaviour {
     float inputMagnitude = moveInput.normalized.magnitude;
 
     moveVector += transform.forward * inputMagnitude * moveSpeed;
-    anim.SetFloat("speed", Mathf.Lerp(anim.GetFloat("speed"), inputMagnitude, locomotionDampen));
+    SetAnimSpeed(inputMagnitude);
   }
 
   private void HandleTurning(Vector3 moveInput, float multiplier = 1f) {
@@ -121,10 +121,13 @@ public class PlayerController : MonoBehaviour {
     CheckAttacking();
 
     Vector3 moveInput = GetInputDirectionByCamera();
+
     if (Input.GetMouseButtonDown(0)) {
       ContinueAttack(moveInput);
       return;
     }
+
+    SetAnimSpeed(moveInput.normalized.magnitude);
   }
 
   // NOTE: hacky fix
@@ -133,6 +136,7 @@ public class PlayerController : MonoBehaviour {
     movementState = MovementState.Attacking;
     startAttackTime = Time.time;
     anim.SetTrigger("attack");
+    anim.SetFloat("speed", 0f);
   }
 
   private void ContinueAttack(Vector3 moveInput) {
@@ -143,7 +147,6 @@ public class PlayerController : MonoBehaviour {
     AnimatorStateInfo info = anim.GetCurrentAnimatorStateInfo(0);
     AnimatorTransitionInfo transInfo = anim.GetAnimatorTransitionInfo(0);
     if (Time.time - startAttackTime > 0.3f && !info.IsTag("Attacking") && !transInfo.IsName("Attacking")) {
-      Debug.Log("FDSFSFSFFDSFDSF");
       movementState = MovementState.Locomotion;
       anim.ResetTrigger("attack");
     }
@@ -203,5 +206,9 @@ public class PlayerController : MonoBehaviour {
 
     //this is the direction in the world space we want to move:
     return forward * verticalAxis + right * horizontalAxis;
+  }
+
+  private void SetAnimSpeed(float inputMagnitude) {
+    anim.SetFloat("speed", Mathf.Lerp(anim.GetFloat("speed"), inputMagnitude, locomotionDampen));
   }
 }
