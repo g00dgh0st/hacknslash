@@ -1,3 +1,4 @@
+using System.Collections.Generic;
 using UnityEngine;
 
 namespace ofr.grim {
@@ -9,6 +10,7 @@ namespace ofr.grim {
   }
 
   public class DudeController : MonoBehaviour {
+
     private bool _isGrounded;
     protected bool isGrounded {
       get {
@@ -24,5 +26,13 @@ namespace ofr.grim {
     }
 
     protected MovementState movementState { get; set; }
+
+    [SerializeField]
+    protected AnimationLibrary animLibrary;
+
+    protected void Awake() {
+      animLibrary.BuildLookup();
+    }
+
   }
 }

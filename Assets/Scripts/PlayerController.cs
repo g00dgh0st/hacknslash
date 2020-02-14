@@ -1,15 +1,15 @@
 ﻿using System;
 using System.Collections;
 using System.Collections.Generic;
+using Animancer;
 using UnityEngine;
 
 namespace ofr.grim {
 
   public class PlayerController : DudeController {
-    private Animator anim;
+    private AnimancerComponent anim;
     private Camera mainCam;
     private CharacterController controller;
-    private AnimStateBehaviour animStateBehavior;
 
     private float locomotionDampen = 0.2f;
     private float turnDamped = 0.5f;
@@ -23,13 +23,16 @@ namespace ofr.grim {
 
     private Vector3 moveVector;
 
-    void Awake() {
+    new void Awake() {
+      base.Awake();
+      anim = GetComponent<AnimancerComponent>();
       controller = GetComponent<CharacterController>();
       mainCam = Camera.main;
     }
 
     void Start() {
       movementState = MovementState.Locomotion;
+      anim.Play(animLibrary.animationLookup["idle"]);
     }
 
     void Update() {
@@ -143,81 +146,81 @@ namespace ofr.grim {
 
     // OLD STUFF
 
-    void OnAnimatorMove() {
-      if (movementState == MovementState.Attack) {
-        // attack animations only atm
-        controller.Move(anim.deltaPosition);
-      }
-    }
+    // void OnAnimatorMove() {
+    //   if (movementState == MovementState.Attack) {
+    //     // attack animations only atm
+    //     controller.Move(anim.deltaPosition);
+    //   }
+    // }
 
-    private void HandleRolling() {
-      moveVector += transform.forward * rollSpeed;
-      anim.ResetTrigger("roll");
-    }
+    // private void HandleRolling() {
+    //   moveVector += transform.forward * rollSpeed;
+    //   anim.ResetTrigger("roll");
+    // }
 
-    private void HandleAttacking() {
-      AnimatorStateInfo info = anim.GetCurrentAnimatorStateInfo(0);
-      AnimatorTransitionInfo transInfo = anim.GetAnimatorTransitionInfo(0);
-      if (Time.time - startAttackTime > 0.3f && !info.IsTag("Attacking") && !transInfo.IsName("Attacking")) {
-        movementState = MovementState.Locomotion;
-        anim.ResetTrigger("attack");
-        return;
-      }
+    // private void HandleAttacking() {
+    //   AnimatorStateInfo info = anim.GetCurrentAnimatorStateInfo(0);
+    //   AnimatorTransitionInfo transInfo = anim.GetAnimatorTransitionInfo(0);
+    //   if (Time.time - startAttackTime > 0.3f && !info.IsTag("Attacking") && !transInfo.IsName("Attacking")) {
+    //     movementState = MovementState.Locomotion;
+    //     anim.ResetTrigger("attack");
+    //     return;
+    //   }
 
-      Vector3 moveInput = GetInputDirectionByCamera();
+    //   Vector3 moveInput = GetInputDirectionByCamera();
 
-      if (Input.GetMouseButtonDown(0)) {
-        ContinueAttack(moveInput);
-        return;
-      }
+    //   if (Input.GetMouseButtonDown(0)) {
+    //     ContinueAttack(moveInput);
+    //     return;
+    //   }
 
-      SetAnimSpeed(moveInput.normalized.magnitude);
-    }
+    //   SetAnimSpeed(moveInput.normalized.magnitude);
+    // }
 
-    // NOTE: hacky fix
-    private float startAttackTime;
+    // // NOTE: hacky fix
+    // private float startAttackTime;
 
-    public bool IsGrounded {
-      get =>
-        throw new NotImplementedException();
-      set =>
-        throw new NotImplementedException();
-    }
-    public MovementState MovementState {
-      get =>
-        throw new NotImplementedException();
-      set =>
-        throw new NotImplementedException();
-    }
+    // public bool IsGrounded {
+    //   get =>
+    //     throw new NotImplementedException();
+    //   set =>
+    //     throw new NotImplementedException();
+    // }
+    // public MovementState MovementState {
+    //   get =>
+    //     throw new NotImplementedException();
+    //   set =>
+    //     throw new NotImplementedException();
+    // }
 
-    private void StartAttack(Vector3 moveInput) {
-      movementState = MovementState.Attack;
-      startAttackTime = Time.time;
-      anim.SetTrigger("attack");
-      anim.SetFloat("speed", 0f);
-    }
+    // private void StartAttack(Vector3 moveInput) {
+    //   movementState = MovementState.Attack;
+    //   startAttackTime = Time.time;
+    //   anim.SetTrigger("attack");
+    //   anim.SetFloat("speed", 0f);
+    // }
 
-    private void ContinueAttack(Vector3 moveInput) {
-      anim.SetTrigger("attack");
-    }
+    // private void ContinueAttack(Vector3 moveInput) {
+    //   anim.SetTrigger("attack");
+    // }
 
-    void StartRoll(Vector3 rollDirection) {
-      anim.SetTrigger("roll");
-    }
+    // void StartRoll(Vector3 rollDirection) {
+    //   anim.SetTrigger("roll");
+    // }
 
-    // Animation Event
-    public void Rolling(int rolling) {
-      movementState = (rolling == 1 ? MovementState.Dodge : MovementState.Locomotion);
-    }
+    // // Animation Event
+    // public void Rolling(int rolling) {
+    //   movementState = (rolling == 1 ? MovementState.Dodge : MovementState.Locomotion);
+    // }
 
-    void StartJump(Vector3 moveInput) {
-      // TODO: use move vector to affect jump
-      anim.SetTrigger("jump");
-      moveVector += (Vector3.up * jumpSpeed);
-    }
+    // void StartJump(Vector3 moveInput) {
+    //   // TODO: use move vector to affect jump
+    //   anim.SetTrigger("jump");
+    //   moveVector += (Vector3.up * jumpSpeed);
+    // }
 
-    private void SetAnimSpeed(float inputMagnitude) {
-      anim.SetFloat("speed", Mathf.Lerp(anim.GetFloat("speed"), inputMagnitude, locomotionDampen));
-    }
+    // private void SetAnimSpeed(float inputMagnitude) {
+    //   anim.SetFloat("speed", Mathf.Lerp(anim.GetFloat("speed"), inputMagnitude, locomotionDampen));
+    // }
   }
 }
