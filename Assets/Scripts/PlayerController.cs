@@ -36,7 +36,10 @@ namespace ofr.grim {
     }
 
     void OnAnimatorMove() {
-
+      if (attackMovement) {
+        // attack animations only atm
+        controller.Move(anim.deltaPosition);
+      }
     }
 
     void Update() {
@@ -53,7 +56,7 @@ namespace ofr.grim {
             HandleDodgeControl();
             break;
           case MovementState.Attack:
-            // HandleAttacking();
+            HandleAttackControl();
             break;
           default:
             // should not happen
@@ -72,14 +75,14 @@ namespace ofr.grim {
       HandleTurning(moveInput);
 
       if (Input.GetButtonDown("Jump")) {
-        Dodge();
+        AnimateDodge();
         return;
       }
 
-      // if (Input.GetButtonDown("Fire")) {
-      //   StartAttack(moveInput);
-      //   return;
-      // }
+      if (Input.GetButtonDown("Fire")) {
+        Attack();
+        return;
+      }
 
       HandleMoving(moveInput);
     }
@@ -94,11 +97,18 @@ namespace ofr.grim {
       }
     }
 
+    private void HandleAttackControl() {
+      if (Input.GetButtonDown("Fire")) {
+        Attack();
+        return;
+      }
+    }
+
     private void HandleMoving(Vector3 moveInput) {
       float inputMagnitude = moveInput.normalized.magnitude;
 
       moveVector += transform.forward * inputMagnitude * moveSpeed;
-      Locomotion(inputMagnitude);
+      AnimateLocomotion(inputMagnitude);
     }
 
     private void HandleTurning(Vector3 moveInput, float multiplier = 1f) {
@@ -106,6 +116,14 @@ namespace ofr.grim {
 
       Quaternion targetDirection = Quaternion.LookRotation(moveInput);
       transform.rotation = Quaternion.Lerp(transform.rotation, targetDirection, turnDamped * multiplier);
+    }
+
+    private void Attack() {
+      if (AnimateAttack()) {
+
+      } else {
+        // print("cant attack");
+      }
     }
 
     private bool ApplyGravity() {
@@ -145,81 +163,5 @@ namespace ofr.grim {
       //this is the direction in the world space we want to move:
       return forward * verticalAxis + right * horizontalAxis;
     }
-
-    // OLD STUFF
-
-    // void OnAnimatorMove() {
-    //   if (movementState == MovementState.Attack) {
-    //     // attack animations only atm
-    //     controller.Move(anim.deltaPosition);
-    //   }
-    // }
-
-    // private void HandleRolling() {
-    //   moveVector += transform.forward * rollSpeed;
-    //   anim.ResetTrigger("roll");
-    // }
-
-    // private void HandleAttacking() {
-    //   AnimatorStateInfo info = anim.GetCurrentAnimatorStateInfo(0);
-    //   AnimatorTransitionInfo transInfo = anim.GetAnimatorTransitionInfo(0);
-    //   if (Time.time - startAttackTime > 0.3f && !info.IsTag("Attacking") && !transInfo.IsName("Attacking")) {
-    //     movementState = MovementState.Locomotion;
-    //     anim.ResetTrigger("attack");
-    //     return;
-    //   }
-
-    //   Vector3 moveInput = GetInputDirectionByCamera();
-
-    //   if (Input.GetMouseButtonDown(0)) {
-    //     ContinueAttack(moveInput);
-    //     return;
-    //   }
-
-    //   SetAnimSpeed(moveInput.normalized.magnitude);
-    // }
-
-    // // NOTE: hacky fix
-    // private float startAttackTime;
-
-    // public bool IsGrounded {
-    //   get =>
-    //     throw new NotImplementedException();
-    //   set =>
-    //     throw new NotImplementedException();
-    // }
-    // public MovementState MovementState {
-    //   get =>
-    //     throw new NotImplementedException();
-    //   set =>
-    //     throw new NotImplementedException();
-    // }
-
-    // private void StartAttack(Vector3 moveInput) {
-    //   movementState = MovementState.Attack;
-    //   startAttackTime = Time.time;
-    //   anim.SetTrigger("attack");
-    //   anim.SetFloat("speed", 0f);
-    // }
-
-    // private void ContinueAttack(Vector3 moveInput) {
-    //   anim.SetTrigger("attack");
-    // }
-
-    // void StartRoll(Vector3 rollDirection) {
-    //   anim.SetTrigger("roll");
-    // }
-
-    // // Animation Event
-    // public void Rolling(int rolling) {
-    //   movementState = (rolling == 1 ? MovementState.Dodge : MovementState.Locomotion);
-    // }
-
-    // void StartJump(Vector3 moveInput) {
-    //   // TODO: use move vector to affect jump
-    //   anim.SetTrigger("jump");
-    //   moveVector += (Vector3.up * jumpSpeed);
-    // }
-
   }
 }
