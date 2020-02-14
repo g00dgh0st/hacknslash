@@ -1,17 +1,19 @@
 ﻿using System;
 using System.Collections;
 using System.Collections.Generic;
-using Animancer;
 using UnityEngine;
+using UnityEngine.UI;
 
 namespace ofr.grim {
 
   public class PlayerController : DudeController {
-    private AnimancerComponent anim;
+    // DEBUG STUFF
+    public Text debugText;
+    // END DEBUGT STUFF
+
     private Camera mainCam;
     private CharacterController controller;
 
-    private float locomotionDampen = 0.2f;
     private float turnDamped = 0.5f;
     private float airTurnDampMultiplier = 0.05f;
     private float moveSpeed = 5f;
@@ -25,35 +27,38 @@ namespace ofr.grim {
 
     new void Awake() {
       base.Awake();
-      anim = GetComponent<AnimancerComponent>();
       controller = GetComponent<CharacterController>();
       mainCam = Camera.main;
     }
 
     void Start() {
       movementState = MovementState.Locomotion;
-      anim.Play(animLibrary.animationLookup["idle"]);
+    }
+
+    void OnAnimatorMove() {
+
     }
 
     void Update() {
+      debugText.text = isGrounded ? movementState.ToString("g") : "airborne";
       ApplyGravity();
 
       if (isGrounded) {
         // grounded control
-        HandleGroundedControl();
-        // switch (movementState) {
-        //   case MovementState.Locomotion:
-        //     break;
-        //   case MovementState.Dodge:
-        //     HandleRolling();
-        //     break;
-        //   case MovementState.Attack:
-        //     HandleAttacking();
-        //     break;
-        //   default:
-        //     // should not happen
-        //     break;
-        // }
+        switch (movementState) {
+          case MovementState.Locomotion:
+            HandleGroundedControl();
+            break;
+          case MovementState.Dodge:
+            HandleDodgeControl();
+            break;
+          case MovementState.Attack:
+            // HandleAttacking();
+            break;
+          default:
+            // should not happen
+            break;
+        }
       } else {
         // aerial control
         HandleAirborneControl();
@@ -66,16 +71,10 @@ namespace ofr.grim {
       Vector3 moveInput = GetInputDirectionByCamera();
       HandleTurning(moveInput);
 
-      // if (Input.GetButtonDown("Jump")) {
-      //   StartRoll(moveInput);
-      //   return;
-      // }
-
-      // if (Input.GetButtonDown("Jump")) {
-      //   HandleMoving(moveInput);
-      //   StartJump(moveInput);
-      //   return;
-      // }
+      if (Input.GetButtonDown("Jump")) {
+        Dodge();
+        return;
+      }
 
       // if (Input.GetButtonDown("Fire")) {
       //   StartAttack(moveInput);
@@ -89,11 +88,17 @@ namespace ofr.grim {
       HandleTurning(GetInputDirectionByCamera(), airTurnDampMultiplier);
     }
 
+    private void HandleDodgeControl() {
+      if (dodgeMovement) {
+        moveVector += transform.forward * rollSpeed;
+      }
+    }
+
     private void HandleMoving(Vector3 moveInput) {
       float inputMagnitude = moveInput.normalized.magnitude;
 
       moveVector += transform.forward * inputMagnitude * moveSpeed;
-      // SetAnimSpeed(inputMagnitude);
+      Locomotion(inputMagnitude);
     }
 
     private void HandleTurning(Vector3 moveInput, float multiplier = 1f) {
@@ -105,17 +110,14 @@ namespace ofr.grim {
 
     private bool ApplyGravity() {
       if (controller.isGrounded) {
-        // anim.SetBool("grounded", true);
         isGrounded = true;
         moveVector = Physics.gravity * Time.deltaTime;
         return true;
       } else if (moveVector.y <= 0 && Physics.Raycast(transform.position, Vector3.down, groundCheckDistance, groundCheckLayer)) {
-        // anim.SetBool("grounded", true);
         isGrounded = true;
         moveVector = Vector3.down * groundCheckDistance / Time.deltaTime;
         return true;
       }
-      // anim.SetBool("grounded", false);
       isGrounded = false;
       moveVector += Physics.gravity * Time.deltaTime * (moveVector.y <= 0 ? fallMultiplier : 1f);
       return false;
@@ -219,8 +221,5 @@ namespace ofr.grim {
     //   moveVector += (Vector3.up * jumpSpeed);
     // }
 
-    // private void SetAnimSpeed(float inputMagnitude) {
-    //   anim.SetFloat("speed", Mathf.Lerp(anim.GetFloat("speed"), inputMagnitude, locomotionDampen));
-    // }
   }
 }

@@ -9,6 +9,7 @@ namespace ofr.grim {
     Hit
   }
 
+  [RequireComponent(typeof(Animator))]
   public class DudeController : MonoBehaviour {
 
     private bool _isGrounded;
@@ -17,22 +18,47 @@ namespace ofr.grim {
         return this._isGrounded;
       }
       set {
-        this._isGrounded = value;
-        if (value == true) {
+        if (value == true && this._isGrounded == false) {
           // if grounded, reset to locomotion state
           this.movementState = MovementState.Locomotion;
         }
+        this._isGrounded = value;
+        anim.SetBool("grounded", this._isGrounded);
       }
     }
 
+    protected bool dodgeMovement;
     protected MovementState movementState { get; set; }
+    private Animator anim;
 
     [SerializeField]
-    protected AnimationLibrary animLibrary;
+    private float locomotionTransitionDampen = 0.2f;
 
     protected void Awake() {
-      animLibrary.BuildLookup();
+      anim = GetComponent<Animator>();
     }
 
+    protected void Locomotion(float speed) {
+      anim.SetFloat("speed", Mathf.Lerp(anim.GetFloat("speed"), speed, locomotionTransitionDampen));
+    }
+
+    protected void Dodge() {
+      anim.SetTrigger("dodge");
+    }
+
+    /// ANIMATION EVENTS
+    void DodgeEvent(string message) {
+      movementState = MovementState.Dodge;
+
+      if (message == "start") {
+        dodgeMovement = true;
+      }
+
+      if (message == "end") {
+        dodgeMovement = false;
+        anim.ResetTrigger("dodge");
+        movementState = MovementState.Locomotion;
+      }
+    }
   }
 }

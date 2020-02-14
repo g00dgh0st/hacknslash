@@ -572,15 +572,15 @@ ModelImporter:
       curves: []
       events:
       - time: 0.11122892
-        functionName: Rolling
-        data: 
+        functionName: DodgeEvent
+        data: start
         objectReferenceParameter: {instanceID: 0}
         floatParameter: 0
         intParameter: 1
         messageOptions: 0
       - time: 0.68830705
-        functionName: Rolling
-        data: 
+        functionName: DodgeEvent
+        data: end
         objectReferenceParameter: {instanceID: 0}
         floatParameter: 0
         intParameter: 0
