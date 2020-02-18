@@ -58,6 +58,9 @@ namespace ofr.grim {
           case MovementState.Attack:
             HandleAttackControl();
             break;
+          case MovementState.Block:
+            HandleBlockControl();
+            break;
           default:
             // should not happen
             break;
@@ -84,6 +87,11 @@ namespace ofr.grim {
         return;
       }
 
+      if (Input.GetButton("Fire2")) {
+        Block(true);
+        return;
+      }
+
       HandleMoving(moveInput);
     }
 
@@ -100,6 +108,16 @@ namespace ofr.grim {
     private void HandleAttackControl() {
       if (Input.GetButtonDown("Fire")) {
         Attack();
+        return;
+      }
+    }
+
+    private void HandleBlockControl() {
+      Vector3 moveInput = GetInputDirectionByCamera();
+      HandleTurning(moveInput);
+
+      if (!Input.GetButton("Fire2")) {
+        Block(false);
         return;
       }
     }
@@ -122,8 +140,12 @@ namespace ofr.grim {
       if (AnimateAttack()) {
 
       } else {
-        // print("cant attack");
+        // print("cant attack");/
       }
+    }
+
+    private void Block(bool blockOn) {
+      ToggleBlock(blockOn);
     }
 
     private bool ApplyGravity() {

@@ -6,12 +6,16 @@ namespace ofr.grim {
     Locomotion,
     Attack,
     Dodge,
-    Hit
+    Hit,
+    Block
   }
 
   [RequireComponent(typeof(Animator))]
   public class DudeController : MonoBehaviour {
     protected Animator anim;
+
+    [SerializeField]
+    private Collider attackCollider;
 
     [SerializeField]
     private float locomotionTransitionDampen = 0.2f;
@@ -34,10 +38,25 @@ namespace ofr.grim {
 
     protected bool dodgeMovement = false;
     protected bool attackMovement = false;
-    // private bool canAttack = true;
 
     protected void Awake() {
       anim = GetComponent<Animator>();
+    }
+
+    public void AttackCollide(Collider target) {
+      if (target.tag == "Enemy") {
+        target.GetComponent<DudeController>().GetHit(transform.position);
+      } else if (target.tag == "Hittable") {
+        // stuff
+      }
+    }
+
+    public virtual void GetHit(Vector3 attackPosition) {
+      anim.SetTrigger("hit");
+    }
+
+    public virtual void Die() {
+      print("i dead");
     }
 
     protected void AnimateLocomotion(float speed) {
@@ -50,13 +69,14 @@ namespace ofr.grim {
     }
 
     protected bool AnimateAttack() {
-      // if (canAttack) {
-      //   canAttack = false;
       anim.SetTrigger("attack");
       return true;
-      // }
+    }
 
-      // return false;
+    protected void ToggleBlock(bool blockOn) {
+      anim.SetBool("block", blockOn);
+      if (blockOn) movementState = MovementState.Block;
+      else movementState = MovementState.Locomotion;
     }
 
     /// ANIMATION EVENTS
@@ -78,17 +98,29 @@ namespace ofr.grim {
         attackMovement = true;
       }
 
-      if (message == "combo") {
-        // anim.ResetTrigger("attack");
-        // canAttack = true;
+      if (message == "collideOn") {
+        attackCollider.enabled = true;
+      }
+
+      if (message == "collideOff") {
+        attackCollider.enabled = false;
       }
 
       if (message == "end") {
-        print("end");
         movementState = MovementState.Locomotion;
         attackMovement = false;
         // canAttack = true;
         anim.ResetTrigger("attack");
+      }
+    }
+
+    void HitEvent(string message) {
+      if (message == "start") {
+        movementState = MovementState.Hit;
+      }
+
+      if (message == "end") {
+        movementState = MovementState.Locomotion;
       }
     }
   }
