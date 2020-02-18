@@ -4,13 +4,11 @@ using UnityEngine;
 
 namespace ofr.grim {
   public class Health : MonoBehaviour {
-    private DudeController parentController;
     private float maxHealth = 100f;
     private float currentHealth;
     private bool isDead = false;
     void Awake() {
       currentHealth = maxHealth;
-      parentController = GetComponentInParent<DudeController>();
     }
 
     public void TakeDamage(float damage) {
@@ -25,7 +23,6 @@ namespace ofr.grim {
 
     public void Die() {
       isDead = true;
-      parentController.Die();
     }
   }
 }

@@ -22,6 +22,7 @@ namespace ofr.grim {
     private float fallMultiplier = 1.5f;
     private float groundCheckDistance = 0.4f;
     [SerializeField] private LayerMask groundCheckLayer;
+    [SerializeField] private LayerMask enemyLayerMask;
 
     private Vector3 moveVector;
 
@@ -83,7 +84,7 @@ namespace ofr.grim {
       }
 
       if (Input.GetButtonDown("Fire")) {
-        Attack();
+        Attack(moveInput);
         return;
       }
 
@@ -92,7 +93,7 @@ namespace ofr.grim {
         return;
       }
 
-      HandleMoving(moveInput);
+      HandleMoving(moveInput.normalized);
     }
 
     private void HandleAirborneControl() {
@@ -106,8 +107,10 @@ namespace ofr.grim {
     }
 
     private void HandleAttackControl() {
+      Vector3 moveInput = GetInputDirectionByCamera();
+
       if (Input.GetButtonDown("Fire")) {
-        Attack();
+        Attack(moveInput);
         return;
       }
     }
@@ -115,15 +118,16 @@ namespace ofr.grim {
     private void HandleBlockControl() {
       Vector3 moveInput = GetInputDirectionByCamera();
       HandleTurning(moveInput);
+      HandleMoving(Vector3.ClampMagnitude(moveInput, 0.4f));
 
       if (!Input.GetButton("Fire2")) {
-        Block(false);
+        ToggleBlock(false);
         return;
       }
     }
 
     private void HandleMoving(Vector3 moveInput) {
-      float inputMagnitude = moveInput.normalized.magnitude;
+      float inputMagnitude = moveInput.magnitude;
 
       moveVector += transform.forward * inputMagnitude * moveSpeed;
       AnimateLocomotion(inputMagnitude);
@@ -136,12 +140,16 @@ namespace ofr.grim {
       transform.rotation = Quaternion.Lerp(transform.rotation, targetDirection, turnDamped * multiplier);
     }
 
-    private void Attack() {
-      if (AnimateAttack()) {
+    private void Attack(Vector3 moveInput) {
+      Vector3 castDirection = moveInput.magnitude > 0.1 ? moveInput : transform.forward;
 
-      } else {
-        // print("cant attack");/
+      if (Physics.SphereCast(transform.position, 2f, castDirection, out RaycastHit hit, 3f, enemyLayerMask)) {
+        HandleTurning(hit.transform.position - transform.position);
+        Debug.DrawRay(transform.position, castDirection * 10f, Color.red, 1f);
+        Debug.DrawRay(transform.position, (hit.transform.position - transform.position) * 10f, Color.green, 1f);
       }
+
+      AnimateAttack();
     }
 
     private void Block(bool blockOn) {
