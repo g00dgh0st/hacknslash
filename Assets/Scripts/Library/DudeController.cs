@@ -34,7 +34,7 @@ namespace ofr.grim {
 
     protected bool dodgeMovement = false;
     protected bool attackMovement = false;
-    private bool canAttack = true;
+    // private bool canAttack = true;
 
     protected void Awake() {
       anim = GetComponent<Animator>();
@@ -50,13 +50,13 @@ namespace ofr.grim {
     }
 
     protected bool AnimateAttack() {
-      if (canAttack) {
-        canAttack = false;
-        anim.SetTrigger("attack");
-        return true;
-      }
+      // if (canAttack) {
+      //   canAttack = false;
+      anim.SetTrigger("attack");
+      return true;
+      // }
 
-      return false;
+      // return false;
     }
 
     /// ANIMATION EVENTS
@@ -79,14 +79,15 @@ namespace ofr.grim {
       }
 
       if (message == "combo") {
-        canAttack = true;
+        // anim.ResetTrigger("attack");
+        // canAttack = true;
       }
 
       if (message == "end") {
         print("end");
         movementState = MovementState.Locomotion;
         attackMovement = false;
-        canAttack = true;
+        // canAttack = true;
         anim.ResetTrigger("attack");
       }
     }
