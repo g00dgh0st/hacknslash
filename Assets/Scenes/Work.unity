@@ -610,29 +610,6 @@ Rigidbody:
   m_Interpolate: 0
   m_Constraints: 0
   m_CollisionDetection: 3
---- !u!1 &1734186046 stripped
-GameObject:
-  m_CorrespondingSourceObject: {fileID: 8640018536106317379, guid: 96d12988ed0a16f41ac639aa1b1300d7,
-    type: 3}
-  m_PrefabInstance: {fileID: 6757189586727830164}
-  m_PrefabAsset: {fileID: 0}
---- !u!114 &1734186047
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 1734186046}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 172515602e62fb746b5d573b38a5fe58, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: 
-  isGlobal: 1
-  priority: 0
-  blendDistance: 0
-  weight: 1
-  sharedProfile: {fileID: 11400000, guid: be9111d9d20029b4985eb4c00448c5b0, type: 2}
 --- !u!114 &1858235963 stripped
 MonoBehaviour:
   m_CorrespondingSourceObject: {fileID: 1858235963, guid: 96d12988ed0a16f41ac639aa1b1300d7,
@@ -732,7 +709,8 @@ PrefabInstance:
       propertyPath: debugText
       value: 
       objectReference: {fileID: 1858235963}
-    m_RemovedComponents: []
+    m_RemovedComponents:
+    - {fileID: 1008497102667812266, guid: 46dfdeede19e5164eb6c2d72816b8395, type: 3}
   m_SourcePrefab: {fileID: 100100000, guid: 46dfdeede19e5164eb6c2d72816b8395, type: 3}
 --- !u!1001 &4209033924629089706
 PrefabInstance:
