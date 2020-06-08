@@ -77,6 +77,8 @@ namespace Invector.vCharacterController
 
         [vEditorToolbar("Jump / Airborne", order = 3)]
 
+        [vHelpBox("Jump only works via Rigidbody Physics, if you want Jump that use only RootMotion make sure to use the AnimatorTag 'CustomAction' ")]
+
         [Header("Jump")]
         [Tooltip("Use the currently Rigidbody Velocity to influence on the Jump Distance")]
         public bool jumpWithRigidbodyForce = false;
@@ -135,7 +137,7 @@ namespace Invector.vCharacterController
         [Tooltip("Snaps the capsule collider to the ground surface, recommend when using complex terrains or inclined ramps")]
         public bool useSnapGround = true;
         [Tooltip("Distance to became not grounded")]
-        public float groundMinDistance = 0.25f;
+        public float groundMinDistance = 0.1f;
         public float groundMaxDistance = 0.5f;
         [Tooltip("Max angle to walk")]
         [Range(30, 80)]
@@ -181,10 +183,10 @@ namespace Invector.vCharacterController
         {
             get
             {
-                return _isStrafing || lockInStrafe;
+               return sprintOnlyFree && isSprinting ? false : _isStrafing;
             }
             set
-            {
+            {               
                 _isStrafing = value;
             }
         }
@@ -239,7 +241,7 @@ namespace Invector.vCharacterController
         internal float verticalSpeed;                       // set the verticalSpeed based on the verticalInput
         internal float horizontalSpeed;                     // set the horizontalSpeed based on the horizontalInput       
         internal float moveSpeed;                           // set the current moveSpeed for the MoveCharacter method
-        internal float verticalVelocity;                    // set the vertical velocity of the rigidbody        
+        internal float verticalVelocity;                    // set the vertical velocity of the rigidbody
         internal float colliderRadius, colliderHeight;      // storage capsule collider extra information                       
         internal float jumpMultiplier = 1;                  // internally used to set the jumpMultiplier
         internal float timeToResetJumpMultiplier;           // internally used to reset the jump multiplier
@@ -255,7 +257,7 @@ namespace Invector.vCharacterController
         [HideInInspector] public bool applyingStepOffset;   // internally used to apply the StepOffset       
         protected internal bool lockAnimMovement;           // internaly used with the vAnimatorTag("LockMovement"), use on the animator to lock the movement of a specific animation clip        
         protected internal bool lockAnimRotation;           // internaly used with the vAnimatorTag("LockRotation"), use on the animator to lock a rotation of a specific animation clip
-      
+
         internal Transform rotateTarget;
         internal Vector3 input;                              // generate raw input for the controller
         internal Vector3 oldInput;                           // used internally to identify oldinput from the current input
@@ -354,7 +356,7 @@ namespace Invector.vCharacterController
             if (!customAction)
                 base.TriggerDamageReaction(damage);
             else if (damage.activeRagdoll)
-                onActiveRagdoll.Invoke();
+                onActiveRagdoll.Invoke(damage);
         }
 
         public virtual void ReduceStamina(float value, bool accumulative)
@@ -454,25 +456,28 @@ namespace Invector.vCharacterController
         public virtual void MoveCharacter(Vector3 _direction)
         {
             // calculate input smooth
-            inputSmooth = Vector3.Lerp(inputSmooth, input, (isStrafing ? strafeSpeed.movementSmooth : freeSpeed.movementSmooth) * Time.deltaTime);
+            inputSmooth = Vector3.Lerp(inputSmooth, input, (isStrafing ? strafeSpeed.movementSmooth : freeSpeed.movementSmooth) * (useRootMotion ? Time.deltaTime : Time.fixedDeltaTime));
 
-            if (isSliding||ragdolled) return;
+            if (isSliding || ragdolled || !isGrounded || isJumping) return;
 
             _direction.y = 0;
             _direction.x = Mathf.Clamp(_direction.x, -1f, 1f);
             _direction.z = Mathf.Clamp(_direction.z, -1f, 1f);
+            // limit the input
+            if (_direction.magnitude > 1f)
+                _direction.Normalize();
 
-            Vector3 targetPosition = (useRootMotion ? animator.rootPosition : _rigidbody.position) + _direction * (stopMove ? 0 : moveSpeed) * Time.deltaTime;
-            Vector3 targetVelocity = (targetPosition - transform.position) / Time.deltaTime;
+            Vector3 targetPosition = (useRootMotion ? animator.rootPosition : _rigidbody.position) + _direction * (stopMove ? 0 : moveSpeed) * (useRootMotion ? Time.deltaTime : Time.fixedDeltaTime);
+            Vector3 targetVelocity = (targetPosition - transform.position) / (useRootMotion ? Time.deltaTime : Time.fixedDeltaTime);
 
             bool useVerticalVelocity = true;
             if (useSnapGround)
                 SnapToGround(ref targetVelocity, ref useVerticalVelocity);
 
             CalculateStepOffset(_direction.normalized, ref targetVelocity, ref useVerticalVelocity);
-
+            
             if (useVerticalVelocity) targetVelocity.y = _rigidbody.velocity.y;
-            _rigidbody.velocity = targetVelocity;
+            _rigidbody.velocity = targetVelocity;            
         }
 
         private void SnapToGround(ref Vector3 targetVelocity, ref bool useVerticalVelocity)
@@ -598,11 +603,19 @@ namespace Invector.vCharacterController
 
         public virtual void RotateToDirection(Vector3 direction, float rotationSpeed)
         {
-            if (lockAnimRotation || customAction || (!jumpAndRotate && !isGrounded)|| isSliding || ragdolled) return;
+            if (lockAnimRotation || customAction || (!jumpAndRotate && !isGrounded) || isSliding || ragdolled) return;
             direction.y = 0f;
             Vector3 desiredForward = Vector3.RotateTowards(transform.forward, direction.normalized, rotationSpeed * Time.deltaTime, .1f);
             Quaternion _newRotation = Quaternion.LookRotation(desiredForward);
-            transform.rotation  = _newRotation;
+            transform.rotation = _newRotation;
+        }
+
+        /// <summary>
+        /// Check if <see cref="input"/> and <see cref="inputSmooth"/> has some value greater than 0.1f
+        /// </summary>
+        public bool hasMovementInput
+        {
+            get => ((inputSmooth.sqrMagnitude + input.sqrMagnitude) > 0.1f || (input - inputSmooth).sqrMagnitude > 0.1f);
         }
 
         #endregion
@@ -657,7 +670,7 @@ namespace Invector.vCharacterController
 
         public virtual void AirControl()
         {
-            if (isGrounded || isSliding) return;
+            if ((isGrounded && !isJumping) || isSliding) return;
             if (transform.position.y > heightReached) heightReached = transform.position.y;
             inputSmooth = Vector3.Lerp(inputSmooth, input, airSmooth * Time.deltaTime);
 
@@ -782,15 +795,18 @@ namespace Invector.vCharacterController
             if (isDead || customAction || disableCheckGround || isSliding)
             {
                 isGrounded = true;
+                heightReached = transform.position.y;
                 return;
             }
 
             if (groundDistance <= groundMinDistance || applyingStepOffset)
-            {
+            {                
                 CheckFallDamage();
                 isGrounded = true;
                 if (!useSnapGround && !applyingStepOffset && !isJumping && groundDistance > 0.05f)
                     _rigidbody.AddForce(transform.up * (extraGravity * 2 * Time.deltaTime), ForceMode.VelocityChange);
+
+                heightReached = transform.position.y;
             }
             else
             {
@@ -812,7 +828,7 @@ namespace Invector.vCharacterController
                     _rigidbody.AddForce(transform.up * (extraGravity * 2 * Time.deltaTime), ForceMode.VelocityChange);
                 }
             }
-        }
+        }                
 
         protected virtual void CheckFallDamage()
         {
@@ -826,7 +842,7 @@ namespace Invector.vCharacterController
                 TakeDamage(new vDamage(damage, true));
             }
 
-            heightReached = 0;
+
         }
 
         private void ControlMaterialPhysics()
@@ -995,24 +1011,23 @@ namespace Invector.vCharacterController
             animator.SetFloat("InputHorizontal", 0f);
             animator.SetFloat("InputVertical", 0f);
             animator.SetFloat("VerticalVelocity", 0f);
-            _rigidbody.useGravity = false;
-            _rigidbody.velocity = Vector3.zero;
+            //Disable gravity and collision
+            _rigidbody.useGravity = false;          
             _capsuleCollider.isTrigger = true;
+            //Reset rigidbody velocity
+            _rigidbody.velocity = Vector3.zero;
         }
 
         /// <summary>
-        /// Turn rigidbody gravity on the uncheck the capsulle collider as Trigger when the animation has finish playing
-        /// </summary>
-        /// <param name="normalizedTime">Check the value of your animation Exit Time and insert here</param>
-        public virtual void EnableGravityAndCollision(float normalizedTime)
+        /// Turn rigidbody gravity on the uncheck the capsulle collider as Trigger
+        /// </summary>      
+        public virtual void EnableGravityAndCollision()
         {
-            // enable collider and gravity at the end of the animation
-            if (baseLayerInfo.normalizedTime >= normalizedTime)
-            {
-                _capsuleCollider.isTrigger = false;
-                _rigidbody.useGravity = true;
-            }
+            // Enable collision and gravity
+            _capsuleCollider.isTrigger = false;
+            _rigidbody.useGravity = true;
         }
+      
         #endregion
 
         #region Ragdoll 
@@ -1024,7 +1039,7 @@ namespace Invector.vCharacterController
             // check your verticalVelocity and assign a value on the variable RagdollVel at the Player Inspector
             if (verticalVelocity <= ragdollVelocity && groundDistance <= 0.1f && !blockFallActions)
             {
-                onActiveRagdoll.Invoke();
+                onActiveRagdoll.Invoke(null);
             }
         }
 
@@ -1079,6 +1094,7 @@ namespace Invector.vCharacterController
                     "Is Strafing = " + BoolToRichText(isStrafing) + "\n" +
                     "Is Trigger = " + BoolToRichText(_capsuleCollider.isTrigger) + "\n" +
                     "Use Gravity = " + BoolToRichText(_rigidbody.useGravity) + "\n" +
+                    "Lock Movement = " + BoolToRichText(lockMovement) + "\n" +
                     "Lock Movement = " + BoolToRichText(lockAnimMovement) + "\n" +
                     "Lock Rotation = " + BoolToRichText(lockAnimRotation) + "\n" +
                     "Stop Move = " + BoolToRichText(stopMove) + "\n" +
@@ -1130,7 +1146,7 @@ namespace Invector.vCharacterController
             [Range(0f, 1f)]
             public float animationSmooth = 0.2f;
             [Tooltip("Rotation speed of the character")]
-            public float rotationSpeed = 16f;
+            public float rotationSpeed = 20f;
             [Tooltip("Character will limit the movement to walk instead of running")]
             public bool walkByDefault = false;
             [Tooltip("Rotate with the Camera forward when standing idle")]

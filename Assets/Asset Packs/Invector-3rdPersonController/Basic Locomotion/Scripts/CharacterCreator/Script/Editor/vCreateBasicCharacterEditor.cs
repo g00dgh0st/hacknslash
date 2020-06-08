@@ -28,7 +28,7 @@ namespace Invector.vCharacterController
         }
 
         bool isHuman, isValidAvatar, charExist;
-        void OnEnable()
+        public virtual void OnEnable()
         {           
             m_Logo = Resources.Load("icon_v2") as Texture2D;
             charObj = Selection.activeGameObject;
@@ -43,7 +43,7 @@ namespace Invector.vCharacterController
             isValidAvatar = charExist ? charAnimator.avatar.isValid : false;
         }
 
-        void OnGUI()
+        public virtual void OnGUI()
         {
             if (!skin) skin = Resources.Load("vSkin") as GUISkin;
             GUI.skin = skin;
@@ -115,7 +115,7 @@ namespace Invector.vCharacterController
             GUILayout.EndVertical();
         }
 
-        bool CanCreate()
+        public virtual bool CanCreate()
         {
             return isValidAvatar && isHuman && charObj != null && charObj.GetComponent<vThirdPersonController>() == null;
         }
@@ -123,7 +123,7 @@ namespace Invector.vCharacterController
         /// <summary>
         /// Draw the Preview window
         /// </summary>
-        void DrawHumanoidPreview()
+        public virtual void DrawHumanoidPreview()
         {
             GUILayout.FlexibleSpace();
 
@@ -133,22 +133,32 @@ namespace Invector.vCharacterController
             }
         }
 
+        private GameObject InstantiateNewCharacter(GameObject selected)
+        {
+            if (selected == null) return selected;
+            if (selected.scene.IsValid()) return selected;
+
+            return PrefabUtility.InstantiatePrefab(selected) as GameObject;
+
+        }
+
         /// <summary>
         /// Created the Third Person Controller
         /// </summary>
-        void Create()
+        public virtual void Create()
         {
             // base for the character
-            var _ThirdPerson = GameObject.Instantiate(charObj, Vector3.zero, Quaternion.identity) as GameObject;
-            if (!_ThirdPerson)
-                return;          
-            _ThirdPerson.name = "vBasicController_" + charObj.gameObject.name;
-            _ThirdPerson.AddComponent<vThirdPersonController>();
-            _ThirdPerson.AddComponent<vThirdPersonInput>();
-            _ThirdPerson.AddComponent<vActions.vGenericAction>();
+            GameObject newCharacter = InstantiateNewCharacter(charObj);
 
-            var rigidbody = _ThirdPerson.AddComponent<Rigidbody>();
-            var collider = _ThirdPerson.AddComponent<CapsuleCollider>();
+            if (!newCharacter)
+                return;         
+            newCharacter.name = "vBasicController_" + charObj.gameObject.name;
+            newCharacter.AddComponent<vThirdPersonController>();
+            newCharacter.AddComponent<vThirdPersonInput>();
+            newCharacter.AddComponent<vActions.vGenericAction>();
+
+            var rigidbody = newCharacter.AddComponent<Rigidbody>();
+            var collider = newCharacter.AddComponent<CapsuleCollider>();
 
             // camera
             GameObject camera = null;
@@ -174,7 +184,7 @@ namespace Invector.vCharacterController
                 tpcamera = camera.AddComponent<vCamera.vThirdPersonCamera>();
 
             // define the camera cursorObject       
-            tpcamera.target = _ThirdPerson.transform;
+            tpcamera.target = newCharacter.transform;
             if (cameraListData != null)
             {
                 tpcamera.CameraStateList = cameraListData;
@@ -189,16 +199,16 @@ namespace Invector.vCharacterController
             }
 
             CreateHud();
-            _ThirdPerson.tag = "Player";
+            newCharacter.tag = "Player";
 
             var p_layer = LayerMask.NameToLayer("Player");
-            _ThirdPerson.layer = p_layer;
+            newCharacter.layer = p_layer;
 
-            foreach (Transform t in _ThirdPerson.transform.GetComponentsInChildren<Transform>())
+            foreach (Transform t in newCharacter.transform.GetComponentsInChildren<Transform>())
                 t.gameObject.layer = p_layer;
 
             var s_layer = LayerMask.NameToLayer("StopMove");
-            _ThirdPerson.GetComponent<vThirdPersonMotor>().stopMoveLayer = LayerMask.GetMask(LayerMask.LayerToName(s_layer));
+            newCharacter.GetComponent<vThirdPersonMotor>().stopMoveLayer = LayerMask.GetMask(LayerMask.LayerToName(s_layer));
 
             // rigidbody
             rigidbody.useGravity = true;
@@ -207,13 +217,13 @@ namespace Invector.vCharacterController
             rigidbody.mass = 50;
 
             // capsule collider 
-            collider.height = ColliderHeight(_ThirdPerson.GetComponent<Animator>());
+            collider.height = ColliderHeight(newCharacter.GetComponent<Animator>());
             collider.center = new Vector3(0, (float)System.Math.Round(collider.height * 0.5f, 2), 0);
             collider.radius = (float)System.Math.Round(collider.height * 0.15f, 2);
 
             if (controller)
-                _ThirdPerson.GetComponent<Animator>().runtimeAnimatorController = controller;
-            Selection.activeGameObject = _ThirdPerson;
+                newCharacter.GetComponent<Animator>().runtimeAnimatorController = controller;
+            Selection.activeGameObject = newCharacter;
             UnityEditor.SceneView.lastActiveSceneView.FrameSelected();
             this.Close();
         }
@@ -223,7 +233,7 @@ namespace Invector.vCharacterController
         /// </summary>
         /// <param name="animator">animator humanoid</param>
         /// <returns></returns>
-        float ColliderHeight(Animator animator)
+        public virtual float ColliderHeight(Animator animator)
         {
             var foot = animator.GetBoneTransform(HumanBodyBones.LeftFoot);
             var hips = animator.GetBoneTransform(HumanBodyBones.Hips);
@@ -234,7 +244,7 @@ namespace Invector.vCharacterController
         /// Return Hud Object
         /// </summary>
         /// <returns></returns>
-        vHUDController CreateHud()
+        public virtual vHUDController CreateHud()
         {
             var _hud = FindObjectOfType<vHUDController>();
             if (_hud) return _hud;
@@ -267,7 +277,7 @@ namespace Invector.vCharacterController
             GameObject hudObject = null;
             if (_hud == null)
             {
-                hudObject = Instantiate(hud);
+                hudObject =(GameObject) PrefabUtility.InstantiatePrefab(hud) ;
 
                 if (hudObject)
                     hudObject.GetComponent<RectTransform>().SetParent(canvas.transform);

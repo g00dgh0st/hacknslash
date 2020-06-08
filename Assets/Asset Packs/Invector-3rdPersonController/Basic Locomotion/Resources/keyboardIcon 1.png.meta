@@ -4,12 +4,18 @@ TextureImporter:
   internalIDToNameTable:
   - first:
       213: 21300000
-    second: keyboardIcon 1_0
+    second: keyboardIcon_1
   - first:
       213: 21300002
-    second: keyboardIcon 1_1
+    second: keyboardIcon_2
+  - first:
+      213: 21300004
+    second: keyboardIcon_3
+  - first:
+      213: 21300006
+    second: keyboardIcon_4
   externalObjects: {}
-  serializedVersion: 10
+  serializedVersion: 11
   mipmaps:
     mipMapMode: 0
     enableMipMap: 1
@@ -63,6 +69,7 @@ TextureImporter:
   maxTextureSizeSet: 0
   compressionQualitySet: 0
   textureFormatSet: 0
+  applyGammaDecoding: 1
   platformSettings:
   - serializedVersion: 3
     buildTarget: DefaultTexturePlatform
@@ -104,7 +111,7 @@ TextureImporter:
     serializedVersion: 2
     sprites:
     - serializedVersion: 2
-      name: keyboardIcon 1_0
+      name: keyboardIcon_1
       rect:
         serializedVersion: 2
         x: 190
@@ -112,20 +119,20 @@ TextureImporter:
         width: 131
         height: 125
       alignment: 0
-      pivot: {x: 0, y: 0}
+      pivot: {x: 0.5, y: 0.5}
       border: {x: 0, y: 0, z: 0, w: 0}
       outline: []
       physicsShape: []
       tessellationDetail: 0
       bones: []
-      spriteID: 02305410000000000800000000000000
+      spriteID: f3e5a9cc2db7733459a4cdb94059e952
       internalID: 21300000
       vertices: []
       indices: 
       edges: []
       weights: []
     - serializedVersion: 2
-      name: keyboardIcon 1_1
+      name: keyboardIcon_2
       rect:
         serializedVersion: 2
         x: 56
@@ -133,14 +140,56 @@ TextureImporter:
         width: 133
         height: 127
       alignment: 0
+      pivot: {x: 0.5, y: 0.5}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      outline: []
+      physicsShape: []
+      tessellationDetail: 0
+      bones: []
+      spriteID: bdcea70c1eed7e54581488cf223e241c
+      internalID: 21300002
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: keyboardIcon_3
+      rect:
+        serializedVersion: 2
+        x: 324
+        y: 196
+        width: 128
+        height: 122
+      alignment: 0
       pivot: {x: 0, y: 0}
       border: {x: 0, y: 0, z: 0, w: 0}
       outline: []
       physicsShape: []
       tessellationDetail: 0
       bones: []
-      spriteID: 22305410000000000800000000000000
-      internalID: 21300002
+      spriteID: 8a044d19aec9def4ba058dca794dafaa
+      internalID: 21300004
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: keyboardIcon_4
+      rect:
+        serializedVersion: 2
+        x: 191
+        y: 67
+        width: 130
+        height: 129
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      outline: []
+      physicsShape: []
+      tessellationDetail: 0
+      bones: []
+      spriteID: 48969e32577f9574ca9c975fcc1d8caf
+      internalID: 21300006
       vertices: []
       indices: 
       edges: []
@@ -180,7 +229,7 @@ TextureImporter:
       - {x: 58, y: 188}
     physicsShape: []
     bones: []
-    spriteID: 
+    spriteID: f62502ee134acf0489366033aff2306d
     internalID: 0
     vertices: []
     indices: 

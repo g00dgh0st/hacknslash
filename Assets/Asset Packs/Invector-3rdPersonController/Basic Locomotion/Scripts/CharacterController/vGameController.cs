@@ -4,6 +4,7 @@ using UnityEngine.SceneManagement;
 
 namespace Invector
 {
+    using UnityEngine.Events;
     using vCharacterController;
     public class vGameController : MonoBehaviour
     {
@@ -27,6 +28,8 @@ namespace Invector
         private vThirdPersonController currentController;
         public static vGameController instance;
         private GameObject oldPlayer;
+
+        public UnityEvent onSpawn;
 
         void Start()
         {
@@ -85,6 +88,7 @@ namespace Invector
                 currentController = currentPlayer.GetComponent<vThirdPersonController>();
                 currentController.onDead.AddListener(OnCharacterDead);
                 OnReloadGame.Invoke();
+                
                 if (displayInfoInFadeText && vHUDController.instance)
                     vHUDController.instance.ShowText("Spawn player: " + currentPlayer.name.Replace("(Clone)", ""));
 
@@ -121,7 +125,9 @@ namespace Invector
                 {
                     vHUDController.instance.ShowText("Respawn player: " + currentPlayer.name.Replace("(Clone)", ""));
                 }
+
                 OnReloadGame.Invoke();
+                onSpawn.Invoke();                
             }
         }
 

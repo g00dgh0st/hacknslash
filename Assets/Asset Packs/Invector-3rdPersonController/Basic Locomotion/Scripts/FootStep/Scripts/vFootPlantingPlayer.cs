@@ -15,11 +15,14 @@ namespace Invector
             for (int i = 0; i < customSurfaces.Count; i++)
                 if (customSurfaces[i] != null && ContainsTexture(footStepObject.name, customSurfaces[i]))
                 {
-                    customSurfaces[i].PlayRandomClip(footStepObject, spawnParticle, spawnStepMark, volume);
+                    customSurfaces[i].PlayRandomClip(footStepObject, spawnParticle, spawnStepMark, volume);                                 
                     return;
                 }
             if (defaultSurface != null)
+            {             
                 defaultSurface.PlayRandomClip(footStepObject, spawnParticle, spawnStepMark, volume);
+            }
+                
         }
 
         // check if AudioSurface Contains texture in TextureName List

@@ -83,12 +83,12 @@ namespace ofr.grim {
         return;
       }
 
-      if (Input.GetButtonDown("Fire")) {
+      if (Input.GetMouseButtonDown(0)) {
         Attack(moveInput);
         return;
       }
 
-      if (Input.GetButton("Fire2")) {
+      if (Input.GetMouseButton(1)) {
         Block(true);
         return;
       }
@@ -109,7 +109,7 @@ namespace ofr.grim {
     private void HandleAttackControl() {
       Vector3 moveInput = GetInputDirectionByCamera();
 
-      if (Input.GetButtonDown("Fire")) {
+      if (Input.GetMouseButtonDown(0)) {
         Attack(moveInput);
         return;
       }
@@ -120,7 +120,7 @@ namespace ofr.grim {
       HandleTurning(moveInput);
       HandleMoving(Vector3.ClampMagnitude(moveInput, 0.4f));
 
-      if (!Input.GetButton("Fire2")) {
+      if (!Input.GetMouseButton(1)) {
         ToggleBlock(false);
         return;
       }

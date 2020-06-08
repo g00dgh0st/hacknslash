@@ -1,11 +1,12 @@
-﻿using UnityEngine;
-using System.Collections;
+﻿using System.Collections;
 using System.Collections.Generic;
+using UnityEngine;
 
 namespace Invector.vCamera
 {
     public class vThirdPersonCamera : MonoBehaviour
     {
+
         private static vThirdPersonCamera _instance;
         public static vThirdPersonCamera instance
         {
@@ -25,7 +26,7 @@ namespace Invector.vCamera
 
         #region inspector properties    
         public Transform target;
-       
+
         [Tooltip("Lerp speed between Camera States")]
         public float smoothBetweenState = 6f;
         public float smoothCameraRotation = 6f;
@@ -96,7 +97,7 @@ namespace Invector.vCamera
             }
         }
         #endregion
-      
+
         private Vector3 cameraVelocityDamp;
         private bool firstUpdated;
         void OnDrawGizmos()
@@ -123,14 +124,14 @@ namespace Invector.vCamera
                 return;
             firstUpdated = true;
             useSmooth = true;
-            if (!targetLookAt)targetLookAt = new GameObject("targetLookAt").transform;
+            if (!targetLookAt) targetLookAt = new GameObject("targetLookAt").transform;
 
-          
+
             targetLookAt.rotation = transform.rotation;
             targetLookAt.hideFlags = HideFlags.HideInHierarchy;
             if (startSmooth)
                 distance = Vector3.Distance(targetLookAt.position, transform.position);
-            if(!targetCamera) targetCamera = Camera.main;
+            if (!targetCamera) targetCamera = Camera.main;
             currentTarget = target;
             switchRight = 1f;
             currentSwitchRight = 1f;
@@ -148,9 +149,9 @@ namespace Invector.vCamera
             ChangeState("Default", startSmooth);
             currentZoom = currentState.defaultDistance;
             currentHeight = currentState.height;
-          
+
             currentTargetPos = new Vector3(currentTarget.position.x, currentTarget.position.y + offSetPlayerPivot, currentTarget.position.z) + currentTarget.transform.up * lerpState.height;
-            targetLookAt.position = currentTargetPos;      
+            targetLookAt.position = currentTargetPos;
 
             isInit = true;
         }
@@ -243,7 +244,7 @@ namespace Invector.vCamera
                 currentState.cameraMode = state.cameraMode;
                 lerpState = state; // set the state of transition (lerpstate) to the state finded on the list
                 if (!firstStateIsInit)
-                {                   
+                {
                     currentState.defaultDistance = Vector3.Distance(targetLookAt.position, transform.position);
                     currentState.forward = lerpState.forward;
                     currentState.height = state.height;
@@ -265,6 +266,9 @@ namespace Invector.vCamera
                 // if the state choosed if not real, the first state will be set up as default
                 if (CameraStateList != null && CameraStateList.tpCameraStates.Count > 0)
                 {
+                    if(lerpState != null && lerpState.Name.Equals(CameraStateList.tpCameraStates[0].Name))                    
+                        return;
+                    
                     state = CameraStateList.tpCameraStates[0];
                     currentStateName = state.Name;
                     currentState.cameraMode = state.cameraMode;
@@ -308,9 +312,9 @@ namespace Invector.vCamera
             {
                 // search for the camera state string name
                 var state = CameraStateList.tpCameraStates.Find(delegate (vThirdPersonCameraState obj)
-               {
-                   return obj.Name.Equals(stateName);
-               });
+                {
+                    return obj.Name.Equals(stateName);
+                });
 
                 if (state != null)
                 {
@@ -350,9 +354,9 @@ namespace Invector.vCamera
             if (currentState.cameraMode == TPCameraMode.FixedPoint)
             {
                 var point = currentState.lookPoints.Find(delegate (LookPoint obj)
-               {
-                   return obj.pointName.Equals(pointName);
-               });
+                {
+                    return obj.pointName.Equals(pointName);
+                });
                 if (point != null)
                 {
                     indexLookPoint = currentState.lookPoints.IndexOf(point);
@@ -472,7 +476,7 @@ namespace Invector.vCamera
 
         void CameraMovement(bool forceUpdate = false)
         {
-            if (currentTarget == null || targetCamera == null ||(!firstStateIsInit &&!forceUpdate))
+            if (currentTarget == null || targetCamera == null || (!firstStateIsInit && !forceUpdate))
                 return;
 
             if (useSmooth)
@@ -502,7 +506,7 @@ namespace Invector.vCamera
             var targetPos = new Vector3(currentTarget.position.x, currentTarget.position.y, currentTarget.position.z) + currentTarget.transform.up * offSetPlayerPivot;
             currentTargetPos = targetPos;
             desired_cPos = targetPos + currentTarget.transform.up * currentState.height;
-            current_cPos = firstUpdated ? targetPos + currentTarget.transform.up * currentHeight:  Vector3.SmoothDamp(current_cPos, targetPos + currentTarget.transform.up * currentHeight,ref cameraVelocityDamp, lerpState.smoothDamp*Time.deltaTime);
+            current_cPos = firstUpdated ? targetPos + currentTarget.transform.up * currentHeight : Vector3.SmoothDamp(current_cPos, targetPos + currentTarget.transform.up * currentHeight, ref cameraVelocityDamp, lerpState.smoothDamp * Time.deltaTime);
             firstUpdated = false;
             RaycastHit hitInfo;
 

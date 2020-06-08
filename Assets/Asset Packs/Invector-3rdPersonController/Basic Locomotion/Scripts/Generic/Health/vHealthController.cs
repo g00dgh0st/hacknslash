@@ -1,6 +1,7 @@
 ﻿using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
+using UnityEngine.Events;
 
 namespace Invector
 {
@@ -38,7 +39,7 @@ namespace Invector
                 if (_currentHealth != value)
                 {
                     _currentHealth = value;
-                    //HandleCheckHealthEvents();
+                    onChangeHealth.Invoke(_currentHealth);
                 }
 
                 if (!_isDead && _currentHealth <= 0)
@@ -76,8 +77,10 @@ namespace Invector
         public List<CheckHealthEvent> checkHealthEvents = new List<CheckHealthEvent>();
         [SerializeField] protected OnReceiveDamage _onReceiveDamage = new OnReceiveDamage();
         [SerializeField] protected OnDead _onDead = new OnDead();
+        public ValueChangedEvent onChangeHealth;
         public OnReceiveDamage onReceiveDamage { get { return _onReceiveDamage; } protected set { _onReceiveDamage = value; } }
         public OnDead onDead { get { return _onDead; } protected set { _onDead = value; } }
+        public UnityEvent onResetHealth;
         internal bool inHealthRecovery;
 
         #endregion
@@ -160,6 +163,7 @@ namespace Invector
         public virtual void ResetHealth()
         {
             currentHealth = maxHealth;
+            onResetHealth.Invoke();
             if (isDead) isDead = false;
         }
 
@@ -225,6 +229,12 @@ namespace Invector
             public HealthCompare healthCompare = HealthCompare.Equals;
 
             public UnityEngine.Events.UnityEvent OnCheckHealth;
+        }
+
+        [System.Serializable]
+        public class ValueChangedEvent : UnityEvent<float>
+        {
+
         }
     }
 }

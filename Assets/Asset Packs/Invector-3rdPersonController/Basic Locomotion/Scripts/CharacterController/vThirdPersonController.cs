@@ -4,32 +4,7 @@ namespace Invector.vCharacterController
 {
     [vClassHeader("THIRD PERSON CONTROLLER", iconName = "controllerIcon")]
     public class vThirdPersonController : vThirdPersonAnimator
-    {
-        #region Variables
-
-        [vHelpBox("Check this option to transfer your character from one scene to another, uncheck if you're planning to use the controller with any kind of Multiplayer local or online")]
-        public bool useInstance = true;
-        public static vThirdPersonController instance;
-
-        #endregion
-
-        protected override void Start()
-        {
-            base.Start();
-            if (!useInstance) return;
-
-            if (instance == null)
-            {
-                instance = this;
-                DontDestroyOnLoad(this.gameObject);
-                this.gameObject.name = gameObject.name + " Instance";
-            }
-            else
-            {
-                Destroy(this.gameObject);
-                return;
-            }
-        }
+    {       
 
         public virtual void MoveToPosition(Vector3 targetPosition)
         {
@@ -70,14 +45,14 @@ namespace Invector.vCharacterController
 
         public virtual void ControlLocomotionType()
         {
-            if (lockAnimMovement || lockMovement || customAction || isRolling || !isGrounded ) return;
+            if (lockAnimMovement || lockMovement || customAction || isRolling ) return;
 
             if (!lockSetMoveSpeed)
             {
                 if (locomotionType.Equals(LocomotionType.FreeWithStrafe) && !isStrafing || locomotionType.Equals(LocomotionType.OnlyFree))
                 {
                     SetControllerMoveSpeed(freeSpeed);
-                    SetAnimatorMoveSpeed(freeSpeed);
+                    SetAnimatorMoveSpeed(freeSpeed);                    
                 }
                 else if (locomotionType.Equals(LocomotionType.OnlyStrafe) || locomotionType.Equals(LocomotionType.FreeWithStrafe) && isStrafing)
                 {
@@ -93,7 +68,7 @@ namespace Invector.vCharacterController
 
         public virtual void ControlRotationType()
         {
-            if (lockAnimRotation || lockRotation || customAction) return;
+            if (lockAnimRotation || lockRotation || customAction || isRolling) return;
 
             bool validInput = input != Vector3.zero || (isStrafing ? strafeSpeed.rotateWithCamera : freeSpeed.rotateWithCamera);
 
@@ -147,24 +122,24 @@ namespace Invector.vCharacterController
         }
 
         public virtual void Sprint(bool value)
-        {
-            var sprintConditions = (currentStamina > 0 && input.sqrMagnitude > 0.1f && isGrounded && !customAction &&
-                !(isStrafing && !strafeSpeed.walkByDefault && (horizontalSpeed >= 0.5 || horizontalSpeed <= -0.5 || verticalSpeed <= 0.1f)));
+        {            
+            var sprintConditions = (currentStamina > 0 && hasMovementInput && isGrounded && !customAction &&
+                !(isStrafing && !strafeSpeed.walkByDefault && (horizontalSpeed >= 0.5 || horizontalSpeed <= -0.5 || verticalSpeed <= 0.1f) && !sprintOnlyFree));
 
             if (value && sprintConditions)
-            {
-                if (currentStamina > (finishStaminaOnSprint ? sprintStamina : 0) && input.sqrMagnitude > 0.1f)
+            {                
+                if (currentStamina > (finishStaminaOnSprint ? sprintStamina : 0) && hasMovementInput)
                 {
                     finishStaminaOnSprint = false;
                     if (isGrounded && useContinuousSprint)
                     {
                         isCrouching = false;
                         isSprinting = !isSprinting;
-                        OnStartSprinting.Invoke();
+                        OnStartSprinting.Invoke();                        
                     }
                     else if (!isSprinting)
                     {
-                        isSprinting = true;
+                        isSprinting = true;                        
                     }
                 }
                 else if (!useContinuousSprint && isSprinting)

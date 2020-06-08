@@ -2,16 +2,16 @@
 using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.Events;
+
 namespace Invector.vCharacterController
 {
-
     [vClassHeader("HEAD TRACK", iconName = "headTrackIcon")]
     public class vHeadTrack : vMonoBehaviour
     {
         #region variables
 
         [vEditorToolbar("Settings")]
-        
+
         [vHelpBox("If your character is not looking up/down, try changing the axis", vHelpBoxAttribute.MessageType.Info)]
         public Vector3 upDownAxis = Vector3.right;
 
@@ -27,13 +27,13 @@ namespace Invector.vCharacterController
         [Header("Default Offsets ")]
         [SerializeField] protected Vector2 defaultOffsetSpine;
         [SerializeField] protected Vector2 defaultOffsetHead;
-        
-        [vReadOnly(true)]        
+
+        [vReadOnly(true)]
         public Vector2 offsetSpine;
-        [vReadOnly(true)] 
+        [vReadOnly(true)]
         public Vector2 offsetHead;
 
-        [Header("Tracking")]       
+        [Header("Tracking")]
         [Tooltip("Follow the Camera Forward")]
         public bool followCamera = true;
         [vHideInInspector("followCamera")]
@@ -49,7 +49,7 @@ namespace Invector.vCharacterController
         [vMinMax(minLimit = -90f, maxLimit = 90f)] public Vector2 verticalAngleLimit = new Vector2(-80, 80);
 
         [vHelpBox("Animations with vAnimatorTag Behavior will ignore the HeadTrack while is being played")]
-        [Header("Ignore AnimatorTags")]        
+        [Header("Ignore AnimatorTags")]
         public List<string> animatorIgnoreTags = new List<string>() { "Attack", "LockMovement", "CustomAction", "IsEquipping", "IgnoreHeadtrack" };
 
         [vEditorToolbar("Bones")]
@@ -91,7 +91,8 @@ namespace Invector.vCharacterController
         #endregion
         public float Smooth
         {
-          get {
+            get
+            {
                 return ignoreSmooth ? 1f : smooth * Time.deltaTime;
             }
         }
@@ -250,23 +251,22 @@ namespace Invector.vCharacterController
                     dir = lookPosition - headPoint;
                     if ((followCamera && !alwaysFollowCamera) || !followCamera)
                     {
-                        if (currentLookTarget != null && (currentLookTarget.ignoreHeadTrackAngle || TargetIsOnRange(currentLookTarget.lookPoint - headPoint)) && currentLookTarget.IsVisible(headPoint, obstacleLayer))
-                        {
-                            dir = currentLookTarget.lookPoint - headPoint;
-                            if (currentLookTarget != lastLookTarget)
-                            {
-                                currentLookTarget.EnterLook(this);
-                                lastLookTarget = currentLookTarget;
-                            }
-                        }
-
-                        else if (simpleTarget != null)
+                        if (simpleTarget != null)
                         {
                             dir = simpleTarget.position - headPoint;
                             if (currentLookTarget && currentLookTarget == lastLookTarget)
                             {
                                 currentLookTarget.ExitLook(this);
                                 lastLookTarget = null;
+                            }
+                        }
+                        else if (currentLookTarget != null && (currentLookTarget.ignoreHeadTrackAngle || TargetIsOnRange(currentLookTarget.lookPoint - headPoint)) && currentLookTarget.IsVisible(headPoint, obstacleLayer))
+                        {
+                            dir = currentLookTarget.lookPoint - headPoint;
+                            if (currentLookTarget != lastLookTarget)
+                            {
+                                currentLookTarget.EnterLook(this);
+                                lastLookTarget = currentLookTarget;
                             }
                         }
                         else if (currentLookTarget && currentLookTarget == lastLookTarget)
@@ -342,6 +342,11 @@ namespace Invector.vCharacterController
             return (angle.x >= verticalAngleLimit.x && angle.x <= verticalAngleLimit.y && angle.y >= horizontalAngleLimit.x && angle.y <= horizontalAngleLimit.y);
         }
 
+        public virtual void SetAlwaysFollowCamera(bool value)
+        {
+            alwaysFollowCamera = value;
+        }
+
         /// <summary>
         /// Set vLookTarget
         /// </summary>
@@ -381,7 +386,8 @@ namespace Invector.vCharacterController
 
         public virtual void RemoveLookTarget(Transform target)
         {
-            if (simpleTarget == target) simpleTarget = null;
+            if (simpleTarget == target)
+                simpleTarget = null;
         }
 
         /// <summary>

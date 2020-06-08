@@ -6,6 +6,40 @@ namespace Invector
 {
     public static class vExtensions
     {
+        public static string InsertSpaceBeforeUpperCase(this string input)
+        {
+            var result = "";          
+            foreach (char c in input)
+            {
+                if (char.IsUpper(c))
+                {
+                    // if not the first letter, insert space before uppercase
+                    if (!string.IsNullOrEmpty(result))
+                    {
+                        result += " ";
+                    }
+                }
+                // start new word
+                result += c;
+            }
+
+            return result;
+        }
+
+        public static string RemoveUnderline(this string input)
+        {
+            return input.Replace("_", "");
+        }
+
+        /// <summary>
+        /// Clear string spaces and turn to Upper
+        /// </summary>
+        /// <param name="target"></param>
+        /// <returns></returns>
+        public static string ToClearUpper(this string target)
+        {
+            return target.Replace(" ", string.Empty).ToUpper();
+        }
         public static bool IsVectorNaN(this Vector3 vector)
         {
             return float.IsNaN(vector.x) || float.IsNaN(vector.y) || float.IsNaN(vector.z);
@@ -84,6 +118,7 @@ namespace Invector
             }
             return newPts;
         }
+
         public static void SetLayerRecursively(this GameObject obj, int layer)
         {
             obj.layer = layer;
@@ -230,6 +265,11 @@ namespace Invector
             return new Vector3(length, height, width);
         }
 
+        public static T ToEnum<T>(this string value, bool ignoreCase = true)
+        {
+            return (T)Enum.Parse(typeof(T), value, ignoreCase);
+        }
+
         public static bool Contains<T>(this Enum value, Enum lookingForFlag) where T : struct
         {
             int intValue = (int)(object)value;
@@ -240,5 +280,57 @@ namespace Invector
         /// Load all <see cref="vCharacterController.vActions.IActionController"/> and derivatives  in character gameObject to register to events <see cref="vCharacterController.vCharacter.onActionEnter"/>,<see cref="vCharacterController.vCharacter.onActionStay"/> and <see cref="vCharacterController.vCharacter.onActionExit"/>.
         /// </summary>
         /// <param name="character">Target <seealso cref="vCharacterController.vCharacter>"/></param>
+    }
+
+    /// <summary>
+    /// vTime control when use a Time with scale or with out scale.
+    /// Usage to make functions that doesn't depend on the paused Time scale
+    /// </summary>
+    public static class vTime
+    {
+        public static bool useUnscaledTime = false;
+        static bool unscaledTime
+        {
+            get
+            {
+                return Time.timeScale <= 0 && useUnscaledTime;
+            }
+        }
+        /// <summary>
+        /// Return DeltaTime with unscaled time when <seealso cref="Time.timeScale"/> is Zero
+        /// </summary>
+        public static float deltaTime
+        {
+            get
+            {
+                return !unscaledTime
+                       ? Time.deltaTime 
+                       : Time.unscaledDeltaTime;
+            }
+        }
+        /// <summary>
+        /// Return FixedDeltaTime with unscaled time when <seealso cref="Time.timeScale"/> is Zero
+        /// </summary>
+        public static float fixedDeltaTime
+        {
+            get
+            {
+                return !unscaledTime 
+                       ? Time.fixedDeltaTime
+                       : Time.fixedUnscaledDeltaTime;
+            }
+        }
+        /// <summary>
+        /// Return Time with unscaled time when <seealso cref="Time.timeScale"/> is Zero
+        /// </summary>
+        public static float time
+        {
+            get
+            {
+                return !unscaledTime
+                       ? Time.time
+                       : Time.unscaledTime;
+            }
+        }
     }
 }

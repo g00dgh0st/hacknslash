@@ -237,7 +237,8 @@ namespace Invector.vCharacterController
         [SerializeField]
         private bool mobileAxisInvert;
 
-        public float buttomTimer;
+        public float timeButtonWasPressed;
+        public float lastTimeTheButtonWasPressed;
         public bool inButtomTimer;
         private float multTapTimer;
         private int multTapCounter;
@@ -587,18 +588,23 @@ namespace Invector.vCharacterController
             if (string.IsNullOrEmpty(buttonName) || !IsButtonAvailable(this.buttonName)) return false;
             if (GetButtonDown() && !inButtomTimer)
             {
-                buttomTimer = Time.time;
+                lastTimeTheButtonWasPressed = Time.time + 0.1f;
+                timeButtonWasPressed = Time.time;
                 inButtomTimer = true;
             }
             if (inButtomTimer)
             {
-                var time = buttomTimer + inputTime;
+                var time = timeButtonWasPressed + inputTime;
                 var valid = (time - Time.time <= 0);
 
-                if (GetButtonUp())
+                if (!GetButton() || lastTimeTheButtonWasPressed < Time.time)
                 {
                     inButtomTimer = false;
-                    return valid;
+                    return false;
+                }
+                else
+                {
+                    lastTimeTheButtonWasPressed = Time.time + 0.1f;
                 }
                 if (valid)
                 {
@@ -619,19 +625,24 @@ namespace Invector.vCharacterController
             if (string.IsNullOrEmpty(buttonName) || !IsButtonAvailable(this.buttonName)) return false;
             if (GetButtonDown() && !inButtomTimer)
             {
-                buttomTimer = Time.time;
+                lastTimeTheButtonWasPressed = Time.time + 0.1f;
+                timeButtonWasPressed = Time.time;
                 inButtomTimer = true;
             }
             if (inButtomTimer)
             {
-                var time = buttomTimer + inputTime;
+                var time = timeButtonWasPressed + inputTime;
                 currentTimer = time - Time.time;
                 var valid = (time - Time.time <= 0);
 
-                if (GetButtonUp())
+                if (!GetButton() || lastTimeTheButtonWasPressed < Time.time)
                 {
-                    inButtomTimer = false;
-                    return valid;
+                    inButtomTimer = false;                    
+                    return false;
+                }
+                else
+                {                   
+                    lastTimeTheButtonWasPressed = Time.time + 0.1f;
                 }
                 if (valid)
                 {
@@ -648,28 +659,30 @@ namespace Invector.vCharacterController
         /// <param name="inputTime"> time to check button press</param>
         /// <returns></returns>
         public bool GetButtonTimer(ref float currentTimer, ref bool upAfterPressed, float inputTime = 2)
-        {
+        {            
             if (string.IsNullOrEmpty(buttonName) || !IsButtonAvailable(this.buttonName)) return false;
-            if (GetButtonDown() && !inButtomTimer)
+            if (GetButtonDown())
             {
-                buttomTimer = Time.time;
+                lastTimeTheButtonWasPressed = Time.time + 0.1f;
+                timeButtonWasPressed = Time.time;
                 inButtomTimer = true;
             }
             if (inButtomTimer)
             {
-                var time = buttomTimer + inputTime;
+                var time = timeButtonWasPressed + inputTime;
                 currentTimer = (inputTime - (time - Time.time)) / inputTime;
                 var valid = (time - Time.time <= 0);
 
-                if (GetButtonUp())
+                if (!GetButton() || lastTimeTheButtonWasPressed < Time.time)
                 {
                     inButtomTimer = false;
                     upAfterPressed = true;
-                    return valid;
+                    return false;
                 }
                 else
                 {
                     upAfterPressed = false;
+                    lastTimeTheButtonWasPressed = Time.time + 0.1f;
                 }
                 if (valid)
                 {

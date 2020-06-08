@@ -145,7 +145,7 @@ namespace Invector.vCharacterController
                 }
             }
             if (damage.activeRagdoll)
-                onActiveRagdoll.Invoke();
+                onActiveRagdoll.Invoke(damage);
         }
 
         private IEnumerator SetTriggerRoutine(int trigger)

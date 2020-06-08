@@ -22,7 +22,54 @@ WEBSITE: http://www.invector.xyz/
 PATREON: https://www.patreon.com/invector
 ONLINE DOCUMENTATION: https://www.invector.xyz/thirdpersondocumentation
 
-Invector Team - 2019
+Invector Team - 2020
+
+Basic Locomotion v2.5.2 BugFixes - 16/05/2020
+
+- Fix Character Creator Window bug in the button "Create" not working on 2019.x when the prefab of the character is in the scene
+- Fix Missing files at the Mobile Internal Package
+- Add HealthController OnResetHealth and OnChangeHealth Events
+
+-----------------------------------------------------------------------------------------------------
+
+Basic Locomotion v2.5.1 Improvements/BugFixes - 03/05/2020
+
+- Fix Character MovementSmooth & AnimationSmooth values acting different depending on the framerate
+- Fix Character being dragged down on 45+ ramps if the option 'UseSnapGround' is checked
+- Fix Camera Zoom not scrolling with the Mouse ScrollWhell
+- Fix Ragdoll AudioSource being created far away from the controller
+- Fix Sprinting being reset to Run when making a quick 180 degrees quickly
+- Fix ControlRotationType not being called when not using the vThirdPersonCamera
+- Fix FallDamage being applied when the ground is a negative y value
+
+- Add Checkpoint Example (Works via vGameController)
+- Add vLoadLevelHelper example to transfer the character from one scene to another
+- Add bool 'ignoreTpCamera' to use different camera solutions
+- Add defense input for the Melee Point & Click add-on controller
+- Add Ragdoll Ground Layer, New Debugs options & DamageReceiver improvements
+- Add Ragdoll StayDownTime you can now add a time for the character to stay in ragdoll after taking damage
+- Add new vSimpleDoor with input hold example, improved verifications
+- Add vTriggerActionEvent to filter when you perform a specific TriggerGenericAction to call Events
+(ex: when jumpOver only, you can call a event to hide weapons)
+
+- Improved GenericAction verifications when performing a action without animation
+- Improved GenericAction Debug Mode, now it's more detailed step by step of the action
+- Improved Strafe Locomotion Sprinting, add 'hasMovementInput' delay to the sprint to avoid losing momentum when changing direction quickly
+
+- Add-On Swimming added dynamic water level support
+- Add-On Builder several improvements and new placement detection system to build objects on uneven terrain
+- New Add-On Inventory Crafting System (Required MeleeCombat or Shooter Template)
+
+-----------------------------------------------------------------------------------------------------
+
+Basic Locomotion v2.5.0a HOTFIX - 10/01/2020
+
+- Fix Controller moving faster when moving diagonally 
+- Add bool 'ignoreTpCamera' to use different camera solutions
+- Improved Roll rotation while Strafing
+- Improved FreeMovement leanning 
+
+-----------------------------------------------------------------------------------------------------
 
 Basic Locomotion v2.5.0 CORE UPDATE & New Features - 02/12/2019
 

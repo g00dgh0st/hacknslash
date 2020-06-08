@@ -25,7 +25,7 @@ public class vTagMask:IList<string>
     public vTagMask(params string[] arg)
     {
         this.tags = new List<string>(arg);
-    }
+    }    
 
     public bool Contains(string tag)
     {

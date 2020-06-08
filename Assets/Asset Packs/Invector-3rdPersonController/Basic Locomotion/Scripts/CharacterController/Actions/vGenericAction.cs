@@ -3,6 +3,7 @@ using UnityEngine;
 
 namespace Invector.vCharacterController.vActions
 {
+    using System;
     using System.Collections.Generic;
     using vCharacterController;
     [vClassHeader("GENERIC ACTION", "Use the vTriggerGenericAction to trigger a simple animation.", iconName = "triggerIcon")]
@@ -77,6 +78,11 @@ namespace Invector.vCharacterController.vActions
 
             CheckForTriggerAction();
             AnimationBehaviour();
+            HandleColliders();
+        }
+
+        private void HandleColliders()
+        {
             colliders.Clear();
             foreach (var key in actions.Keys)
             {
@@ -129,7 +135,7 @@ namespace Invector.vCharacterController.vActions
                     var screenP = mainCamera ? mainCamera.WorldToScreenPoint(key.transform.position) : screenCenter;
                     if (mainCamera)
                     {
-                        bool isValid = actions[key].enabled && actions[key].gameObject.activeInHierarchy && (!actions[key].activeFromForward && (screenP - screenCenter).magnitude < distance || IsInForward(actions[key].transform) && (screenP - screenCenter).magnitude < distance);
+                        bool isValid = actions[key].enabled && actions[key].gameObject.activeInHierarchy && (!actions[key].activeFromForward && (screenP - screenCenter).magnitude < distance || IsInForward(actions[key].transform, actions[key].forwardAngle) && (screenP - screenCenter).magnitude < distance);
                         if (isValid)
                         {
                             distance = (screenP - screenCenter).magnitude;
@@ -170,14 +176,14 @@ namespace Invector.vCharacterController.vActions
             return _targetAction;
         }
 
-        protected virtual bool IsInForward(Transform target)
+        protected virtual bool IsInForward(Transform target, float angleToCompare)
         {
-            var dist = Vector3.Distance(transform.forward, target.forward);
-            return dist <= 0.8f;
+            var angle = Vector3.Angle(transform.forward, target.forward);
+            return angle <= angleToCompare;
         }
 
         protected virtual void AnimationBehaviour()
-        {            
+        {
             if (animationBehaviourDelay > 0 && !playingAnimation)
             {
                 animationBehaviourDelay -= Time.deltaTime; return;
@@ -185,12 +191,11 @@ namespace Invector.vCharacterController.vActions
 
             if (playingAnimation)
             {
-                OnStartAction.Invoke();
                 triggerAction.OnStartAnimation.Invoke();
 
                 if (triggerAction.matchTarget != null)
                 {
-                    if (debugMode) Debug.Log("Match Target...");
+                    DebugAction("<color=blue>Match Target...</color> ");
                     // use match target to match the Y and Z target 
                     tpInput.cc.MatchTarget(triggerAction.matchTarget.transform.position, triggerAction.matchTarget.transform.rotation, triggerAction.avatarTarget,
                         new MatchTargetWeightMask(triggerAction.matchPos, triggerAction.matchRot), triggerAction.startMatchTarget, triggerAction.endMatchTarget);
@@ -198,46 +203,58 @@ namespace Invector.vCharacterController.vActions
 
                 if (triggerAction.useTriggerRotation)
                 {
-                    if (debugMode) Debug.Log("Rotate to Target...");
+                    DebugAction("<color=blue>Rotate to Target...</color> ");
                     // smoothly rotate the character to the target
                     var newRot = new Vector3(transform.eulerAngles.x, triggerAction.transform.eulerAngles.y, transform.eulerAngles.z);
                     transform.rotation = Quaternion.Lerp(transform.rotation, Quaternion.Euler(newRot), tpInput.cc.animator.GetCurrentAnimatorStateInfo(0).normalizedTime);
                 }
 
-                if (triggerAction.inputType != vTriggerGenericAction.InputType.GetButtonTimer && tpInput.cc.animator.GetCurrentAnimatorStateInfo(0).normalizedTime >= triggerAction.endExitTimeAnimation)
+                if (actionStarted && (triggerAction.inputType != vTriggerGenericAction.InputType.GetButtonTimer || !triggerAction.playAnimationWhileHoldingButton) && tpInput.cc.animator.GetCurrentAnimatorStateInfo(0).normalizedTime >= triggerAction.endExitTimeAnimation)
                 {
-                    if (debugMode) Debug.Log("Finish Animation");
-
+                    DebugAction("Finish Animation ");
                     // triggers the OnEndAnimation Event
-                    triggerAction.OnEndAnimation.Invoke();
-                    // reset GenericAction variables so you can use it again
-                    ResetTriggerSettings();
+                    EndAction();
                 }
             }
             else if (doingAction && actionStarted)
             {
                 //when using a GetButtonTimer the ResetTriggerSettings will be automatically called at the end of the timer or by releasing the input
-                if (triggerAction != null && triggerAction.inputType == vTriggerGenericAction.InputType.GetButtonTimer) return;
+                if (triggerAction != null && (triggerAction.inputType == vTriggerGenericAction.InputType.GetButtonTimer && triggerAction.playAnimationWhileHoldingButton)) return;
 
-                if (debugMode) Debug.Log("Force ResetTriggerSettings");
+                DebugAction("Force ResetTriggerSettings ");
                 // triggers the OnEndAnimation Event
-                triggerAction.OnEndAnimation.Invoke();
-                ResetTriggerSettings();
+                EndAction();
             }
+        }
+
+        protected virtual void EndAction()
+        {
+            OnEndAction.Invoke();
+
+            var trigger = triggerAction;
+            // triggers the OnEndAnimation Event
+            trigger.OnEndAnimation.Invoke();
+
+            // reset GenericAction variables so you can use it again
+            ResetTriggerSettings();
+
+            // Destroy trigger affter reset all settings
+            if (trigger.destroyAfter) StartCoroutine(DestroyActionDelay(trigger));
+
+            DebugAction("End Action ");
         }
 
         public virtual bool playingAnimation
         {
             get
             {
-                if (triggerAction == null) return _playingAnimation = false;
+                if (triggerAction == null || !doingAction) return _playingAnimation = false;
                 if (!_playingAnimation && inActionAnimation)
                 {
                     _playingAnimation = true;
                     DisablePlayerGravityAndCollision();
                 }
-                else
-                if (_playingAnimation && !inActionAnimation)
+                else if (_playingAnimation && !inActionAnimation)
                 {
                     _playingAnimation = false;
                 }
@@ -253,7 +270,7 @@ namespace Invector.vCharacterController.vActions
         {
             get
             {
-                return (!tpInput.cc.isJumping || !tpInput.cc.customAction || !playingAnimation) && !tpInput.cc.animator.IsInTransition(0);
+                return (!doingAction && !playingAnimation && !tpInput.cc.isJumping && !tpInput.cc.customAction && !tpInput.cc.animator.IsInTransition(0));
             }
         }
 
@@ -261,10 +278,17 @@ namespace Invector.vCharacterController.vActions
         {
             if (isLockTriggerEvents) return;
 
-            if (other != null && other.gameObject.CompareTag(actionTag) && !actions.ContainsKey(other))
+            if (other != null && other.gameObject.CompareTag(actionTag))
             {
-                vTriggerGenericAction _triggerAction = other.GetComponent<vTriggerGenericAction>();
-                if (_triggerAction && _triggerAction.enabled) actions.Add(other, _triggerAction);
+                if (!actions.ContainsKey(other))
+                {
+                    vTriggerGenericAction _triggerAction = other.GetComponent<vTriggerGenericAction>();
+                    if (_triggerAction && _triggerAction.enabled) actions.Add(other, _triggerAction);
+                }
+                else
+                {
+                    actions[other].OnPlayerStay.Invoke(gameObject);
+                }
             }
         }
 
@@ -292,94 +316,145 @@ namespace Invector.vCharacterController.vActions
         {
             if (triggerAction == null || !triggerAction.gameObject.activeInHierarchy) return;
 
-            // if (canTriggerAction)
+            // AutoAction
+            if (triggerAction.inputType == vTriggerGenericAction.InputType.AutoAction && actionConditions)
             {
-                if (triggerAction.inputType == vTriggerGenericAction.InputType.AutoAction && actionConditions)
+                TriggerActionEvents();
+                TriggerAnimation();
+            }
+            // GetButtonDown
+            else if (triggerAction.inputType == vTriggerGenericAction.InputType.GetButtonDown && actionConditions)
+            {
+                if (triggerAction.actionInput.GetButtonDown())
                 {
+                    TriggerActionEvents();
                     TriggerAnimation();
                 }
-                else if (triggerAction.inputType == vTriggerGenericAction.InputType.GetButtonDown && actionConditions)
+            }
+            // GetDoubleButton
+            else if (triggerAction.inputType == vTriggerGenericAction.InputType.GetDoubleButton && actionConditions)
+            {
+                if (triggerAction.actionInput.GetDoubleButtonDown(triggerAction.doubleButtomTime))
                 {
-                    if (triggerAction.actionInput.GetButtonDown())
-                    {
-                        TriggerAnimation();
-
-                    }
-                }
-                else if (triggerAction.inputType == vTriggerGenericAction.InputType.GetDoubleButton && actionConditions)
-                {
-                    if (triggerAction.actionInput.GetDoubleButtonDown(triggerAction.doubleButtomTime))
-                        TriggerAnimation();
-                }
-                else if (triggerAction.inputType == vTriggerGenericAction.InputType.GetButtonTimer)
-                {
-                    if (_currentInputDelay <= 0)
-                    {
-                        // this mode will animate while you press the button and call the OnEndAction once you finish pressing the button
-                        if (triggerAction.doActionWhilePressingButton)
-                        {
-                            var up = false;
-                            var t = 0f;
-                            // call the OnEndAction after the buttomTimer 
-                            if (triggerAction.actionInput.GetButtonTimer(ref t, ref up, triggerAction.buttonTimer))
-                            {
-                                triggerAction.OnFinishActionInput.Invoke();
-
-                                ResetActionState();
-                                ResetTriggerSettings();
-                            }
-                            // trigger the animation when you start pressing the action button
-                            if (triggerAction && triggerAction.actionInput.inButtomTimer)
-                            {
-                                triggerAction.UpdateButtonTimer(t);
-                                TriggerAnimation();
-                            }
-                            // call OnCancelActionInput if the button is released
-                            if (up && triggerAction)
-                            {
-                                if (debugMode) Debug.Log("Cancel Action");
-                                triggerAction.OnCancelActionInput.Invoke();
-                                _currentInputDelay = triggerAction.inputDelay;
-                                triggerAction.UpdateButtonTimer(0);
-                                ResetActionState();
-                                ResetTriggerSettings();
-                            }
-                        }
-                        // this mode will call the animation and event only when the buttonTimer finished 
-                        else
-                        {
-                            if (triggerAction.actionInput.GetButtonTimer(triggerAction.buttonTimer))
-                            {
-                                TriggerAnimation();
-
-                                if (playingAnimation)
-                                {
-                                    if (debugMode) Debug.Log("call OnFinishInput Event");
-                                    triggerAction.OnFinishActionInput.Invoke();
-                                }
-                            }
-                        }
-                    }
-                    else
-                    {
-                        _currentInputDelay -= Time.deltaTime;
-                    }
+                    TriggerActionEvents();
+                    TriggerAnimation();
                 }
             }
+            // GetButtonTimer (Hold Button)
+            else if (triggerAction.inputType == vTriggerGenericAction.InputType.GetButtonTimer)
+            {
+                if (_currentInputDelay <= 0)
+                {
+                    var up = false;
+                    var t = 0f;
+
+                    // this mode will play the animation while you're holding the button
+                    if (triggerAction.playAnimationWhileHoldingButton)
+                    {
+                        TriggerActionEventsInput();
+
+                        // call the OnFinishActionInput after the buttomTimer is concluded and reset player settings
+                        if (triggerAction.actionInput.GetButtonTimer(ref t, ref up, triggerAction.buttonTimer))
+                        {
+                            DebugAction("Finish Action Input ");
+                            triggerAction.UpdateButtonTimer(0);
+                            triggerAction.OnFinishActionInput.Invoke();
+                            ResetActionState();
+                            ResetTriggerSettings();
+                        }
+
+                        // trigger the Animation and the ActionEvents while your hold the button
+                        if (triggerAction && triggerAction.actionInput.inButtomTimer)
+                        {
+                            DebugAction("<color=blue>Holding Input</color>  ");
+                            triggerAction.UpdateButtonTimer(t);
+                            TriggerAnimation();
+                        }
+
+                        // call OnCancelActionInput if the button is released before ending the buttonTimer
+                        if (up && triggerAction)
+                            CancelButtonTimer();
+
+                    }
+                    // this mode will play the animation after you finish holding the button
+                    else /*if (!doingAction)*/
+                    {
+                        TriggerActionEventsInput();
+
+                        // call the OnFinishActionInput after the buttomTimer is concluded and reset player settings
+                        if (triggerAction.actionInput.GetButtonTimer(ref t, ref up, triggerAction.buttonTimer))
+                        {
+                            DebugAction("Finish Action Input ");
+                            triggerAction.UpdateButtonTimer(0);
+                            triggerAction.OnFinishActionInput.Invoke();
+                            // destroy the triggerAction if checked with destroyAfter                          
+                            TriggerAnimation();
+                        }
+
+                        // trigger the ActionEvents while your hold the button
+                        if (triggerAction && triggerAction.actionInput.inButtomTimer)
+                        {
+                            DebugAction("<color=blue>Holding Input</color>");
+                            triggerAction.UpdateButtonTimer(t);
+                        }
+
+                        // call OnCancelActionInput if the button is released before ending the buttonTimer
+                        if (up && triggerAction)
+                            CancelButtonTimer();
+                    }
+                }
+                else
+                {
+                    _currentInputDelay -= Time.deltaTime;
+                }
+            }
+        }
+
+        private void CancelButtonTimer()
+        {
+            DebugAction("Cancel Action ");
+            triggerAction.OnCancelActionInput.Invoke();
+            _currentInputDelay = triggerAction.inputDelay;
+            triggerAction.UpdateButtonTimer(0);
+            OnCancelAction.Invoke();
+            ResetActionState();
+            ResetTriggerSettings();
+        }
+
+        private void TriggerActionEventsInput()
+        {
+            // trigger the ActionEvents while your hold the button
+            if (triggerAction && triggerAction.actionInput.GetButtonDown())
+            {
+                TriggerActionEvents();
+            }
+        }
+
+        public virtual void TriggerActionEvents()
+        {
+            DebugAction("TriggerAction Events ", gameObject);
+
+            doingAction = true;
+
+            // Call OnStartAction from the Controller's GenericAction inspector
+            OnStartAction.Invoke();
+
+            // Call OnDoAction from the Controller's GenericAction
+            OnDoAction.Invoke(triggerAction);
+
+            // trigger OnDoAction Event, you can add a delay in the inspector
+            StartCoroutine(triggerAction.OnPressActionDelay(gameObject));
         }
 
         public virtual void TriggerAnimation()
         {
             if (playingAnimation || actionStarted) return;
-            doingAction = true;
-            OnDoAction.Invoke(triggerAction);
 
-            //triggerAction.OnPlayerExit.Invoke();
-            if (debugMode) Debug.Log("TriggerAnimation", gameObject);
+            DebugAction("TriggerAnimation ", gameObject);
 
             if (triggerAction.animatorActionState != 0)
             {
-                if (debugMode) Debug.Log("Applied ActionState: " + triggerAction.animatorActionState, gameObject);
+                DebugAction("Applied ActionState: " + triggerAction.animatorActionState + " ", gameObject);
                 tpInput.cc.SetActionState(triggerAction.animatorActionState);
             }
 
@@ -392,7 +467,7 @@ namespace Invector.vCharacterController.vActions
                     playingAnimation = true;
                     tpInput.cc.animator.CrossFadeInFixedTime(triggerAction.playAnimation, 0.1f);    // trigger the action animation clip
                     if (!string.IsNullOrEmpty(triggerAction.customCameraState))
-                        tpInput.ChangeCameraState(triggerAction.customCameraState, true);                 // change current camera state to a custom
+                        tpInput.ChangeCameraState(triggerAction.customCameraState, true);           // change current camera state to a custom
                 }
             }
             else
@@ -400,11 +475,6 @@ namespace Invector.vCharacterController.vActions
                 actionStarted = true;
             }
             animationBehaviourDelay = 0.2f;
-            // trigger OnDoAction Event, you can add a delay in the inspector   
-            StartCoroutine(triggerAction.OnDoActionDelay(gameObject));
-            // destroy the triggerAction if checked with destroyAfter
-            if (triggerAction.destroyAfter)
-                StartCoroutine(DestroyActionDelay(triggerAction));
         }
 
         public virtual void ResetActionState()
@@ -415,7 +485,7 @@ namespace Invector.vCharacterController.vActions
 
         public virtual void ResetTriggerSettings()
         {
-            if (debugMode) Debug.Log("Reset Trigger Settings");
+            DebugAction("Reset Trigger Settings ");
 
             // reset player gravity and collision
             EnablePlayerGravityAndCollision();
@@ -423,15 +493,12 @@ namespace Invector.vCharacterController.vActions
             ResetActionState();
             // reset the CameraState to the Default state
             tpInput.ResetCameraState();
-            // reset canTriggerAction so you can trigger another action
-            //canTriggerAction = false;
+            // remove the collider from the actions list
             if (triggerAction != null && actions.ContainsKey(triggerAction._collider))
             {
                 actions.Remove(triggerAction._collider);
             }
             triggerAction = null;
-            // reset triggerActionOnce so you can trigger again
-            //  triggerActionOnce = false;
             doingAction = false;
             actionStarted = false;
         }
@@ -440,33 +507,40 @@ namespace Invector.vCharacterController.vActions
         {
             if (triggerAction && triggerAction.disableGravity)
             {
-                if (debugMode) Debug.Log("Disable Player's Gravity");
+                DebugAction("<color=red>Disable Player's Gravity</color> ");
                 tpInput.cc._rigidbody.useGravity = false;
                 tpInput.cc._rigidbody.velocity = Vector3.zero;
             }
             if (triggerAction && triggerAction.disableCollision)
             {
-                if (debugMode) Debug.Log("Disable Player's Collision");
+                DebugAction("<color=red>Disable Player's Collision</color> ");
                 tpInput.cc._capsuleCollider.isTrigger = true;
             }
         }
 
         public virtual void EnablePlayerGravityAndCollision()
         {
-            if (debugMode) Debug.Log("Enable Player's Gravity");
-            tpInput.cc._rigidbody.useGravity = true;
+            if (tpInput.cc._rigidbody.useGravity == false)
+            {
+                DebugAction("<color=green>Enable Player's Gravity</color> ");
+                tpInput.cc._rigidbody.useGravity = true;
+            }
 
-            if (debugMode) Debug.Log("Enable Player's Collision");
-            tpInput.cc._capsuleCollider.isTrigger = false;
+            if (tpInput.cc._capsuleCollider.isTrigger == true)
+            {
+                DebugAction("<color=green>Enable Player's Collision </color> ");
+                tpInput.cc._capsuleCollider.isTrigger = false;
+            }
+
         }
 
         public virtual IEnumerator DestroyActionDelay(vTriggerGenericAction triggerAction)
         {
             var _triggerAction = triggerAction;
             yield return new WaitForSeconds(_triggerAction.destroyDelay);
-            OnEndAction.Invoke();
-            ResetTriggerSettings();
-            Destroy(_triggerAction.gameObject);
+            if (_triggerAction != null && _triggerAction.gameObject != null)
+                Destroy(_triggerAction.gameObject);
+            DebugAction("Destroy Trigger ");
         }
 
         public virtual void SetLockTriggerEvents(bool value)
@@ -480,6 +554,15 @@ namespace Invector.vCharacterController.vActions
             }
             actions.Clear();
             isLockTriggerEvents = value;
+        }
+
+
+        void DebugAction(string message, UnityEngine.Object context = null)
+        {
+            if (debugMode)
+            {
+                Debug.Log($"<b>GenericAction: </b>{message}", context);
+            }
         }
     }
 }

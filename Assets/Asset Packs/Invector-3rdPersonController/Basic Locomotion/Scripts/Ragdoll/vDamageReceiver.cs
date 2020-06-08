@@ -5,7 +5,7 @@ namespace Invector.vCharacterController
     [vClassHeader("DAMAGE RECEIVER", "You can add damage multiplier for example causing twice damage on Headshots", openClose = false)]
     public partial class vDamageReceiver : vMonoBehaviour, vIDamageReceiver
     {
-       
+
         [vEditorToolbar("Default")]
         public float damageMultiplier = 1f;
         [HideInInspector]
@@ -21,82 +21,73 @@ namespace Invector.vCharacterController
         public float minDamageMultiplier, maxDamageMultiplier;
         [vHideInInspector("useRandomValues")]
         public int minReactionID, maxReactionID;
-        [vHideInInspector("useRandomValues;fixedValues"),Tooltip("Change Between 0 and 100")]
+        [vHideInInspector("useRandomValues;fixedValues"), Tooltip("Change Between 0 and 100")]
         public float changeToMaxValue;
-
+        public GameObject targetReceiver;
+        public vIHealthController healthController;
         [SerializeField] protected OnReceiveDamage _onReceiveDamage = new OnReceiveDamage();
         public UnityEngine.Events.UnityEvent OnGetMaxValue;
         public OnReceiveDamage onReceiveDamage { get { return _onReceiveDamage; } protected set { _onReceiveDamage = value; } }
 
-        void Start()
+        protected virtual void Start()
         {
             ragdoll = GetComponentInParent<vRagdoll>();
         }
 
-        void OnCollisionEnter(Collision collision)
+        protected virtual void OnCollisionEnter(Collision collision)
         {
             if (collision != null)
             {
                 if (ragdoll && ragdoll.isActive)
                 {
                     ragdoll.OnRagdollCollisionEnter(new vRagdollCollision(this.gameObject, collision));
-                    if (!inAddDamage)
-                    {
-                        float impactforce = collision.relativeVelocity.x + collision.relativeVelocity.y + collision.relativeVelocity.z;
-                        if (impactforce > 10 || impactforce < -10)
-                        {
-                            inAddDamage = true;
-                            vDamage damage = new vDamage((int)Mathf.Abs(impactforce) - 10);
-                            damage.ignoreDefense = true;
-                            damage.sender = collision.transform;
-                            damage.hitPosition = collision.contacts[0].point;
-
-                            Invoke("ResetAddDamage", 0.1f);
-                        }
-                    }
                 }
             }
         }
 
-        bool inAddDamage;
-
-        void ResetAddDamage()
+        public virtual void TakeDamage(vDamage damage)
         {
-            inAddDamage = false;
-        }
+            if (healthController == null && targetReceiver)
+                healthController = targetReceiver.GetComponent<vIHealthController>();
+            else if (healthController == null)
+                healthController = GetComponentInParent<vIHealthController>();
 
-        public void TakeDamage(vDamage damage)
-        {
-            if (!ragdoll) return;
-            if (!ragdoll.iChar.isDead)
+            if (healthController != null)
             {
-                inAddDamage = true;
-                float multiplier = (useRandomValues && !fixedValues) ? Random.Range(minDamageMultiplier, maxDamageMultiplier) :
-                                    (useRandomValues && fixedValues) ? randomChange ? maxDamageMultiplier:minDamageMultiplier :damageMultiplier;
-               
-                if (overrideReactionID)
-                {
-                    if (useRandomValues && !fixedValues) damage.reaction_id = Random.Range(minReactionID, maxReactionID);
-                    else if(useRandomValues && fixedValues) damage.reaction_id = randomChange ? maxReactionID:minReactionID;
-                    else
-                      damage.reaction_id =  reactionID;
-                }
-
-                var _damage = new vDamage(damage);
-                var value = (float)_damage.damageValue;
-                _damage.damageValue = (int)(value * multiplier);
-                if (multiplier == maxDamageMultiplier) OnGetMaxValue.Invoke();
-                ragdoll.ApplyDamage(damage);
+                var _damage = ApplyDamageModifiers(damage);
+                healthController.TakeDamage(_damage);
                 onReceiveDamage.Invoke(_damage);
-                Invoke("ResetAddDamage", 0.1f);
             }
         }
-       
+
+        public virtual vDamage ApplyDamageModifiers(vDamage damage)
+        {
+            float multiplier = (useRandomValues && !fixedValues) ? Random.Range(minDamageMultiplier, maxDamageMultiplier) :
+                               (useRandomValues && fixedValues) ? randomChange ? maxDamageMultiplier : minDamageMultiplier : damageMultiplier;
+            var _damage = new vDamage(damage);
+            _damage.damageValue *= (int)multiplier;
+            if (multiplier == maxDamageMultiplier) OnGetMaxValue.Invoke();
+
+            OverrideReaction(ref _damage);
+            return _damage;
+        }
+
+        protected virtual void OverrideReaction(ref vDamage damage)
+        {
+            if (overrideReactionID)
+            {
+                if (useRandomValues && !fixedValues) damage.reaction_id = Random.Range(minReactionID, maxReactionID);
+                else if (useRandomValues && fixedValues) damage.reaction_id = randomChange ? maxReactionID : minReactionID;
+                else
+                    damage.reaction_id = reactionID;
+            }
+        }
+
         protected virtual bool randomChange
         {
             get
-            {   
-                 return Random.Range(0f, 100f) < changeToMaxValue; 
+            {
+                return Random.Range(0f, 100f) < changeToMaxValue;
             }
         }
     }

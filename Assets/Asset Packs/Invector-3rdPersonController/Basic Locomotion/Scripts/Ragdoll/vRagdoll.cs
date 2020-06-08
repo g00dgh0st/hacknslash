@@ -8,7 +8,15 @@ namespace Invector.vCharacterController
     public class vRagdoll : vMonoBehaviour
     {
         #region public variables       
+        [vEditorToolbar("Debug")]
+        public bool startRagdolled = false;
+        [vButton("Active Ragdoll And Keep Ragdolled", "ActivateRagdollWithDelayToGetUp", typeof(vRagdoll))]
         [vButton("Active Ragdoll", "ActivateRagdoll", typeof(vRagdoll))]
+        [SerializeField] protected float debugTimeToStayRagdolled;
+        [vEditorToolbar("Settings")]
+        public LayerMask groundLayer = 1 << 0;
+        public bool keepRagdolled;
+        public bool _ignoreGetUpAnimation;
         public bool removePhysicsAfterDie;
         [Tooltip("SHOOTER: Keep false to use detection hit on each children collider, don't forget to change the layer to BodyPart from hips to all childrens. MELEE: Keep true to only hit the main Capsule Collider.")]
         public bool disableColliders = false;
@@ -33,6 +41,8 @@ namespace Invector.vCharacterController
         public bool isActive;
 
         bool inStabilize, updateBehaviour;
+
+        public bool ignoreGetUpAnimation { get => _ignoreGetUpAnimation; set => _ignoreGetUpAnimation = value; }
 
         bool ragdolled
         {
@@ -80,10 +90,15 @@ namespace Invector.vCharacterController
 
                         //Initiate the get up animation
                         //hip hips forward vector pointing upwards, initiate the get up from back animation
-                        if (animator.GetBoneTransform(HumanBodyBones.Hips).forward.y > 0)
-                            animator.Play("StandUp@FromBack");
-                        else
-                            animator.Play("StandUp@FromBelly");
+                        if (!ignoreGetUpAnimation)
+                        {
+                            if (animator.GetBoneTransform(HumanBodyBones.Hips).forward.y > 0)
+                                animator.Play("StandUp@FromBack");
+                            else
+                                animator.Play("StandUp@FromBelly");
+
+                        }
+
                     }
                 }
             }
@@ -99,19 +114,21 @@ namespace Invector.vCharacterController
 
         //The current state
         RagdollState state = RagdollState.animated;
+
         //How long do we blend when transitioning from ragdolled to animated
-        float ragdollToMecanimBlendTime = 0.5f;
-        float mecanimToGetUpTransitionTime = 0.05f;
+        readonly float ragdollToMecanimBlendTime = 0.5f;
+        readonly float mecanimToGetUpTransitionTime = 0.05f;
         //A helper variable to store the time when we transitioned from ragdolled to blendToAnim state
         float ragdollingEndTime = -100;
         //Additional vectores for storing the pose the ragdoll ended up in.
         Vector3 ragdolledHipPosition, ragdolledHeadPosition, ragdolledFeetPosition;
+
         //Declare a list of body parts, initialized in Start()
-        List<BodyPart> bodyParts = new List<BodyPart>();
+        readonly List<BodyPart> bodyParts = new List<BodyPart>();
         // used to reset parent of hips
         Transform hipsParent;
         //used to controll damage frequency
-        bool inApplyDamage;
+        bool inApplyCollisionSound;
         private GameObject _ragdollContainer;
         class BodyPart
         {
@@ -146,6 +163,7 @@ namespace Invector.vCharacterController
             {
                 var _collisionPrefab = new GameObject("ragdollAudioSource");
                 _collisionPrefab.transform.SetParent(gameObject.transform);
+                _collisionPrefab.transform.position = transform.position;
                 collisionSource = _collisionPrefab.AddComponent<AudioSource>();
             }
 
@@ -184,13 +202,15 @@ namespace Invector.vCharacterController
                 setKinematic(true);
                 setCollider(true);
             }
+
+            if (startRagdolled) Invoke("ActivateRagdoll", 0.1f);
         }
 
         void CreateRagdollContainer()
         {
             if (!_ragdollContainer)
                 _ragdollContainer = new GameObject("RagdollContainer " + gameObject.name);
-            _ragdollContainer.hideFlags = HideFlags.HideInHierarchy;
+            //_ragdollContainer.hideFlags = HideFlags.HideInHierarchy;
         }
 
         void LateUpdate()
@@ -199,6 +219,7 @@ namespace Invector.vCharacterController
             if (!updateBehaviour && animator.updateMode == AnimatorUpdateMode.AnimatePhysics) return;
             updateBehaviour = false;
             RagdollBehaviour();
+
         }
 
         void FixedUpdate()
@@ -209,7 +230,7 @@ namespace Invector.vCharacterController
             {
                 if (!_ragdollContainer) CreateRagdollContainer();
                 if (characterHips.parent != _ragdollContainer.transform) characterHips.SetParent(_ragdollContainer.transform);
-                if (ragdolled && !inStabilize)
+                if (ragdolled && !inStabilize && !keepRagdolled)
                 {
                     ragdolled = false;
                     StartCoroutine(ResetPlayer(1.1f));
@@ -238,28 +259,52 @@ namespace Invector.vCharacterController
         /// <summary>
         /// Reset the inApplyDamage variable. Set to false;
         /// </summary>
-        void ResetDamage()
+        void ResetCollisionSound()
         {
-            inApplyDamage = false;
+            inApplyCollisionSound = false;
+        }
+
+        public void ActivateRagdollWithDelayToGetUp()
+        {
+            ActivateRagdoll(null, debugTimeToStayRagdolled);
+        }
+
+        void KeepRagdolled(float time)
+        {
+            if (time > 0)
+                keepRagdolled = true;
+
+            CancelInvoke("ResetStayRagdolled");
+            Invoke("ResetStayRagdolled", time);
+
+        }
+        /// <summary>
+        /// Reset keep ragdolled time
+        /// </summary>
+        public void ResetStayRagdolled()
+        {
+            keepRagdolled = false;
         }
 
         /// <summary>
-        /// Add Damage to vCharacter every 0.1 seconds
+        /// Active Ragdoll
         /// </summary>
-        /// <param name="damage"></param>
-        public void ApplyDamage(vDamage damage)
-        {
-            if (isActive && ragdolled && !inApplyDamage && iChar != null)
-            {
-                inApplyDamage = true;
-                iChar.TakeDamage(damage);
-                Invoke("ResetDamage", 0.2f);
-            }
-        }
-
         public void ActivateRagdoll()
         {
             ActivateRagdoll(null);
+        }
+        /// <summary>
+        /// Active Ragdoll
+        /// </summary>
+        /// <param name="damage">Damage</param>
+        /// <param name="timeToStayRagdolled">Time to keep ragdolled active</param>
+        public void ActivateRagdoll(vDamage damage, float timeToStayRagdolled)
+        {
+            if (isActive || (damage != null && !damage.activeRagdoll))
+                return;
+
+            ActivateRagdoll(damage);
+            KeepRagdolled(timeToStayRagdolled);
         }
 
         // active ragdoll - call this method to turn the ragdoll on      
@@ -268,7 +313,9 @@ namespace Invector.vCharacterController
             if (isActive || (damage != null && !damage.activeRagdoll))
                 return;
             if (!_ragdollContainer) CreateRagdollContainer();
-            inApplyDamage = true;
+            if (damage != null && damage.senselessTime > 0) KeepRagdolled(damage.senselessTime);
+
+            inApplyCollisionSound = true;
             isActive = true;
 
             if (transform.parent != null && !transform.parent.gameObject.isStatic) transform.parent = null;
@@ -286,14 +333,18 @@ namespace Invector.vCharacterController
             StartCoroutine(RagdollStabilizer(2f));
 
             if (!isDead)
+            {
                 characterHips.SetParent(_ragdollContainer.transform);// = null;
-            Invoke("ResetDamage", 0.2f);
+
+            }
+
+            Invoke("ResetCollisionSound", 0.2f);
         }
 
         // ragdoll collision sound        
         public void OnRagdollCollisionEnter(vRagdollCollision ragdolCollision)
         {
-            if (ragdolCollision.ImpactForce > 1)
+            if (!inApplyCollisionSound && ragdolCollision.ImpactForce > 1)
             {
                 if (collisionSource)
                 {
@@ -301,7 +352,9 @@ namespace Invector.vCharacterController
                     collisionSource.volume = ragdolCollision.ImpactForce * 0.05f;
                     if (!collisionSource.isPlaying)
                     {
+                        inApplyCollisionSound = true;
                         collisionSource.Play();
+                        Invoke("ResetCollisionSound", 0.2f);
                     }
                 }
             }
@@ -360,8 +413,8 @@ namespace Invector.vCharacterController
                     Vector3 newRootPosition = transform.position + animatedToRagdolled;
 
                     //Now cast a ray from the computed position downwards and find the highest hit that does not belong to the character 
-                    RaycastHit[] hits = Physics.RaycastAll(new Ray(newRootPosition + Vector3.up, Vector3.down));
-                    //newRootPosition.y = 0;
+                    RaycastHit[] hits = Physics.RaycastAll(new Ray(newRootPosition + Vector3.up, Vector3.down), 1, groundLayer, QueryTriggerInteraction.Ignore);
+
 
                     foreach (RaycastHit hit in hits)
                     {

@@ -29,7 +29,7 @@ namespace Invector
             if (go == null) return;
 
             var controller = go.GetComponent<Invector.vCharacterController.vThirdPersonController>();
-            if (controller != null) DrawIcon("icon_v2", selectionRect);
+            if (controller != null) DrawIcon("controllerIcon", selectionRect);
         }
 
 

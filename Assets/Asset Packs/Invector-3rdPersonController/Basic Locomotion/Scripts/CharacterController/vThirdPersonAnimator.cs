@@ -16,7 +16,7 @@ namespace Invector.vCharacterController
         public const float runningSpeed = 1f;
         public const float sprintSpeed = 1.5f;
         private bool triggerDieBehaviour;
-
+       
         public int baseLayer { get { return animator.GetLayerIndex("Base Layer"); } }
         public int underBodyLayer { get { return animator.GetLayerIndex("UnderBody"); } }
         public int rightArmLayer { get { return animator.GetLayerIndex("RightArm"); } }
@@ -24,13 +24,14 @@ namespace Invector.vCharacterController
         public int upperBodyLayer { get { return animator.GetLayerIndex("UpperBody"); } }
         public int fullbodyLayer { get { return animator.GetLayerIndex("FullBody"); } }
 
+        protected Vector3 lasLeanEulerAngle;
         #endregion
 
         protected override void Start()
         {
             base.Start();
             animatorStateInfos = new vAnimatorStateInfos(GetComponent<Animator>());
-            animatorStateInfos.RegisterListener();
+            animatorStateInfos.RegisterListener();            
         }
 
         protected virtual void OnEnable()
@@ -90,8 +91,8 @@ namespace Invector.vCharacterController
         public virtual void UpdateAnimatorParameters()
         {
             if (disableAnimations) return;
-
-            animator.SetBool(vAnimatorParameters.IsStrafing, isStrafing); ;
+           
+            animator.SetBool(vAnimatorParameters.IsStrafing, isStrafing);
             animator.SetBool(vAnimatorParameters.IsSprinting, isSprinting);
             animator.SetBool(vAnimatorParameters.IsSliding, isSliding);
             animator.SetBool(vAnimatorParameters.IsCrouching, isCrouching);
@@ -112,9 +113,9 @@ namespace Invector.vCharacterController
                 }
                 else
                 {
-                    var dir = transform.InverseTransformDirection(moveDirection);
+                  
                     animator.SetFloat(vAnimatorParameters.InputVertical, stopMove ? 0 : verticalSpeed, freeSpeed.animationSmooth, Time.deltaTime);
-                    animator.SetFloat(vAnimatorParameters.InputHorizontal, stopMove ? 0 : useLeanMovement ? dir.x : 0f, freeSpeed.animationSmooth, Time.deltaTime);
+                    animator.SetFloat(vAnimatorParameters.InputHorizontal, stopMove ? 0 : useLeanMovement ? LeanMovement() : 0f, freeSpeed.animationSmooth, Time.deltaTime);
                 }
                 
                 animator.SetFloat(vAnimatorParameters.InputMagnitude, stopMove ? 0f : inputMagnitude, isStrafing ? strafeSpeed.animationSmooth : freeSpeed.animationSmooth, Time.deltaTime);
@@ -126,6 +127,14 @@ namespace Invector.vCharacterController
                 FreeTurnOnSpot(_direction * 180);
                 StrafeTurnOnSpot();
             }
+        }
+
+        protected virtual float LeanMovement()
+        {
+            var leanEuler =  transform.eulerAngles- lasLeanEulerAngle;
+            float angleY = leanEuler.NormalizeAngle().y/(isStrafing?strafeSpeed.rotationSpeed: freeSpeed.rotationSpeed);
+            lasLeanEulerAngle = transform.eulerAngles;          
+            return angleY;
         }
 
         public virtual void SetAnimatorMoveSpeed(vMovementSpeed speed)
@@ -147,6 +156,11 @@ namespace Invector.vCharacterController
             animator.SetFloat("InputHorizontal", 0f, 0f, Time.deltaTime);
             animator.SetFloat("InputVertical", 0f, 0f, Time.deltaTime);
             animator.SetFloat("InputMagnitude", 0f, 0f, Time.deltaTime);
+            animator.SetBool(vAnimatorParameters.IsSprinting, false);
+            animator.SetBool(vAnimatorParameters.IsSliding, false);
+            animator.SetBool(vAnimatorParameters.IsCrouching, false);
+            animator.SetBool(vAnimatorParameters.IsGrounded, true);
+            animator.SetFloat(vAnimatorParameters.GroundDistance, 0f);
         }
 
         protected virtual void TriggerRandomIdle()
@@ -199,12 +213,12 @@ namespace Invector.vCharacterController
                 {
                     // activate the ragdoll after the animation finish played
                     if (fullBodyInfo.normalizedTime >= 0.8f)
-                        onActiveRagdoll.Invoke();
+                        onActiveRagdoll.Invoke(null);
                 }
             }
             // death by ragdoll
             else if (deathBy == DeathBy.Ragdoll)
-                onActiveRagdoll.Invoke();
+                onActiveRagdoll.Invoke(null);
         }
 
         #region TurnOnSpot
@@ -218,7 +232,7 @@ namespace Invector.vCharacterController
 
         protected virtual void StrafeTurnOnSpot()
         {
-            if (!isStrafing || input.sqrMagnitude >= 0.25f || isTurningOnSpot || customAction || !strafeSpeed.rotateWithCamera)
+            if (!isStrafing || input.sqrMagnitude >= 0.25f || isTurningOnSpot || customAction || !strafeSpeed.rotateWithCamera|| isRolling)
             {
                 animator.SetFloat(vAnimatorParameters.TurnOnSpotDirection, 0);
                 return;
@@ -237,7 +251,7 @@ namespace Invector.vCharacterController
 
         protected virtual void FreeTurnOnSpot(float direction)
         {
-            if (isStrafing || !freeSpeed.rotateWithCamera) return;
+            if (isStrafing || !freeSpeed.rotateWithCamera || isRolling) return;
 
             bool inTransition = animator.IsInTransition(0);
             float directionDampTime = isTurningOnSpot || inTransition ? 1000000 : 0;

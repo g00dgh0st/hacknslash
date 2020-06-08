@@ -3,7 +3,7 @@
 namespace Invector.vCharacterController
 {
     [System.Serializable]
-    public class OnActiveRagdoll : UnityEngine.Events.UnityEvent { }
+    public class OnActiveRagdoll : UnityEngine.Events.UnityEvent<vDamage> { }
     public interface vICharacter : vIHealthController
     {
         OnActiveRagdoll onActiveRagdoll { get; }

@@ -14,6 +14,8 @@ namespace Invector
         public bool ignoreDefense;
         [Tooltip("Activated Ragdoll when hit the Character")]
         public bool activeRagdoll;
+        [vHideInInspector("activeRagdoll"),Tooltip("Time to keep Ragdoll active")]
+        public float senselessTime;
         [HideInInspector]
         public Transform sender;
         [HideInInspector]
@@ -65,6 +67,7 @@ namespace Invector
             this.reaction_id = damage.reaction_id;
             this.damageType = damage.damageType;
             this.hitPosition = damage.hitPosition;
+            this.senselessTime = damage.senselessTime;
         }
 
         /// <summary>

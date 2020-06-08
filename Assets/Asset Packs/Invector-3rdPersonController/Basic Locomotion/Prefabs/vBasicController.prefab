@@ -275,13 +275,13 @@ MonoBehaviour:
   minReactionID: 0
   maxReactionID: 0
   changeToMaxValue: 0
+  targetReceiver: {fileID: 0}
   _onReceiveDamage:
     m_PersistentCalls:
       m_Calls: []
   OnGetMaxValue:
     m_PersistentCalls:
       m_Calls: []
-  targetReceiver: {fileID: 0}
 --- !u!144 &14490674
 CharacterJoint:
   m_ObjectHideFlags: 0
@@ -947,13 +947,13 @@ MonoBehaviour:
   minReactionID: 0
   maxReactionID: 0
   changeToMaxValue: 0
+  targetReceiver: {fileID: 0}
   _onReceiveDamage:
     m_PersistentCalls:
       m_Calls: []
   OnGetMaxValue:
     m_PersistentCalls:
       m_Calls: []
-  targetReceiver: {fileID: 0}
 --- !u!144 &14482834
 CharacterJoint:
   m_ObjectHideFlags: 0
@@ -1153,13 +1153,13 @@ MonoBehaviour:
   minReactionID: 0
   maxReactionID: 0
   changeToMaxValue: 0
+  targetReceiver: {fileID: 0}
   _onReceiveDamage:
     m_PersistentCalls:
       m_Calls: []
   OnGetMaxValue:
     m_PersistentCalls:
       m_Calls: []
-  targetReceiver: {fileID: 0}
 --- !u!144 &14402644
 CharacterJoint:
   m_ObjectHideFlags: 0
@@ -1262,6 +1262,9 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 1b04f4ac1b776ff48b5f78a97b57f776, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
+  OnStep:
+    m_PersistentCalls:
+      m_Calls: []
 --- !u!1 &135926
 GameObject:
   m_ObjectHideFlags: 0
@@ -1415,13 +1418,13 @@ MonoBehaviour:
   minReactionID: 0
   maxReactionID: 0
   changeToMaxValue: 0
+  targetReceiver: {fileID: 0}
   _onReceiveDamage:
     m_PersistentCalls:
       m_Calls: []
   OnGetMaxValue:
     m_PersistentCalls:
       m_Calls: []
-  targetReceiver: {fileID: 0}
 --- !u!144 &14402640
 CharacterJoint:
   m_ObjectHideFlags: 0
@@ -2024,6 +2027,9 @@ MonoBehaviour:
   extraGravity: -10
   limitFallVelocity: -15
   ragdollVelocity: -15
+  fallMinHeight: 6
+  fallMinVerticalVelocity: -10
+  fallDamage: 10
   useRollRootMotion: 1
   rollControl: 1
   rollSpeed: 0
@@ -2032,15 +2038,20 @@ MonoBehaviour:
   rollUseGravityTime: 0.2
   timeToRollAgain: 0.75
   groundCheckMethod: 1
-  groundMinDistance: 0.25
+  useSnapGround: 1
+  groundMinDistance: 0.1
   groundMaxDistance: 0.5
   slopeLimit: 45
   slideDownVelocity: 10
   slideSidewaysVelocity: 5
+  slidingEnterTime: 0.1
   stepOffsetMaxHeight: 0.5
   stepOffsetMinHeight: 0
   stepOffsetDistance: 0.1
   debugWindow: 1
+  applyingStepOffset: 0
+  inputSmooth: {x: 0, y: 0, z: 0}
+  moveDirection: {x: 0, y: 0, z: 0}
   matchTarget: {fileID: 0}
   useInstance: 1
 --- !u!114 &114000013620396000
@@ -2203,14 +2214,21 @@ MonoBehaviour:
     mobileAxisInvert: 0
     buttomTimer: 0
     inButtomTimer: 0
+  OnLockCamera:
+    m_PersistentCalls:
+      m_Calls: []
+  OnUnlockCamera:
+    m_PersistentCalls:
+      m_Calls: []
   tpCamera: {fileID: 0}
-  cameraMain: {fileID: 0}
+  ignoreTpCamera: 0
   customCameraState: 
   customlookAtPoint: 
   changeCameraState: 0
   smoothCameraState: 0
   cc: {fileID: 0}
   hud: {fileID: 0}
+  lockMoveInput: 0
 --- !u!54 &5498168
 Rigidbody:
   m_ObjectHideFlags: 0
@@ -2265,6 +2283,8 @@ MonoBehaviour:
   rightFootTrigger: {fileID: 11455972}
   currentStep: {fileID: 0}
   footStepTriggers: []
+  detectionTags:
+    tags: []
 --- !u!114 &11411552
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -2280,6 +2300,9 @@ MonoBehaviour:
   openCloseEvents: 0
   openCloseWindow: 0
   selectedToolbar: 0
+  groundLayer:
+    serializedVersion: 2
+    m_Bits: 1
   removePhysicsAfterDie: 1
   disableColliders: 1
   collisionSource: {fileID: 0}
@@ -2321,7 +2344,6 @@ MonoBehaviour:
   openCloseEvents: 0
   openCloseWindow: 0
   selectedToolbar: 0
-  considerHeadAnimationForward: 0
   upDownAxis: {x: 1, y: 0, z: 0}
   strafeHeadWeight: 0.8
   strafeBodyWeight: 0.4
@@ -2335,8 +2357,9 @@ MonoBehaviour:
   offsetSpine: {x: 0, y: 0}
   offsetHead: {x: 0, y: 0}
   followCamera: 1
-  awaysFollowCamera: 0
+  alwaysFollowCamera: 0
   cancelTrackOutOfAngle: 1
+  considerHeadAnimationForward: 0
   horizontalAngleLimit: {x: -90, y: 90}
   verticalAngleLimit: {x: -90, y: 90}
   animatorIgnoreTags:
@@ -2684,13 +2707,13 @@ MonoBehaviour:
   minReactionID: 0
   maxReactionID: 0
   changeToMaxValue: 0
+  targetReceiver: {fileID: 0}
   _onReceiveDamage:
     m_PersistentCalls:
       m_Calls: []
   OnGetMaxValue:
     m_PersistentCalls:
       m_Calls: []
-  targetReceiver: {fileID: 0}
 --- !u!144 &14452976
 CharacterJoint:
   m_ObjectHideFlags: 0
@@ -2827,13 +2850,13 @@ MonoBehaviour:
   minReactionID: 0
   maxReactionID: 0
   changeToMaxValue: 0
+  targetReceiver: {fileID: 0}
   _onReceiveDamage:
     m_PersistentCalls:
       m_Calls: []
   OnGetMaxValue:
     m_PersistentCalls:
       m_Calls: []
-  targetReceiver: {fileID: 0}
 --- !u!144 &14461052
 CharacterJoint:
   m_ObjectHideFlags: 0
@@ -2970,13 +2993,13 @@ MonoBehaviour:
   minReactionID: 0
   maxReactionID: 0
   changeToMaxValue: 0
+  targetReceiver: {fileID: 0}
   _onReceiveDamage:
     m_PersistentCalls:
       m_Calls: []
   OnGetMaxValue:
     m_PersistentCalls:
       m_Calls: []
-  targetReceiver: {fileID: 0}
 --- !u!144 &14448160
 CharacterJoint:
   m_ObjectHideFlags: 0
@@ -3079,6 +3102,9 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 1b04f4ac1b776ff48b5f78a97b57f776, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
+  OnStep:
+    m_PersistentCalls:
+      m_Calls: []
 --- !u!1 &159486
 GameObject:
   m_ObjectHideFlags: 0
@@ -3422,13 +3448,13 @@ MonoBehaviour:
   minReactionID: 0
   maxReactionID: 0
   changeToMaxValue: 0
+  targetReceiver: {fileID: 0}
   _onReceiveDamage:
     m_PersistentCalls:
       m_Calls: []
   OnGetMaxValue:
     m_PersistentCalls:
       m_Calls: []
-  targetReceiver: {fileID: 0}
 --- !u!144 &14459296
 CharacterJoint:
   m_ObjectHideFlags: 0
@@ -3565,13 +3591,13 @@ MonoBehaviour:
   minReactionID: 0
   maxReactionID: 0
   changeToMaxValue: 0
+  targetReceiver: {fileID: 0}
   _onReceiveDamage:
     m_PersistentCalls:
       m_Calls: []
   OnGetMaxValue:
     m_PersistentCalls:
       m_Calls: []
-  targetReceiver: {fileID: 0}
 --- !u!144 &14412054
 CharacterJoint:
   m_ObjectHideFlags: 0
@@ -4852,13 +4878,13 @@ MonoBehaviour:
   minReactionID: 0
   maxReactionID: 0
   changeToMaxValue: 0
+  targetReceiver: {fileID: 0}
   _onReceiveDamage:
     m_PersistentCalls:
       m_Calls: []
   OnGetMaxValue:
     m_PersistentCalls:
       m_Calls: []
-  targetReceiver: {fileID: 0}
 --- !u!144 &14497284
 CharacterJoint:
   m_ObjectHideFlags: 0
@@ -5150,10 +5176,10 @@ MonoBehaviour:
   minReactionID: 0
   maxReactionID: 0
   changeToMaxValue: 0
+  targetReceiver: {fileID: 0}
   _onReceiveDamage:
     m_PersistentCalls:
       m_Calls: []
   OnGetMaxValue:
     m_PersistentCalls:
       m_Calls: []
-  targetReceiver: {fileID: 0}

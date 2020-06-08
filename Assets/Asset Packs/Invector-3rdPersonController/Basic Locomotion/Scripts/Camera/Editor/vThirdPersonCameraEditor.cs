@@ -65,7 +65,7 @@ namespace Invector.vCamera
             indexSelected = 0;
             tpCamera = (vThirdPersonCamera)target;
             tpCamera.indexLookPoint = 0;
-            if (tpCamera.CameraStateList.tpCameraStates[tpCamera.indexList].cameraMode != TPCameraMode.FixedPoint) return;
+            if (tpCamera.CameraStateList==null||tpCamera.CameraStateList.tpCameraStates[tpCamera.indexList].cameraMode != TPCameraMode.FixedPoint) return;
             if (tpCamera.CameraStateList != null && (tpCamera.indexList < tpCamera.CameraStateList.tpCameraStates.Count) && tpCamera.CameraStateList.tpCameraStates[tpCamera.indexList].lookPoints.Count > 0)
             {
                 tpCamera.transform.position = tpCamera.CameraStateList.tpCameraStates[tpCamera.indexList].lookPoints[0].positionPoint;

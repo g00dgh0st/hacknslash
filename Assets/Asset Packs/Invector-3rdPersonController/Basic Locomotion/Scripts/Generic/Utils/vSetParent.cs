@@ -3,7 +3,6 @@ namespace Invector.Utils
 {
     public class vSetParent : MonoBehaviour
     {
-
         public void RemoveParent()
         {
             transform.parent = null;

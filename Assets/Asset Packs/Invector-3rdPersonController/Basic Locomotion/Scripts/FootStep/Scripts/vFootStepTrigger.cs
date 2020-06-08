@@ -1,4 +1,5 @@
 ﻿using UnityEngine;
+using UnityEngine.Events;
 
 namespace Invector
 {
@@ -6,6 +7,7 @@ namespace Invector
     {
         protected Collider _trigger;
         protected vFootStep _fT;
+        public UnityEvent OnStep;
 
         void OnDrawGizmos()
         {
@@ -52,12 +54,14 @@ namespace Invector
             }            
 
             if (footstepObj.isTerrain) //Check if trigger objet is a terrain
-            {
+            {                
                 _fT.StepOnTerrain(footstepObj);
+                OnStep.Invoke();
             }
             else
-            {                                             
-                _fT.StepOnMesh(footstepObj);             
+            {                
+                _fT.StepOnMesh(footstepObj);
+                OnStep.Invoke();
             }
         }
     }

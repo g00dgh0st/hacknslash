@@ -6,44 +6,58 @@ using UnityEngine.Events;
 
 namespace Invector
 {
+    [RequireComponent(typeof(BoxCollider))]
     [vClassHeader("Simple Door", openClose = false)]
     public class vSimpleDoor : vMonoBehaviour
     {
+        [vReadOnly]
+        public DoorState state;
         public Transform pivot;
+        public bool startOpened;
         public bool autoOpen = true;
         public bool autoClose = true;
+        [vHideInInspector("autoClose"), Tooltip("Close the door only if door is completely opened\n**The TimeToClose will be used yet")]
+        public bool closeOnlyWhenOpened;
+        [Tooltip("Target angle of Opened door")]
         public float angleOfOpen = 90f;
-        public float angleToInvert = 30f;
-        public float speedClose = 2f;
-        public float speedOpen = 2f;
-        [Tooltip("Used when autoOpenClose is checked")]
+        [vHideInInspector("autoOpen"), Tooltip("Min angle between character forward and door that  can auto open")]
+        public float minAngleToOpen = 45f;
+        [Tooltip("Door can open to left side and to right side, if false, door will open just in to right side")]
+        public bool openBothSide = true;
+        public float closeSpeed = 2f;
+        public float openSpeed = 2f;
+        [vHideInInspector("autoClose"), Tooltip("Time to auto close door after Opened")]
         public float timeToClose = 1f;
-        [Tooltip("Used when autoOpenClose is checked")]
-        public List<string> tagsToOpen = new List<string>() { "Player" };
-        [HideInInspector]
-        public bool isOpen;
-        [HideInInspector]
-        public bool isInTransition;
-        private Vector3 currentAngle;
-        private float forwardDotVelocity;
-        private bool invertAngle;
-        private bool canOpen;
-        public bool stop;
-        public NavMeshObstacle navMeshObstacle;
-        public UnityEvent onOpen, onClose;
+        [Tooltip("Used when autoOpen or autoClose is checked")]
+        public vTagMask tagsToOpen = new List<string>() { "Player" };
 
-        void Start()
+        private Vector3 currentAngle;
+        private float angle;
+        private bool _invertOpenSide;
+        private Collider colliderInTrigger;
+        public UnityEvent onStartOpen, onStartOpenRight, onStartOpenLeft, onStartClose;
+        public UnityEvent onOpen, onOpenRight, onOpenLeft, onClose;
+
+        public enum DoorState
         {
-            if (!pivot) enabled = false;
-            //  navMeshObstacle = GetComponentInChildren<NavMeshObstacle>();
-            if (navMeshObstacle)
-            {
-                //navMeshObstacle.enabled = false;
-                navMeshObstacle.carving = true;
-            }
+            Closed, Opened, Closing, Opening
         }
 
-        void OnDrawGizmos()
+        float targetDoorAngle;
+        bool stopDoor;
+
+        protected virtual void Start()
+        {
+            if (!pivot) enabled = false;
+            if (startOpened)
+            {
+                state = DoorState.Closed;
+                Open();
+            }
+            else onClose.Invoke();
+        }
+
+        protected virtual void OnDrawGizmos()
         {
             if (pivot)
             {
@@ -52,128 +66,162 @@ namespace Invector
                 Gizmos.DrawSphere(pivot.position, 0.1f);
             }
         }
-
-        public void SetAutoOpen(bool value)
+        /// <summary>
+        /// Set Door to auto open
+        /// </summary>
+        /// <param name="value"> auto open </param>
+        public virtual void SetAutoOpen(bool value)
         {
             autoOpen = value;
         }
 
-        public void SetAutoClose(bool value)
+        /// <summary>
+        /// Set Door to auto close
+        /// </summary>
+        /// <param name="value">auto close</param>
+        public virtual void SetAutoClose(bool value)
         {
             autoClose = value;
         }
 
-        public void Open()
+        /// <summary>
+        /// Open Door
+        /// </summary>
+        /// <param name="invert">invert direction to open</param>
+        public virtual void Open(bool invert)
         {
-            if (!isOpen)
-                StartCoroutine(_Open());
+            _invertOpenSide = invert;
+            Open();
         }
 
-        public void Close()
+        /// <summary>
+        /// Open Door
+        /// </summary>
+        public virtual void Open()
         {
-            if (isOpen)
-                StartCoroutine(_Close());
-        }
-
-        IEnumerator _Open()
-        {
-            isInTransition = true;
-            if (navMeshObstacle)
-                navMeshObstacle.enabled = false;
-            while (currentAngle.y != (invertAngle ? -angleOfOpen : angleOfOpen))
+            if (state != DoorState.Opening && state != DoorState.Opening)
             {
-                yield return new WaitForEndOfFrame();
-
-                if (invertAngle)
-                {
-                    currentAngle.y -= (100 * speedOpen) * Time.deltaTime;
-                    currentAngle.y = Mathf.Clamp(currentAngle.y, -angleOfOpen, 0);
-                }
-                else
-                {
-                    currentAngle.y += (100 * speedOpen) * Time.deltaTime;
-                    currentAngle.y = Mathf.Clamp(currentAngle.y, 0, angleOfOpen);
-                }
-                pivot.localEulerAngles = currentAngle;
-
+                targetDoorAngle = invertOpenSide ? -angleOfOpen : angleOfOpen;
+                StartCoroutine(HandleDoor());
             }
-            isInTransition = false;
-            onOpen.Invoke();
-            isOpen = true;
         }
 
-        IEnumerator _Close()
+        /// <summary>
+        /// Close Door
+        /// </summary>
+        public virtual void Close()
         {
-            yield return new WaitForSeconds(timeToClose);
-            isInTransition = true;
-            while (currentAngle.y != 0)
+            if (state != DoorState.Closing && state != DoorState.Closed)
             {
-                yield return new WaitForEndOfFrame();
-                if (stop)
+                targetDoorAngle = 0;
+                StartCoroutine(HandleDoor());
+            }
+        }
+
+        /// <summary>
+        /// Open or close door Routine
+        /// </summary>
+        /// <returns></returns>
+        protected virtual IEnumerator HandleDoor()
+        {
+            bool open = Mathf.Abs(targetDoorAngle).Equals(angleOfOpen);
+            state = open ? DoorState.Opening : DoorState.Closing;
+            switch (state)///Call start event based in state;
+            {
+                case DoorState.Opening:
+                    onStartOpen.Invoke();
+                    if (invertOpenSide)
+                        onStartOpenLeft.Invoke();
+                    else
+                        onStartOpenRight.Invoke();
                     break;
-                if (invertAngle)
+                case DoorState.Closing: onStartClose.Invoke(); break;
+            }
+
+            stopDoor = true;  //break last routine to exit (While) function
+            yield return new WaitForEndOfFrame();
+            stopDoor = false;  //start new routine
+            while (!stopDoor)
+            {
+                ///Lerp  current angle to target door angle
+                currentAngle.y = Mathf.MoveTowardsAngle(currentAngle.y, targetDoorAngle, (open ? openSpeed : closeSpeed));
+                if (Mathf.Abs(currentAngle.y - targetDoorAngle) < 0.01f)///Check if target Door angle is reached
                 {
-                    currentAngle.y += (100 * speedClose) * Time.deltaTime;
-                    currentAngle.y = Mathf.Clamp(currentAngle.y, -angleOfOpen, 0);
+                    currentAngle.y = targetDoorAngle;
+                    pivot.localEulerAngles = currentAngle;
+                    break;
                 }
-                else
-                {
-                    currentAngle.y -= (100 * speedClose) * Time.deltaTime;
-                    currentAngle.y = Mathf.Clamp(currentAngle.y, 0, angleOfOpen);
-                }
+                ///Apply the angle to pivot door
                 pivot.localEulerAngles = currentAngle;
+                yield return null;
             }
-            if (!stop)
-            {
-                isInTransition = false;
-            }
-            stop = false;
-            onClose.Invoke();
-            isOpen = false;
-            if (navMeshObstacle)
-                navMeshObstacle.enabled = true;
-        }
 
-        void OnTriggerStay(Collider collider)
-        {
-            if (autoOpen && !isOpen && tagsToOpen.Contains(collider.tag))
+            if (!stopDoor)
             {
-                forwardDotVelocity = Mathf.Abs(Vector3.Angle(transform.forward, collider.transform.position - transform.position));
-                if (forwardDotVelocity < 60.0f)
-                {
-                    if (!isInTransition || (currentAngle.y > -angleToInvert && currentAngle.y < angleToInvert))
-                        invertAngle = false;
-                    canOpen = true;
-                }
-                else if (forwardDotVelocity >= 60.0f && forwardDotVelocity < 120f)
-                {
-                    canOpen = false;
-                }
-                else
-                {
-                    if (!isInTransition || (currentAngle.y > -angleToInvert && currentAngle.y < angleToInvert))
-                        invertAngle = true;
-                    canOpen = true;
-                }
+                state = open ? DoorState.Opened : DoorState.Closed;
+                ///Close door if auto close and dont has a collider in trigger
+                if (open && autoClose && !colliderInTrigger) CloseWithDelay();
 
-                if (canOpen && !isOpen)
+                switch (state)//Call finish event based in state
                 {
-                    StartCoroutine(_Open());
+                    case DoorState.Opened:
+                        onOpen.Invoke();
+                        if (invertOpenSide)
+                            onOpenLeft.Invoke();
+                        else
+                            onOpenRight.Invoke();
+                        break;
+                    case DoorState.Closed: onClose.Invoke(); break;
                 }
-            }
-            else if (isInTransition && isOpen && tagsToOpen.Contains(collider.tag))
-            {
-                stop = true;
-                isOpen = false;
             }
         }
 
-        void OnTriggerExit(Collider collider)
+        protected virtual void OnTriggerStay(Collider other)
         {
-            if (autoClose && isOpen && tagsToOpen.Contains(collider.tag))
+            if (tagsToOpen.Contains(other.tag))
             {
-                StartCoroutine(_Close());
+                if (autoOpen && (state == DoorState.Closing || state == DoorState.Closed))
+                {
+                    Vector3 relativePos = transform.InverseTransformPoint(other.transform.position);
+                    if (relativePos.z > 0) _invertOpenSide = false;
+                    else _invertOpenSide = true;
+                    angle = Mathf.Abs(Vector3.Angle(_invertOpenSide ? transform.forward : -transform.forward, other.transform.forward));
+                    if (angle < minAngleToOpen)
+                    {
+                        if (!colliderInTrigger) colliderInTrigger = other;
+                        Open();
+                    }
+                }
             }
+        }
+
+        protected virtual void OnTriggerExit(Collider other)
+        {
+            if (autoClose && tagsToOpen.Contains(other.tag) &&
+                (colliderInTrigger != null && colliderInTrigger.gameObject.Equals(other.gameObject) || colliderInTrigger == null))
+            {
+                colliderInTrigger = null;
+                if (!closeOnlyWhenOpened || state == DoorState.Opened)
+                {
+                    CloseWithDelay();
+                }
+            }
+        }
+
+        protected virtual bool invertOpenSide
+        {
+            get
+            {
+                return _invertOpenSide && openBothSide;
+            }
+        }
+        /// <summary>
+        /// Close Door using <see cref="timeToClose"/> delay
+        /// </summary>
+        protected virtual void CloseWithDelay()
+        {
+            CancelInvoke("Close");
+            Invoke("Close", timeToClose);
         }
     }
 }

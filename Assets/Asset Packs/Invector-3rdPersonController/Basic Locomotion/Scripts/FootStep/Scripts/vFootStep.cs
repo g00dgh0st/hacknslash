@@ -25,6 +25,8 @@ namespace Invector
         public Transform currentStep;
         public List<vFootStepTrigger> footStepTriggers;
 
+        public vTagMask detectionTags;
+
         void Start()
         {
             var colls = GetComponentsInChildren<Collider>();
@@ -168,6 +170,7 @@ namespace Invector
         {
             if (currentStep != null && currentStep == footStepObject.sender) return;
             currentStep = footStepObject.sender;
+            
             PlayFootFallSound(footStepObject, spawnParticle, spawnStepMark, volume);
             if (debugTextureName)
                 Debug.Log(footStepObject.name);

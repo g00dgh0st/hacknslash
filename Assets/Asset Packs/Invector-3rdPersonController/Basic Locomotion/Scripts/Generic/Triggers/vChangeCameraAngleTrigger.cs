@@ -7,7 +7,18 @@ namespace Invector.vCamera
         public bool applyY, applyX;
         public Vector2 angle;
         public vThirdPersonCamera tpCamera;
+        public bool useSelfWorldAngle;
+        private void OnDrawGizmos()
+        {
+            if(useSelfWorldAngle)
+            {
+                angle.x = transform.eulerAngles.y;
+                angle.y = transform.eulerAngles.x;
+                
 
+                
+            }
+        }
         IEnumerator Start()
         {
             tpCamera = FindObjectOfType<vThirdPersonCamera>();

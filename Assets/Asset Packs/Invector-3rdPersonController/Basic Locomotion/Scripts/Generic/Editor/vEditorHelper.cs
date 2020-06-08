@@ -72,6 +72,7 @@ namespace Invector
 
         protected virtual void OnEnable()
         {
+         
             var targetObject = serializedObject.targetObject;
             var hasAttributeHeader = targetObject.GetType().IsDefined(typeof(vClassHeaderAttribute), true);
             if (hasAttributeHeader)
@@ -245,9 +246,14 @@ namespace Invector
                     var titles = getToobarTitles();
                     EditorGUILayout.PropertyField(serializedObject.FindProperty("m_Script"));
 
-                    var customToolbar = skin.GetStyle("customToolbar");
+                    var customToolbar = skin.GetStyle("customToolbar");                   
+                   
                     if (headerAttribute.useHelpBox)
+                    {
+                        EditorStyles.helpBox.richText = true;
                         EditorGUILayout.HelpBox(headerAttribute.helpBoxText, MessageType.Info);
+                    }
+                       
                     GUILayout.Space(10);
                     selectedToolBar = GUILayout.SelectionGrid(selectedToolBar, titles, titles.Length > 2 ? 3 : titles.Length, customToolbar, GUILayout.MinWidth(250));
                     if (!(selectedToolBar < toolbars.Count)) selectedToolBar = 0;
@@ -282,7 +288,10 @@ namespace Invector
                     if (!headerAttribute.openClose || openCloseWindow)
                     {
                         if (headerAttribute.useHelpBox)
+                        {
+                            EditorStyles.helpBox.richText = true;                           
                             EditorGUILayout.HelpBox(headerAttribute.helpBoxText, MessageType.Info);
+                        }                           
 
                         if (ignoreEvents != null && ignoreEvents.Length > 0)
                         {

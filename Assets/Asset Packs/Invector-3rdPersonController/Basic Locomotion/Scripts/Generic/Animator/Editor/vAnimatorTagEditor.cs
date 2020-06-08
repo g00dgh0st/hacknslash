@@ -18,7 +18,7 @@ namespace Invector.vEventSystems
         {
             if (!skin) skin = Resources.Load("vSkin") as GUISkin;
             serializedObject.Update();
-            GUILayout.BeginVertical(skin.box);
+            GUILayout.BeginVertical(skin.box);            
             EditorStyles.helpBox.richText = true;
             EditorGUILayout.HelpBox("Useful Tags:\n " +
                 "<b>CustomAction </b> - <i> Lock position and rotation to use RootMotion instead</i> \n " +

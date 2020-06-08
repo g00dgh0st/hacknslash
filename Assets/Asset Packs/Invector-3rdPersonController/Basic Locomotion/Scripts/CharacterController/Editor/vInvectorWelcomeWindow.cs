@@ -50,8 +50,8 @@ namespace Invector.vCharacterController
         };
         #endregion
 
-        public const string _thirdPersonVersion = "2.5.0";
-        public const string _fsmAIVersion = "1.1.0";
+        public const string _thirdPersonVersion = "2.5.2";
+        public const string _fsmAIVersion = "1.1.1";
 
         public const string _projectSettingsPath = "Assets/Invector-3rdPersonController/Basic Locomotion/Resources/vProjectSettings.unitypackage";
         public const string _mobilePackagePath = "Assets/Invector-3rdPersonController/Basic Locomotion/Resources/vMobileAddon.unitypackage";
@@ -97,7 +97,7 @@ namespace Invector.vCharacterController
         void InitStyle()
         {
             if (!skin) skin = Resources.Load("welcomeWindowSkin") as GUISkin;
-
+            
             invectorBanner = (Texture2D)Resources.Load("invectorBanner", typeof(Texture2D));
             mobileIcon = (Texture2D)Resources.Load("mobileIcon", typeof(Texture2D));
             topdownIcon = (Texture2D)Resources.Load("topdownIcon", typeof(Texture2D));
@@ -114,7 +114,8 @@ namespace Invector.vCharacterController
 
         public void OnGUI()
         {
-            GUI.skin = skin;            
+            GUI.skin = skin;
+            
             DrawHeader();
             DrawMenuButtons();
             DrawPageContent();
@@ -176,10 +177,10 @@ namespace Invector.vCharacterController
 
         public static void FirstRunPageContent()
         {
-            GUILayout.BeginVertical("window");           
-
-            EditorGUILayout.HelpBox("This Template requires a custom <b>ProjectSettings</b> which includes: <i>InputManager, Layers, Tags and a PhysicsManager.</i>" +                
-                " It's recommended to import the Template into a New Empty Project, using it as a base to build your game. \n\n * You can <b>UNCHECK the InputManager</b> when using only the <b>FSM AI</b>", MessageType.Warning, true);
+            GUILayout.BeginVertical("window");
+            
+            EditorGUILayout.HelpBox("This Template requires a custom ProjectSettings which includes: InputManager, Layers, Tags and a PhysicsManager." +                
+                " It's recommended to import the Template into a New Empty Project, using it as a base to build your game. \n\n * You can UNCHECK the InputManager when using only the FSM AI", MessageType.Warning, true);
 
             if (GUILayout.Button(">>> Import Project Settings <<<"))
             {

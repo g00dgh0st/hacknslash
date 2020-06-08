@@ -1,5 +1,6 @@
 ﻿using System.Collections;
 using UnityEngine;
+using UnityEngine.Events;
 
 namespace Invector.vCharacterController
 {
@@ -16,10 +17,8 @@ namespace Invector.vCharacterController
 
         #region Variables        
 
-        [vEditorToolbar("Inputs")]
-        [Header("Default Input")]
-        public bool lockInput;
-        [Header("Uncheck if you need to use the cursor")]
+        [vEditorToolbar("Inputs")]                
+        [vHelpBox("Check these options if you need to use the mouse cursor, ex: <b>2.5D, Topdown or Mobile</b>", vHelpBoxAttribute.MessageType.Info)]
         public bool unlockCursorOnStart = false;
         public bool showCursorOnStart = false;
         public GenericInput horizontalInput = new GenericInput("Horizontal", "LeftAnalogHorizontal", "Horizontal");
@@ -29,6 +28,7 @@ namespace Invector.vCharacterController
         public GenericInput strafeInput = new GenericInput("Tab", "RightStickClick", "RightStickClick");
         public GenericInput sprintInput = new GenericInput("LeftShift", "LeftStickClick", "LeftStickClick");
         public GenericInput crouchInput = new GenericInput("C", "Y", "Y");
+        [HideInInspector] public bool lockInput;
 
         [vEditorToolbar("Camera Settings")]
         public bool lockCameraInput;
@@ -39,9 +39,16 @@ namespace Invector.vCharacterController
         public GenericInput rotateCameraXInput = new GenericInput("Mouse X", "RightAnalogHorizontal", "Mouse X");
         public GenericInput rotateCameraYInput = new GenericInput("Mouse Y", "RightAnalogVertical", "Mouse Y");
         public GenericInput cameraZoomInput = new GenericInput("Mouse ScrollWheel", "", "");
+
+        [vEditorToolbar("Events")]
+        public UnityEvent OnLockCamera;
+        public UnityEvent OnUnlockCamera;
+
         [HideInInspector]
         public vCamera.vThirdPersonCamera tpCamera;         // acess tpCamera info
-        [HideInInspector] public Camera cameraMain;
+        [HideInInspector]
+        public bool ignoreTpCamera;                         // controls whether update the cameraStates of not
+       
         [HideInInspector]
         public string customCameraState;                    // generic string to change the CameraState
         [HideInInspector]
@@ -56,8 +63,41 @@ namespace Invector.vCharacterController
         public vHUDController hud;                          // acess vHUDController component
         protected bool updateIK = false;
         protected bool isInit;
-        
+        [HideInInspector] public bool lockMoveInput;
         protected InputDevice inputDevice { get { return vInput.instance.inputDevice; } }
+
+        private Camera _cameraMain;
+
+        bool withoutMainCamera;
+
+        public Camera cameraMain
+        {
+            get
+            {
+                if(!_cameraMain &&!withoutMainCamera)
+                {
+                    if (!Camera.main)
+                    {
+                        Debug.Log("Missing a Camera with the tag MainCamera, please add one.");
+                        withoutMainCamera = true;
+                    }
+                    else
+                    {
+                        _cameraMain = Camera.main;
+                        cc.rotateTarget = _cameraMain.transform;
+                    }
+                    
+                }
+                
+                return _cameraMain;
+            }
+            set
+            {
+                _cameraMain = value;
+            }
+        }
+
+
         public Animator animator
         {
             get
@@ -78,11 +118,8 @@ namespace Invector.vCharacterController
 
             if (cc != null)
                 cc.Init();
-
-            if (vThirdPersonController.instance == cc || vThirdPersonController.instance == null)
-            {
-                StartCoroutine(CharacterInit());
-            }
+            
+            StartCoroutine(CharacterInit());            
 
             ShowCursor(showCursorOnStart);
             LockCursor(unlockCursorOnStart);
@@ -91,11 +128,12 @@ namespace Invector.vCharacterController
         protected virtual IEnumerator CharacterInit()
         {
             yield return new WaitForEndOfFrame();
-            if (tpCamera == null)
-            {
-                tpCamera = FindObjectOfType<vCamera.vThirdPersonCamera>();
-                if (tpCamera && tpCamera.target != transform) tpCamera.SetMainTarget(this.transform);
-            }
+            FindCamera();
+            FindHUD();
+        }
+
+        public virtual void FindHUD()
+        {
             if (hud == null && vHUDController.instance != null)
             {
                 hud = vHUDController.instance;
@@ -103,43 +141,55 @@ namespace Invector.vCharacterController
             }
         }
 
+        public virtual void FindCamera()
+        {
+            if (tpCamera == null)
+            {
+                tpCamera = FindObjectOfType<vCamera.vThirdPersonCamera>();
+                if (tpCamera && tpCamera.target != transform) tpCamera.SetMainTarget(this.transform);
+            }
+        }
+
         #endregion
 
         protected virtual void LateUpdate()
-        {            
-            if (cc == null || Time.timeScale == 0) return;           
+        {
+            if (cc == null || Time.timeScale == 0) return;
             if (!updateIK) return;
             if (onLateUpdate != null) onLateUpdate.Invoke();
 
             CameraInput();                      // update camera input
-            UpdateCameraStates();               // update camera states            
-            updateIK = false;            
+            UpdateCameraStates();               // update camera states                        
+            updateIK = false;
         }
 
         protected virtual void FixedUpdate()
         {
             if (onFixedUpdate != null) onFixedUpdate.Invoke();
 
-            cc.UpdateMotor();                                                             // handle the ThirdPersonMotor methods            
-            cc.ControlLocomotionType();                                                   // handle the controller locomotion type and movespeed   
-            if (tpCamera == null || !tpCamera.lockTarget) cc.ControlRotationType();       // handle the controller rotation type
-            cc.UpdateAnimator();                                                          // handle the ThirdPersonAnimator methods
-            updateIK = true;           
-        }
+            Physics.SyncTransforms();
+            cc.UpdateMotor();                                                   // handle the ThirdPersonMotor methods            
+            cc.ControlLocomotionType();                                         // handle the controller locomotion type and movespeed   
+            ControlRotation();
+            cc.UpdateAnimator();                                                // handle the ThirdPersonAnimator methods
+            updateIK = true;
+        }        
 
         protected virtual void Update()
-        {            
+        {
             if (cc == null || Time.timeScale == 0) return;
             if (onUpdate != null) onUpdate.Invoke();
-
-            InputHandle();                      // update input methods            
+            
+            InputHandle();                      // update input methods                        
             UpdateHUD();                        // update hud graphics            
         }
 
         public virtual void OnAnimatorMove()
-        {            
-            cc.ControlAnimatorRootMotion();
-            if (onAnimatorMove != null) onAnimatorMove.Invoke();
+        {
+            if (cc == null) return;
+
+            cc.ControlAnimatorRootMotion();            
+            if (onAnimatorMove != null) onAnimatorMove.Invoke();            
         }
 
         #region Generic Methods
@@ -195,6 +245,11 @@ namespace Invector.vCharacterController
         public virtual void SetLockCameraInput(bool value)
         {
             lockCameraInput = value;
+
+            if (lockCameraInput)
+                OnLockCamera.Invoke();
+            else
+                OnUnlockCamera.Invoke();
         }
 
         /// <summary>
@@ -223,8 +278,8 @@ namespace Invector.vCharacterController
         public virtual void SetStrafeLocomotion(bool value)
         {
             cc.lockInStrafe = value;
-            cc.isStrafing = value;
-        }        
+            cc.isStrafing = value;            
+        }
 
         #endregion
 
@@ -244,11 +299,28 @@ namespace Invector.vCharacterController
 
         public virtual void MoveInput()
         {
-            // gets input
-            cc.input.x = horizontalInput.GetAxisRaw();
-            cc.input.z = verticallInput.GetAxisRaw();            
+            if (!lockMoveInput)
+            {
+                // gets input
+                cc.input.x = horizontalInput.GetAxisRaw();
+                cc.input.z = verticallInput.GetAxisRaw();
+            }
 
             cc.ControlKeepDirection();
+        }
+
+        public virtual void ControlRotation()
+        {
+            if (cameraMain && !ignoreCameraRotation)
+            {
+                if (!cc.keepDirection)
+                    cc.UpdateMoveDirection(cameraMain.transform);            
+            }
+
+            if (tpCamera != null && tpCamera.lockTarget && cc.isStrafing)
+                cc.RotateToPosition(tpCamera.lockTarget.position);          // rotate the character to a specific target
+            else
+                cc.ControlRotationType();                                   // handle the controller rotation type (strafe or free)
         }
 
         protected virtual void StrafeInput()
@@ -258,15 +330,16 @@ namespace Invector.vCharacterController
         }
 
         protected virtual void SprintInput()
-        { 
-            cc.Sprint(cc.useContinuousSprint ? sprintInput.GetButtonDown() : sprintInput.GetButton());
+        {
+            if (sprintInput.useInput)
+                cc.Sprint(cc.useContinuousSprint ? sprintInput.GetButtonDown() : sprintInput.GetButton());
         }
 
         protected virtual void CrouchInput()
         {
             cc.AutoCrouch();
 
-            if (crouchInput.GetButtonDown())
+            if (crouchInput.useInput && crouchInput.GetButtonDown())
                 cc.Crouch();
         }
 
@@ -278,7 +351,7 @@ namespace Invector.vCharacterController
         {
             return !cc.customAction && !cc.isCrouching && cc.isGrounded && cc.GroundAngle() < cc.slopeLimit && cc.currentStamina >= cc.jumpStamina && !cc.isJumping;
         }
-       
+
         /// <summary>
         /// Input to trigger the Jump 
         /// </summary>
@@ -314,21 +387,8 @@ namespace Invector.vCharacterController
         {
             if (!cameraMain)
             {
-                if (!Camera.main) Debug.Log("Missing a Camera with the tag MainCamera, please add one.");
-                else
-                {
-                    cameraMain = Camera.main;
-                    cc.rotateTarget = cameraMain.transform;
-                }
-            }
-
-            if (cameraMain && !ignoreCameraRotation)
-            {
-                if (!cc.keepDirection)
-                    cc.UpdateMoveDirection(cameraMain.transform);
-                if (tpCamera != null && tpCamera.lockTarget)
-                    cc.RotateToPosition(tpCamera.lockTarget.position);
-            }
+                return;
+            }           
 
             if (tpCamera == null)
                 return;
@@ -344,7 +404,7 @@ namespace Invector.vCharacterController
         public virtual void UpdateCameraStates()
         {
             // CAMERA STATE - you can change the CameraState here, the bool means if you want lerp of not, make sure to use the same CameraState String that you named on TPCameraListData
-
+            if (ignoreTpCamera) return;
             if (tpCamera == null)
             {
                 tpCamera = FindObjectOfType<vCamera.vThirdPersonCamera>();
@@ -368,10 +428,23 @@ namespace Invector.vCharacterController
         }
 
         public virtual void ChangeCameraState(string cameraState, bool useLerp = true)
+        {            
+            if (useLerp) ChangeCameraStateWithLerp(cameraState);
+            else ChangeCameraStateNoLerp(cameraState);
+        }
+
+        public virtual void ChangeCameraStateWithLerp(string cameraState)
         {
             changeCameraState = true;
             customCameraState = cameraState;
-            smoothCameraState = useLerp;
+            smoothCameraState = true;
+        }
+
+        public virtual void ChangeCameraStateNoLerp(string cameraState)
+        {
+            changeCameraState = true;
+            customCameraState = cameraState;
+            smoothCameraState = false;
         }
 
         public virtual void ResetCameraState()
@@ -379,8 +452,6 @@ namespace Invector.vCharacterController
             changeCameraState = false;
             customCameraState = string.Empty;
         }
-
-       
 
         #endregion
 

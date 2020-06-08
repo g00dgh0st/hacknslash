@@ -28,7 +28,8 @@ namespace Invector.vCharacterController.vActions
         [Tooltip("Input to climb faster")]
         public GenericInput slideDownInput = new GenericInput("Q", "X", "X");
 
-        public AnimationCurve enterRotationCurve, exitRotationCurve;
+        public AnimationCurve enterRotationCurve = new AnimationCurve(new Keyframe(0, 0), new Keyframe(1, 1));
+        public AnimationCurve exitRotationCurve = new AnimationCurve(new Keyframe(0, 0), new Keyframe(1, 1));
 
         [vEditorToolbar("Events")]
         public UnityEvent OnEnterLadder;
