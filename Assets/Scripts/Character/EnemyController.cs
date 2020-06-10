@@ -13,6 +13,7 @@ namespace ofr.grim {
       navAgent = GetComponent<NavMeshAgent>();
       rBody = GetComponent<Rigidbody>();
     }
+
     public override void GetHit(Vector3 attackPosition) {
       anim.SetTrigger("hit");
       transform.rotation = Quaternion.LookRotation(attackPosition - transform.position);

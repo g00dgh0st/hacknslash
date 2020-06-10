@@ -144,9 +144,13 @@ namespace ofr.grim {
       Vector3 castDirection = moveInput.magnitude > 0.1 ? moveInput : transform.forward;
 
       if (Physics.SphereCast(transform.position, 2f, castDirection, out RaycastHit hit, 3f, enemyLayerMask)) {
-        HandleTurning(hit.transform.position - transform.position);
+        HandleTurning(hit.transform.position - transform.position, 10f);
+
         Debug.DrawRay(transform.position, castDirection * 10f, Color.red, 1f);
         Debug.DrawRay(transform.position, (hit.transform.position - transform.position) * 10f, Color.green, 1f);
+      } else {
+        // TODO: tweak this
+        HandleTurning((transform.position + (castDirection * 10f)) - transform.position, 10f);
       }
 
       AnimateAttack();
