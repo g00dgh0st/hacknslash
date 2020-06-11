@@ -161,22 +161,39 @@ namespace ofr.grim {
 
     private void Attack(Vector3 moveInput) {
       Vector3 castDirection = moveInput.magnitude > 0.1 ? moveInput.normalized : transform.forward;
+      Vector3 castPosition = transform.position + Vector3.up;
+      float castRadius = 1f;
+      float castDistance = 4f;
 
-      Collider[] hits = Physics.OverlapSphere(transform.position + new Vector3(0, 1, 0), 1.5f, enemyLayerMask);
+      Vector3 castDirectionRight = Vector3.Cross(Vector3.up, castDirection).normalized;
 
-      if (hits.Length > 0) {
-        print(hits[0].tag);
+      bool centerCast = Physics.Raycast(castPosition, castDirection, out RaycastHit centerHit, castDistance, enemyLayerMask);
+      bool leftCast = Physics.Raycast(castPosition - (castDirectionRight * castRadius), castDirection, out RaycastHit leftHit, castDistance, enemyLayerMask);
+      bool rightCast = Physics.Raycast(castPosition + (castDirectionRight * castRadius), castDirection, out RaycastHit rightHit, castDistance, enemyLayerMask);
+
+      if (debugMode) {
+        PlayerDebug pd = debug.GetComponent<PlayerDebug>();
+        pd.UpdateMoveLines(castPosition, castDirection, castDirectionRight, castRadius, castDistance);
       }
 
-      if (Physics.SphereCast(transform.position + new Vector3(0, 1, 0), 1.5f, castDirection, out RaycastHit hit, 3f, enemyLayerMask)) {
-        HandleTurning(hit.transform.position - transform.position, 100f);
+      Vector3 lockDir = Vector3.zero;
 
-        if (debugMode) debug.GetComponent<PlayerDebug>().UpdateMoveDir(castDirection, hit.transform.position - transform.position);
+      if (centerCast) {
+        lockDir = centerHit.transform.position - transform.position;
+      } else if (rightCast) {
+        lockDir = rightHit.transform.position - transform.position;
+      } else if (leftCast) {
+        lockDir = leftHit.transform.position - transform.position;
+      }
+
+      if (lockDir != Vector3.zero) {
+        HandleTurning(lockDir, 100f);
+        if (debugMode) debug.GetComponent<PlayerDebug>().UpdateLockLine(lockDir, castDistance);
       } else {
-        // TODO: tweak this
-        HandleTurning((transform.position + (castDirection * 10f)) - transform.position, 100f);
-        if (debugMode) debug.GetComponent<PlayerDebug>().UpdateMoveDir(castDirection);
+        HandleTurning((transform.position + castDirection) - transform.position, 100f);
       }
+
+      // TODO: track lock target?
 
       AnimateAttack();
     }

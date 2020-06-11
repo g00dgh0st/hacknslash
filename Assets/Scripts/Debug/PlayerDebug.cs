@@ -5,44 +5,64 @@ using UnityEngine;
 namespace ofr.grim.debug {
 
   public class PlayerDebug : MonoBehaviour {
-    [SerializeField]
-    private float lineLength = 3f;
 
     [SerializeField]
-    private LineRenderer moveDir;
+    private LineRenderer aimLineCenter;
+
     [SerializeField]
-    private LineRenderer lockDir;
+    private LineRenderer aimLineLeft;
+
+    [SerializeField]
+    private LineRenderer aimLineRight;
+
+    [SerializeField]
+    private LineRenderer lockLine;
 
     private float lifetime = 2f;
     private float expireTime;
 
     void Update() {
       if (Time.time >= expireTime) {
-        moveDir.enabled = false;
-        lockDir.enabled = false;
+        aimLineCenter.enabled = false;
+        aimLineLeft.enabled = false;
+        aimLineCenter.enabled = false;
+        aimLineRight.enabled = false;
+        lockLine.enabled = false;
       }
     }
 
-    public void UpdateMoveDir(Vector3 dir) {
-      moveDir.enabled = true;
-      moveDir.SetPositions(new Vector3[] {
-        transform.position,
-          transform.position + (dir.normalized * lineLength)
+    public void UpdateMoveLines(Vector3 castPos, Vector3 castDir, Vector3 castDirRight, float castRad, float castDist) {
+
+      aimLineCenter.enabled = true;
+      aimLineLeft.enabled = true;
+      aimLineRight.enabled = true;
+
+      aimLineCenter.SetPositions(new Vector3[] {
+        castPos,
+        castPos + (castDir * castDist)
       });
-      lockDir.enabled = false;
+
+      Vector3 leftPos = castPos - (castDirRight * castRad);
+      aimLineLeft.SetPositions(new Vector3[] {
+        leftPos,
+        leftPos + (castDir * castDist)
+      });
+
+      Vector3 rightPos = castPos + (castDirRight * castRad);
+      aimLineRight.SetPositions(new Vector3[] {
+        rightPos,
+        rightPos + (castDir * castDist)
+      });
+
+      lockLine.enabled = false;
       expireTime = Time.time + lifetime;
     }
 
-    public void UpdateMoveDir(Vector3 dir, Vector3 locked) {
-      moveDir.enabled = true;
-      moveDir.SetPositions(new Vector3[] {
+    public void UpdateLockLine(Vector3 lockedDir, float castDist) {
+      lockLine.enabled = true;
+      lockLine.SetPositions(new Vector3[] {
         transform.position,
-          transform.position + (dir.normalized * lineLength)
-      });
-      lockDir.enabled = true;
-      lockDir.SetPositions(new Vector3[] {
-        transform.position,
-          transform.position + (locked.normalized * lineLength)
+          transform.position + (lockedDir.normalized * castDist)
       });
 
       expireTime = Time.time + lifetime;
