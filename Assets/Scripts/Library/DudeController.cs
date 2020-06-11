@@ -10,6 +10,12 @@ namespace ofr.grim {
     Block
   }
 
+  public enum AttackState {
+    Swing,
+    Continue,
+    End
+  }
+
   [RequireComponent(typeof(Animator))]
   public class DudeController : MonoBehaviour {
     protected Animator anim;
@@ -35,12 +41,14 @@ namespace ofr.grim {
       }
     }
     protected MovementState movementState { get; set; }
+    protected AttackState attackState { get; set; }
 
     protected bool dodgeMovement = false;
     protected bool attackMovement = false;
 
     protected void Awake() {
       anim = GetComponent<Animator>();
+      attackState = AttackState.End;
     }
 
     public void AttackCollide(Collider target) {
@@ -92,8 +100,12 @@ namespace ofr.grim {
       }
     }
 
+    public void AttackMachineCallback(AttackState state) {
+      attackState = state;
+    }
+
     void AttackEvent(string message) {
-      if (message == "start") {;
+      if (message == "start") {
         movementState = MovementState.Attack;
         attackMovement = true;
       }

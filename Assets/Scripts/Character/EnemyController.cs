@@ -17,7 +17,7 @@ namespace ofr.grim {
     public override void GetHit(Vector3 attackPosition) {
       anim.SetTrigger("hit");
       transform.rotation = Quaternion.LookRotation(attackPosition - transform.position);
-      // navAgent.Move(transform.forward * -0.05f);
+      navAgent.Move(transform.forward * -0.05f);
     }
   }
 }

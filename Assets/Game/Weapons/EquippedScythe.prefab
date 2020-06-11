@@ -11,8 +11,8 @@ BoxCollider:
   m_IsTrigger: 1
   m_Enabled: 0
   serializedVersion: 2
-  m_Size: {x: 0.0956987, y: 0.32715246, z: 0.12}
-  m_Center: {x: 0, y: 0.14224523, z: 0.07}
+  m_Size: {x: 0.0956987, y: 0.32715246, z: 0.19}
+  m_Center: {x: 0, y: 0.14224523, z: 0.018}
 --- !u!114 &2094058983
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -1072,20 +1072,20 @@ ParticleSystem:
         - serializedVersion: 3
           time: 0
           value: 1
-          inSlope: -1
-          outSlope: -1
-          tangentMode: 34
+          inSlope: 0.081936575
+          outSlope: 0.081936575
+          tangentMode: 0
           weightedMode: 0
           inWeight: 0
-          outWeight: 0
+          outWeight: 0.28285557
         - serializedVersion: 3
-          time: 1
+          time: 0.72314453
           value: 0
-          inSlope: -1
-          outSlope: -1
-          tangentMode: 34
+          inSlope: -2.72603
+          outSlope: -2.72603
+          tangentMode: 0
           weightedMode: 0
-          inWeight: 0
+          inWeight: 0.3485751
           outWeight: 0
         m_PreInfinity: 2
         m_PostInfinity: 2

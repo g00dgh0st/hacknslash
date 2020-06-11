@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections;
 using System.Collections.Generic;
+using ofr.grim.debug;
 using UnityEngine;
 using UnityEngine.UI;
 
@@ -8,6 +9,9 @@ namespace ofr.grim {
 
   public class PlayerController : DudeController {
     // DEBUG STUFF
+    public bool debugMode = false;
+    [SerializeField]
+    private GameObject debug;
     public Text debugText;
     // END DEBUGT STUFF
 
@@ -34,6 +38,9 @@ namespace ofr.grim {
 
     void Start() {
       movementState = MovementState.Locomotion;
+
+      if (debugMode)
+        debug.SetActive(true);
     }
 
     void OnAnimatorMove() {
@@ -44,7 +51,9 @@ namespace ofr.grim {
     }
 
     void Update() {
-      debugText.text = isGrounded ? movementState.ToString("g") : "airborne";
+      if (debugMode)
+        debugText.text = isGrounded ? movementState.ToString("g") : "airborne";
+
       ApplyGravity();
 
       if (isGrounded) {
@@ -109,8 +118,18 @@ namespace ofr.grim {
     private void HandleAttackControl() {
       Vector3 moveInput = GetInputDirectionByCamera();
 
+      // if (Input.GetButtonDown("Jump")) {
+      //   AnimateDodge();
+      //   return;
+      // }
+
       if (Input.GetMouseButtonDown(0)) {
-        Attack(moveInput);
+        if (attackState == AttackState.Continue) {
+          Attack(moveInput);
+        } else if (attackState == AttackState.Swing) {
+          /// Queue attack for next tick
+        }
+
         return;
       }
     }
@@ -141,16 +160,22 @@ namespace ofr.grim {
     }
 
     private void Attack(Vector3 moveInput) {
-      Vector3 castDirection = moveInput.magnitude > 0.1 ? moveInput : transform.forward;
+      Vector3 castDirection = moveInput.magnitude > 0.1 ? moveInput.normalized : transform.forward;
 
-      if (Physics.SphereCast(transform.position, 2f, castDirection, out RaycastHit hit, 3f, enemyLayerMask)) {
-        HandleTurning(hit.transform.position - transform.position, 10f);
+      Collider[] hits = Physics.OverlapSphere(transform.position + new Vector3(0, 1, 0), 1.5f, enemyLayerMask);
 
-        Debug.DrawRay(transform.position, castDirection * 10f, Color.red, 1f);
-        Debug.DrawRay(transform.position, (hit.transform.position - transform.position) * 10f, Color.green, 1f);
+      if (hits.Length > 0) {
+        print(hits[0].tag);
+      }
+
+      if (Physics.SphereCast(transform.position + new Vector3(0, 1, 0), 1.5f, castDirection, out RaycastHit hit, 3f, enemyLayerMask)) {
+        HandleTurning(hit.transform.position - transform.position, 100f);
+
+        if (debugMode) debug.GetComponent<PlayerDebug>().UpdateMoveDir(castDirection, hit.transform.position - transform.position);
       } else {
         // TODO: tweak this
-        HandleTurning((transform.position + (castDirection * 10f)) - transform.position, 10f);
+        HandleTurning((transform.position + (castDirection * 10f)) - transform.position, 100f);
+        if (debugMode) debug.GetComponent<PlayerDebug>().UpdateMoveDir(castDirection);
       }
 
       AnimateAttack();
