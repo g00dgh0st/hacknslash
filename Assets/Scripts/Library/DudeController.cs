@@ -88,7 +88,11 @@ namespace ofr.grim {
     }
 
     /// ANIMATION EVENTS
-    void DodgeEvent(string message) {
+    public void AttackMachineCallback(AttackState state) {
+      attackState = state;
+    }
+
+    protected void DodgeEvent(string message) {
       if (message == "start") {
         dodgeMovement = true;
       }
@@ -100,11 +104,7 @@ namespace ofr.grim {
       }
     }
 
-    public void AttackMachineCallback(AttackState state) {
-      attackState = state;
-    }
-
-    void AttackEvent(string message) {
+    protected void AttackEvent(string message) {
       if (message == "start") {
         movementState = MovementState.Attack;
         attackMovement = true;
@@ -126,7 +126,7 @@ namespace ofr.grim {
       }
     }
 
-    void HitEvent(string message) {
+    protected void HitEvent(string message) {
       if (message == "start") {
         movementState = MovementState.Hit;
       }

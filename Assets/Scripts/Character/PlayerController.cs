@@ -22,7 +22,7 @@ namespace ofr.grim {
     private float airTurnDampMultiplier = 0.05f;
     private float moveSpeed = 5f;
     private float rollSpeed = 10f;
-    private float jumpSpeed = 18f;
+    private float jumpSpeed = 10f;
     private float fallMultiplier = 1.5f;
     private float groundCheckDistance = 0.4f;
     [SerializeField] private LayerMask groundCheckLayer;
@@ -88,7 +88,7 @@ namespace ofr.grim {
       HandleTurning(moveInput);
 
       if (Input.GetButtonDown("Jump")) {
-        AnimateDodge();
+        Dodge(moveInput);
         return;
       }
 
@@ -118,10 +118,10 @@ namespace ofr.grim {
     private void HandleAttackControl() {
       Vector3 moveInput = GetInputDirectionByCamera();
 
-      // if (Input.GetButtonDown("Jump")) {
-      //   AnimateDodge();
-      //   return;
-      // }
+      if (Input.GetButtonDown("Jump") && attackState != AttackState.Swing) {
+        Dodge(moveInput);
+        return;
+      }
 
       if (Input.GetMouseButtonDown(0)) {
         if (attackState == AttackState.Continue) {
@@ -198,6 +198,11 @@ namespace ofr.grim {
       AnimateAttack();
     }
 
+    private void Dodge(Vector3 moveDir) {
+      HandleTurning(moveDir, 100f);
+      AnimateDodge();
+    }
+
     private void Block(bool blockOn) {
       ToggleBlock(blockOn);
     }
@@ -238,6 +243,17 @@ namespace ofr.grim {
 
       //this is the direction in the world space we want to move:
       return forward * verticalAxis + right * horizontalAxis;
+    }
+
+    // OVERRIDE DUDE CONTROLLER ANIM EVENTS
+    new void DodgeEvent(string message) {
+      base.DodgeEvent(message);
+
+      if (message == "start") {
+
+      } else {
+
+      }
     }
   }
 }
