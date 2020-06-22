@@ -24,6 +24,9 @@ namespace ofr.grim {
     private Collider attackCollider;
 
     [SerializeField]
+    private GameObject hitFX;
+
+    [SerializeField]
     private float locomotionTransitionDampen = 0.2f;
 
     private bool _isGrounded;
@@ -45,6 +48,7 @@ namespace ofr.grim {
 
     protected bool dodgeMovement = false;
     protected bool attackMovement = false;
+    // protected bool attackCollisionOn = false;
 
     protected void Awake() {
       anim = GetComponent<Animator>();
@@ -55,12 +59,15 @@ namespace ofr.grim {
       // TODO: tags could be a protected array of tags?
       if (target.tag == "Enemy") {
         target.GetComponent<DudeController>().GetHit(transform.position);
+        Destroy(Instantiate(hitFX, target.ClosestPoint(transform.position + Vector3.up), target.transform.rotation), 2f);
       } else if (target.tag == "Hittable") {
         // stuff
       }
     }
 
     public virtual void GetHit(Vector3 attackPosition) {
+      // TODO: need hit state logic 
+      // movementState = MovementState.Hit;
       anim.SetTrigger("hit");
     }
 
@@ -113,10 +120,12 @@ namespace ofr.grim {
 
       if (message == "collideOn") {
         attackCollider.enabled = true;
+        // attackCollisionOn = true;
       }
 
       if (message == "collideOff") {
         attackCollider.enabled = false;
+        // attackCollisionOn = false;
       }
 
       if (message == "end") {
