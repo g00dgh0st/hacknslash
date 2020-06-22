@@ -46,14 +46,12 @@ public class AttackMachine : StateMachineBehaviour {
   //}
 
   // OnStateMachineEnter is called when entering a state machine via its Entry Node
-  //override public void OnStateMachineEnter(Animator animator, int stateMachinePathHash)
-  //{
-  //    
-  //}
+  // override public void OnStateMachineEnter(Animator animator, int stateMachinePathHash) {
+  //   Debug.Log("ENTER ATTACK");
+  // }
 
   // OnStateMachineExit is called when exiting a state machine via its Exit Node
-  //override public void OnStateMachineExit(Animator animator, int stateMachinePathHash)
-  //{
-  //    
-  //}
+  // override public void OnStateMachineExit(Animator animator, int stateMachinePathHash) {
+  //   Debug.Log("LLLLLLLLLLLLLLEAVE ATTACK");
+  // }
 }

@@ -18,11 +18,12 @@ namespace ofr.grim {
     private Camera mainCam;
     private CharacterController controller;
 
-    private float turnDamped = 0.5f;
-    private float airTurnDampMultiplier = 0.05f;
+    private float turnDamped = 10f;
+    private float airTurnDampMultiplier = 0.5f;
+    private float attackTurnTime = 0.1f;
     private float moveSpeed = 5f;
-    private float rollSpeed = 10f;
-    private float jumpSpeed = 10f;
+    private float blockMaxMoveInput = 0.4f;
+    private float rollSpeed = 15f;
     private float fallMultiplier = 1.5f;
     private float groundCheckDistance = 0.4f;
     [SerializeField] private LayerMask groundCheckLayer;
@@ -111,7 +112,7 @@ namespace ofr.grim {
 
     private void HandleDodgeControl() {
       if (dodgeMovement) {
-        moveVector += transform.forward * rollSpeed;
+        moveVector += transform.forward.normalized * rollSpeed;
       }
     }
 
@@ -119,6 +120,8 @@ namespace ofr.grim {
       Vector3 moveInput = GetInputDirectionByCamera();
 
       if (Input.GetButtonDown("Jump") && attackState != AttackState.Swing) {
+        // trigger the end event just to make sure attack state is cleared
+        AttackEvent("end");
         Dodge(moveInput);
         return;
       }
@@ -137,7 +140,7 @@ namespace ofr.grim {
     private void HandleBlockControl() {
       Vector3 moveInput = GetInputDirectionByCamera();
       HandleTurning(moveInput);
-      HandleMoving(Vector3.ClampMagnitude(moveInput, 0.4f));
+      HandleMoving(Vector3.ClampMagnitude(moveInput, blockMaxMoveInput));
 
       if (!Input.GetMouseButton(1)) {
         ToggleBlock(false);
@@ -155,8 +158,29 @@ namespace ofr.grim {
     private void HandleTurning(Vector3 moveInput, float multiplier = 1f) {
       if (moveInput.magnitude == 0f) return;
 
-      Quaternion targetDirection = Quaternion.LookRotation(moveInput);
-      transform.rotation = Quaternion.Lerp(transform.rotation, targetDirection, turnDamped * multiplier);
+      Quaternion targetRotation = Quaternion.LookRotation(moveInput);
+
+      transform.rotation = Quaternion.Lerp(transform.rotation, targetRotation, turnDamped * multiplier * Time.deltaTime);
+    }
+
+    private IEnumerator HandleTurningAsync(Vector3 turnDir, float turnTime) {
+      // TODO: if this takes in a zero magnitude turn dir, it'll try to turn anyway
+      Quaternion targetRotation = Quaternion.LookRotation(turnDir);
+      Quaternion startRotation = transform.rotation;
+      float timeTaken = 0f;
+      float turnT = 0f;
+
+      while (turnT <= 1f) {
+        timeTaken += Time.deltaTime;
+        turnT = timeTaken / turnTime;
+        transform.rotation = Quaternion.Lerp(startRotation, targetRotation, turnT);
+        yield return true;
+      }
+    }
+
+    private void HandleTurnInstant(Vector3 moveInput) {
+      if (moveInput.magnitude == 0f) return;
+      transform.rotation = Quaternion.LookRotation(moveInput);
     }
 
     private void Attack(Vector3 moveInput) {
@@ -187,10 +211,10 @@ namespace ofr.grim {
       }
 
       if (lockDir != Vector3.zero) {
-        HandleTurning(lockDir, 100f);
+        StartCoroutine(HandleTurningAsync(lockDir, attackTurnTime));
         if (debugMode) debug.GetComponent<PlayerDebug>().UpdateLockLine(lockDir, castDistance);
       } else {
-        HandleTurning((transform.position + castDirection) - transform.position, 100f);
+        StartCoroutine(HandleTurningAsync((transform.position + castDirection) - transform.position, attackTurnTime));
       }
 
       // TODO: track lock target?
@@ -199,7 +223,7 @@ namespace ofr.grim {
     }
 
     private void Dodge(Vector3 moveDir) {
-      HandleTurning(moveDir, 100f);
+      HandleTurnInstant(moveDir);
       AnimateDodge();
     }
 
@@ -243,17 +267,6 @@ namespace ofr.grim {
 
       //this is the direction in the world space we want to move:
       return forward * verticalAxis + right * horizontalAxis;
-    }
-
-    // OVERRIDE DUDE CONTROLLER ANIM EVENTS
-    new void DodgeEvent(string message) {
-      base.DodgeEvent(message);
-
-      if (message == "start") {
-
-      } else {
-
-      }
     }
   }
 }

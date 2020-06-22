@@ -52,6 +52,7 @@ namespace ofr.grim {
     }
 
     public void AttackCollide(Collider target) {
+      // TODO: tags could be a protected array of tags?
       if (target.tag == "Enemy") {
         target.GetComponent<DudeController>().GetHit(transform.position);
       } else if (target.tag == "Hittable") {
@@ -68,6 +69,7 @@ namespace ofr.grim {
     }
 
     protected void AnimateLocomotion(float speed) {
+      // TODO: this should only lerp down to 0 not always
       anim.SetFloat("speed", Mathf.Lerp(anim.GetFloat("speed"), speed, locomotionTransitionDampen));
     }
 
@@ -76,9 +78,8 @@ namespace ofr.grim {
       anim.SetTrigger("dodge");
     }
 
-    protected bool AnimateAttack() {
+    protected void AnimateAttack() {
       anim.SetTrigger("attack");
-      return true;
     }
 
     protected void ToggleBlock(bool blockOn) {
