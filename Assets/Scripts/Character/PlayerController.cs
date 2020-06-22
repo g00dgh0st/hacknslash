@@ -186,8 +186,8 @@ namespace ofr.grim {
     private void Attack(Vector3 moveInput) {
       Vector3 castDirection = moveInput.magnitude > 0.1 ? moveInput.normalized : transform.forward;
       Vector3 castPosition = transform.position + Vector3.up;
-      float castRadius = 1f;
-      float castDistance = 4f;
+      float castRadius = 0.6f;
+      float castDistance = 3f;
 
       Vector3 castDirectionRight = Vector3.Cross(Vector3.up, castDirection).normalized;
 
