@@ -26,6 +26,13 @@ namespace ofr.grim {
     private float rollSpeed = 15f;
     private float fallMultiplier = 1.5f;
     private float groundCheckDistance = 0.4f;
+    float lockOnCastRadius = 0.8f;
+    float lockOnCastDistance = 3.5f;
+
+    // This should be part of a weapon object
+    float gapCloseMaxReach = 2.05f;
+    float gapCloseMinReach = 1.3f;
+    float gapCloseSpeed = 0.15f;
 
     private Vector3 moveVector;
 
@@ -184,18 +191,16 @@ namespace ofr.grim {
     private void Attack(Vector3 moveInput) {
       Vector3 castDirection = moveInput.magnitude > 0.1 ? moveInput.normalized : transform.forward;
       Vector3 castPosition = transform.position + Vector3.up;
-      float castRadius = 0.6f;
-      float castDistance = 3f;
 
       Vector3 castDirectionRight = Vector3.Cross(Vector3.up, castDirection).normalized;
 
-      bool centerCast = Physics.Raycast(castPosition, castDirection, out RaycastHit centerHit, castDistance, enemyLayerMask);
-      bool leftCast = Physics.Raycast(castPosition - (castDirectionRight * castRadius), castDirection, out RaycastHit leftHit, castDistance, enemyLayerMask);
-      bool rightCast = Physics.Raycast(castPosition + (castDirectionRight * castRadius), castDirection, out RaycastHit rightHit, castDistance, enemyLayerMask);
+      bool centerCast = Physics.Raycast(castPosition, castDirection, out RaycastHit centerHit, lockOnCastDistance, enemyLayerMask);
+      bool leftCast = Physics.Raycast(castPosition - (castDirectionRight * lockOnCastRadius), castDirection, out RaycastHit leftHit, lockOnCastDistance, enemyLayerMask);
+      bool rightCast = Physics.Raycast(castPosition + (castDirectionRight * lockOnCastRadius), castDirection, out RaycastHit rightHit, lockOnCastDistance, enemyLayerMask);
 
       if (debugMode) {
         PlayerDebug pd = debug.GetComponent<PlayerDebug>();
-        pd.UpdateMoveLines(castPosition, castDirection, castDirectionRight, castRadius, castDistance);
+        pd.UpdateMoveLines(castPosition, castDirection, castDirectionRight, lockOnCastRadius, lockOnCastDistance);
       }
 
       Vector3 lockDir = Vector3.zero;
@@ -209,8 +214,14 @@ namespace ofr.grim {
       }
 
       if (lockDir != Vector3.zero) {
+        // locked on
+        if (debugMode) debug.GetComponent<PlayerDebug>().UpdateLockLine(lockDir, lockOnCastDistance);
+
         StartCoroutine(HandleTurningAsync(lockDir, attackTurnTime));
-        if (debugMode) debug.GetComponent<PlayerDebug>().UpdateLockLine(lockDir, castDistance);
+
+        if (lockDir.magnitude > gapCloseMaxReach) {
+          StartCoroutine(AttackMove(transform.position + Vector3.ClampMagnitude(lockDir, (lockDir.magnitude - gapCloseMinReach)), gapCloseSpeed));
+        }
       } else {
         StartCoroutine(HandleTurningAsync((transform.position + castDirection) - transform.position, attackTurnTime));
       }
@@ -218,6 +229,21 @@ namespace ofr.grim {
       // TODO: track lock target?
 
       AnimateAttack();
+    }
+
+    private IEnumerator AttackMove(Vector3 targetPosition, float timeToReach) {
+      attackMovement = false;
+
+      Vector3 startPos = transform.position;
+      float timeTaken = 0f;
+      float turnT = 0f;
+
+      while (turnT <= 1f) {
+        timeTaken += Time.deltaTime;
+        turnT = timeTaken / timeToReach;
+        controller.Move(Vector3.Lerp(startPos, targetPosition, turnT) - transform.position);
+        yield return true;
+      }
     }
 
     private void Dodge(Vector3 moveDir) {

@@ -70,7 +70,6 @@ namespace ofr.grim {
     //     // stuff
     //   }
     // }
-
     private void AttackCollision(WeaponCollider collider) {
       Collider[] hits = Physics.OverlapSphere(collider.transform.position, collider.radius, enemyLayerMask);
 

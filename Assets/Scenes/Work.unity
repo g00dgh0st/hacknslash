@@ -8209,11 +8209,6 @@ PrefabInstance:
       propertyPath: debugText
       value: 
       objectReference: {fileID: 1858235963}
-    - target: {fileID: 6248568482661714121, guid: 46dfdeede19e5164eb6c2d72816b8395,
-        type: 3}
-      propertyPath: debugMode
-      value: 1
-      objectReference: {fileID: 0}
     m_RemovedComponents: []
   m_SourcePrefab: {fileID: 100100000, guid: 46dfdeede19e5164eb6c2d72816b8395, type: 3}
 --- !u!1001 &4209033924629089706
