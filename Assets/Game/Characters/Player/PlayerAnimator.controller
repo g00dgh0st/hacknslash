@@ -571,7 +571,7 @@ AnimatorState:
   m_PrefabInstance: {fileID: 0}
   m_PrefabAsset: {fileID: 0}
   m_Name: Frank_RPG_2Hand_Combo01_3
-  m_Speed: 1.6
+  m_Speed: 2
   m_CycleOffset: 0
   m_Transitions:
   - {fileID: 2413684962886752687}
@@ -961,7 +961,7 @@ AnimatorState:
   m_PrefabInstance: {fileID: 0}
   m_PrefabAsset: {fileID: 0}
   m_Name: Frank_RPG_2Hand_Combo01_1 0
-  m_Speed: 0.8
+  m_Speed: 1.5
   m_CycleOffset: 0
   m_Transitions:
   - {fileID: -6981106307131207993}
@@ -1343,7 +1343,7 @@ AnimatorState:
   m_PrefabInstance: {fileID: 0}
   m_PrefabAsset: {fileID: 0}
   m_Name: Frank_RPG_2Hand_Combo01_3 0
-  m_Speed: 0.9
+  m_Speed: 1.5
   m_CycleOffset: 0
   m_Transitions:
   - {fileID: 6414889113229744935}
@@ -1661,7 +1661,7 @@ AnimatorState:
   m_PrefabInstance: {fileID: 0}
   m_PrefabAsset: {fileID: 0}
   m_Name: Frank_RPG_2Hand_Combo01_2
-  m_Speed: 1.6
+  m_Speed: 2
   m_CycleOffset: 0
   m_Transitions:
   - {fileID: -5975238123771843243}
@@ -1788,7 +1788,7 @@ AnimatorState:
   m_PrefabInstance: {fileID: 0}
   m_PrefabAsset: {fileID: 0}
   m_Name: Frank_RPG_2Hand_Combo01_1
-  m_Speed: 1.6
+  m_Speed: 2
   m_CycleOffset: 0
   m_Transitions:
   - {fileID: -5244937508430644340}
@@ -2466,7 +2466,7 @@ AnimatorState:
   m_PrefabInstance: {fileID: 0}
   m_PrefabAsset: {fileID: 0}
   m_Name: Frank_RPG_2Hand_Combo01_2 0
-  m_Speed: 0.8
+  m_Speed: 1.5
   m_CycleOffset: 0
   m_Transitions:
   - {fileID: 4588070478919508445}

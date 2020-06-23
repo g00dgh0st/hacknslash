@@ -589,16 +589,16 @@ ModelImporter:
         floatParameter: 0
         intParameter: 0
         messageOptions: 0
-      - time: 0.32794204
+      - time: 0.34201956
         functionName: AttackEvent
-        data: collideOn
+        data: collide.right
         objectReferenceParameter: {instanceID: 0}
         floatParameter: 0
         intParameter: 0
         messageOptions: 0
-      - time: 0.45970434
+      - time: 0.36621958
         functionName: AttackEvent
-        data: collideOff
+        data: collide.front
         objectReferenceParameter: {instanceID: 0}
         floatParameter: 0
         intParameter: 0
@@ -606,6 +606,13 @@ ModelImporter:
       - time: 0.9782609
         functionName: AttackEvent
         data: end
+        objectReferenceParameter: {instanceID: 0}
+        floatParameter: 0
+        intParameter: 0
+        messageOptions: 0
+      - time: 0.38762215
+        functionName: AttackEvent
+        data: collide.left
         objectReferenceParameter: {instanceID: 0}
         floatParameter: 0
         intParameter: 0

@@ -119,7 +119,18 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 3c2e3785a7d045c459d7d0ed0e9e83f8, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
+  weaponCollision:
+    left: {fileID: 0}
+    right: {fileID: 0}
+    front: {fileID: 0}
+  hitFX: {fileID: 0}
   locomotionTransitionDampen: 0.2
+  groundCheckLayer:
+    serializedVersion: 2
+    m_Bits: 256
+  enemyLayerMask:
+    serializedVersion: 2
+    m_Bits: 1
 --- !u!1001 &1571452644996362909
 PrefabInstance:
   m_ObjectHideFlags: 0

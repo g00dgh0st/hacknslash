@@ -1,46 +1,5 @@
 %YAML 1.1
 %TAG !u! tag:unity3d.com,2011:
---- !u!65 &5131494833537887492
-BoxCollider:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 393627116278128689}
-  m_Material: {fileID: 0}
-  m_IsTrigger: 1
-  m_Enabled: 0
-  serializedVersion: 2
-  m_Size: {x: 0.15, y: 0.32715246, z: 0.19}
-  m_Center: {x: 0, y: 0.11, z: 0.018}
---- !u!114 &2094058983
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 393627116278128689}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 2e223f95de4fe9a44b457c36082a72b9, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: 
---- !u!54 &9086745600643303295
-Rigidbody:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 393627116278128689}
-  serializedVersion: 2
-  m_Mass: 1
-  m_Drag: 0
-  m_AngularDrag: 0.05
-  m_UseGravity: 1
-  m_IsKinematic: 1
-  m_Interpolate: 0
-  m_Constraints: 0
-  m_CollisionDetection: 3
 --- !u!1 &3589417201722945890
 GameObject:
   m_ObjectHideFlags: 0
@@ -4926,12 +4885,6 @@ PrefabInstance:
       objectReference: {fileID: 0}
     m_RemovedComponents: []
   m_SourcePrefab: {fileID: 100100000, guid: 2bbd2f4535ff0ec4ab76c066c37ec6f0, type: 3}
---- !u!1 &393627116278128689 stripped
-GameObject:
-  m_CorrespondingSourceObject: {fileID: 4265593204738497063, guid: 2bbd2f4535ff0ec4ab76c066c37ec6f0,
-    type: 3}
-  m_PrefabInstance: {fileID: 4486745959803009558}
-  m_PrefabAsset: {fileID: 0}
 --- !u!4 &3687647780143026722 stripped
 Transform:
   m_CorrespondingSourceObject: {fileID: 966364839189735476, guid: 2bbd2f4535ff0ec4ab76c066c37ec6f0,

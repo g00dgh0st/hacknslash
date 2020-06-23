@@ -8204,11 +8204,6 @@ PrefabInstance:
       propertyPath: m_LocalEulerAnglesHint.z
       value: 0
       objectReference: {fileID: 0}
-    - target: {fileID: 3899261441009676251, guid: 46dfdeede19e5164eb6c2d72816b8395,
-        type: 3}
-      propertyPath: m_Enabled
-      value: 0
-      objectReference: {fileID: 0}
     - target: {fileID: 6248568482661714121, guid: 46dfdeede19e5164eb6c2d72816b8395,
         type: 3}
       propertyPath: debugText
@@ -8217,26 +8212,6 @@ PrefabInstance:
     - target: {fileID: 6248568482661714121, guid: 46dfdeede19e5164eb6c2d72816b8395,
         type: 3}
       propertyPath: debugMode
-      value: 1
-      objectReference: {fileID: 0}
-    - target: {fileID: 6248568482661714121, guid: 46dfdeede19e5164eb6c2d72816b8395,
-        type: 3}
-      propertyPath: weaponCollideCenter
-      value: 
-      objectReference: {fileID: 0}
-    - target: {fileID: 6248568482661714121, guid: 46dfdeede19e5164eb6c2d72816b8395,
-        type: 3}
-      propertyPath: overlapSphere
-      value: 
-      objectReference: {fileID: 0}
-    - target: {fileID: 6248568482661714121, guid: 46dfdeede19e5164eb6c2d72816b8395,
-        type: 3}
-      propertyPath: hitFX
-      value: 
-      objectReference: {fileID: 106912, guid: 4c6dbb08de5abb84a9e7c01b4e0213ca, type: 3}
-    - target: {fileID: 6647345435680394043, guid: 46dfdeede19e5164eb6c2d72816b8395,
-        type: 3}
-      propertyPath: m_IsActive
       value: 1
       objectReference: {fileID: 0}
     m_RemovedComponents: []

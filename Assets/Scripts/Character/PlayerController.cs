@@ -26,8 +26,6 @@ namespace ofr.grim {
     private float rollSpeed = 15f;
     private float fallMultiplier = 1.5f;
     private float groundCheckDistance = 0.4f;
-    [SerializeField] private LayerMask groundCheckLayer;
-    [SerializeField] private LayerMask enemyLayerMask;
 
     private Vector3 moveVector;
 
