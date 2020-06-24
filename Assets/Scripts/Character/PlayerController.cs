@@ -36,6 +36,23 @@ namespace ofr.grim {
 
     private Vector3 moveVector;
 
+    // TODO: remove this
+    [SerializeField] protected LayerMask groundCheckLayer;
+    private bool _isGrounded;
+    protected bool isGrounded {
+      get {
+        return this._isGrounded;
+      }
+      set {
+        if (value == true && this._isGrounded == false) {
+          // if grounded, reset to locomotion state
+          this.movementState = MovementState.Locomotion;
+        }
+        this._isGrounded = value;
+        anim.SetBool("grounded", this._isGrounded);
+      }
+    }
+
     new void Awake() {
       base.Awake();
       controller = GetComponent<CharacterController>();
@@ -276,8 +293,8 @@ namespace ofr.grim {
     }
 
     private Vector3 GetInputDirectionByCamera() {
-      float horizontalAxis = Input.GetAxis("Horizontal");
-      float verticalAxis = Input.GetAxis("Vertical");
+      float horizontalAxis = Input.GetAxisRaw("Horizontal");
+      float verticalAxis = Input.GetAxisRaw("Vertical");
 
       //camera forward and right vectors:
       var forward = mainCam.transform.forward;

@@ -17,11 +17,13 @@ namespace ofr.grim {
   }
 
   [RequireComponent(typeof(Animator))]
+  [RequireComponent(typeof(AudioSource))]
   public class DudeController : MonoBehaviour, CombatTarget {
     protected Animator anim;
+    protected AudioSource audio;
 
-    // [SerializeField]
-    // private Collider attackCollider;
+    [SerializeField]
+    private AudioClip swingAudio;
 
     [SerializeField]
     private WeaponCollision weaponCollision;
@@ -32,51 +34,31 @@ namespace ofr.grim {
     [SerializeField]
     private float locomotionTransitionDampen = 0.2f;
 
-    [SerializeField] protected LayerMask groundCheckLayer;
     [SerializeField] protected LayerMask enemyLayerMask;
 
-    private bool _isGrounded;
-    protected bool isGrounded {
-      get {
-        return this._isGrounded;
-      }
-      set {
-        if (value == true && this._isGrounded == false) {
-          // if grounded, reset to locomotion state
-          this.movementState = MovementState.Locomotion;
-        }
-        this._isGrounded = value;
-        anim.SetBool("grounded", this._isGrounded);
-      }
-    }
     protected MovementState movementState { get; set; }
     protected AttackState attackState { get; set; }
 
     protected bool dodgeMovement = false;
     protected bool attackMovement = false;
-    // protected bool attackCollisionOn = false;
+
+    protected List<CombatTarget> attackHits;
 
     protected void Awake() {
       anim = GetComponent<Animator>();
+      audio = GetComponent<AudioSource>();
       attackState = AttackState.End;
+      attackHits = new List<CombatTarget>();
     }
 
-    // public void AttackCollide(Collider target) {
-    //   // TODO: tags could be a protected array of tags?
-    //   if (target.tag == "Enemy") {
-    //     target.GetComponent<DudeController>().GetHit(transform.position);
-    //     Destroy(Instantiate(hitFX, target.ClosestPoint(transform.position + Vector3.up), target.transform.rotation), 2f);
-    //   } else if (target.tag == "Hittable") {
-    //     // stuff
-    //   }
-    // }
     private void AttackCollision(WeaponCollider collider) {
       Collider[] hits = Physics.OverlapSphere(collider.transform.position, collider.radius, enemyLayerMask);
 
       foreach (Collider hit in hits) {
         CombatTarget tgt = hit.GetComponent<CombatTarget>();
 
-        if (tgt != null) {
+        if (tgt != null && !attackHits.Exists((t) => GameObject.ReferenceEquals(t, tgt))) {
+          attackHits.Add(tgt);
           tgt.GetHit(transform.position);
           Destroy(Instantiate(hitFX, hit.ClosestPoint(transform.position + Vector3.up), transform.rotation), 2f);
         }
@@ -116,6 +98,10 @@ namespace ofr.grim {
     /// ANIMATION EVENTS
     public void AttackMachineCallback(AttackState state) {
       attackState = state;
+
+      if (attackState != AttackState.Swing) {
+        attackHits.Clear();
+      }
     }
 
     protected void DodgeEvent(string message) {
@@ -134,6 +120,11 @@ namespace ofr.grim {
       if (message == "start") {
         movementState = MovementState.Attack;
         attackMovement = true;
+      }
+
+      if (message == "swing") {
+        // TEMP: just trying out audio
+        audio.PlayOneShot(swingAudio);
       }
 
       if (message.Contains("collide")) {
@@ -155,16 +146,6 @@ namespace ofr.grim {
           AttackCollision(weaponCollision.front);
         }
       }
-
-      // if (message == "collideOn") {
-      //   // attackCollider.enabled = true;
-      //   attackCollisionOn = true;
-      // }
-
-      // if (message == "collideOff") {
-      //   // attackCollider.enabled = false;
-      //   attackCollisionOn = false;
-      // }
 
       if (message == "end") {
         movementState = MovementState.Locomotion;
