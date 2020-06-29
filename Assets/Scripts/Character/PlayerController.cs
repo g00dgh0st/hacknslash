@@ -6,8 +6,21 @@ using UnityEngine;
 using UnityEngine.UI;
 
 namespace ofr.grim {
+  public enum MovementState {
+    Locomotion,
+    Attack,
+    Dodge,
+    Hit,
+    Block
+  }
 
-  public class PlayerController : DudeController {
+  public enum AttackState {
+    Swing,
+    Continue,
+    End
+  }
+
+  public class PlayerController : MonoBehaviour, CombatTarget {
     // DEBUG STUFF
     public bool debugMode = false;
     [SerializeField]
@@ -23,7 +36,7 @@ namespace ofr.grim {
     private float attackTurnTime = 0.1f;
     private float moveSpeed = 5f;
     private float blockMaxMoveInput = 0.4f;
-    private float rollSpeed = 15f;
+    private float rollSpeed = 12f;
     private float fallMultiplier = 1.5f;
     private float groundCheckDistance = 0.4f;
     float lockOnCastRadius = 0.8f;
@@ -53,8 +66,11 @@ namespace ofr.grim {
       }
     }
 
-    new void Awake() {
-      base.Awake();
+    void Awake() {
+      anim = GetComponent<Animator>();
+      audio = GetComponent<AudioSource>();
+      attackState = AttackState.End;
+      attackHits = new List<CombatTarget>();
       controller = GetComponent<CharacterController>();
       mainCam = Camera.main;
     }
@@ -309,5 +325,147 @@ namespace ofr.grim {
       //this is the direction in the world space we want to move:
       return forward * verticalAxis + right * horizontalAxis;
     }
+
+    ///// DUDE CONTROOLLER STUFF
+    protected Animator anim;
+    protected AudioSource audio;
+
+    [SerializeField]
+    private AudioClip swingAudio;
+
+    [SerializeField]
+    private WeaponCollision weaponCollision;
+
+    [SerializeField]
+    protected GameObject hitFX;
+
+    [SerializeField]
+    private float locomotionTransitionDampen = 0.2f;
+
+    [SerializeField] protected LayerMask enemyLayerMask;
+
+    protected MovementState movementState { get; set; }
+    protected AttackState attackState { get; set; }
+
+    protected bool dodgeMovement = false;
+    protected bool attackMovement = false;
+
+    protected List<CombatTarget> attackHits;
+
+    private void AttackCollision(WeaponCollider collider) {
+      Collider[] hits = Physics.OverlapSphere(collider.transform.position, collider.radius, enemyLayerMask);
+
+      foreach (Collider hit in hits) {
+        CombatTarget tgt = hit.GetComponent<CombatTarget>();
+
+        if (tgt != null && !attackHits.Exists((t) => GameObject.ReferenceEquals(t, tgt))) {
+          attackHits.Add(tgt);
+          tgt.GetHit(transform.position);
+          Destroy(Instantiate(hitFX, hit.ClosestPoint(transform.position + Vector3.up), transform.rotation), 2f);
+        }
+      }
+    }
+
+    public virtual void GetHit(Vector3 hitPosition) {
+      // TODO: need hit state logic 
+      // movementState = MovementState.Hit;
+      anim.SetTrigger("hit");
+    }
+
+    public virtual void Die() {
+      print("i dead");
+    }
+
+    protected void AnimateLocomotion(float speed) {
+      // TODO: this should only lerp down to 0 not always
+      anim.SetFloat("speed", Mathf.Lerp(anim.GetFloat("speed"), speed, locomotionTransitionDampen));
+    }
+
+    protected void AnimateDodge() {
+      movementState = MovementState.Dodge;
+      anim.SetTrigger("dodge");
+    }
+
+    protected void AnimateAttack() {
+      anim.SetTrigger("attack");
+    }
+
+    protected void ToggleBlock(bool blockOn) {
+      anim.SetBool("block", blockOn);
+      if (blockOn) movementState = MovementState.Block;
+      else movementState = MovementState.Locomotion;
+    }
+
+    /// ANIMATION EVENTS
+    public void AttackMachineCallback(AttackState state) {
+      attackState = state;
+
+      if (attackState != AttackState.Swing) {
+        attackHits.Clear();
+      }
+    }
+
+    protected void DodgeEvent(string message) {
+      if (message == "start") {
+        dodgeMovement = true;
+      }
+
+      if (message == "end") {
+        dodgeMovement = false;
+        anim.ResetTrigger("dodge");
+        movementState = MovementState.Locomotion;
+      }
+    }
+
+    protected void AttackEvent(string message) {
+      if (message == "start") {
+        movementState = MovementState.Attack;
+        attackMovement = true;
+      }
+
+      if (message == "swing") {
+        // TEMP: just trying out audio
+        audio.PlayOneShot(swingAudio);
+      }
+
+      if (message.Contains("collide")) {
+        string[] split = message.Split('.');
+
+        if (split.Length > 1) {
+          switch (split[1]) {
+            case "left":
+              AttackCollision(weaponCollision.left);
+              break;
+            case "right":
+              AttackCollision(weaponCollision.right);
+              break;
+            default:
+              AttackCollision(weaponCollision.front);
+              break;
+          }
+        } else {
+          AttackCollision(weaponCollision.front);
+        }
+      }
+
+      if (message == "end") {
+        movementState = MovementState.Locomotion;
+        attackMovement = false;
+        // canAttack = true;
+        anim.ResetTrigger("attack");
+      }
+    }
+
+    protected void HitEvent(string message) {
+      if (message == "start") {
+        print("HOTT");
+        movementState = MovementState.Hit;
+      }
+
+      if (message == "end") {
+        movementState = MovementState.Locomotion;
+      }
+    }
+
   }
 }

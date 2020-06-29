@@ -17,7 +17,7 @@ public class AttackMachine : StateMachineBehaviour {
 
     }
 
-    animator.GetComponent<DudeController>().AttackMachineCallback(state);
+    animator.GetComponent<PlayerController>().AttackMachineCallback(state);
   }
 
   // OnStateUpdate is called before OnStateUpdate is called on any state inside this state machine
