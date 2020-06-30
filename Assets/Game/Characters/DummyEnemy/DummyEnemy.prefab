@@ -301,7 +301,7 @@ CapsuleCollider:
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 6067938762425300025}
   m_Material: {fileID: 0}
-  m_IsTrigger: 1
+  m_IsTrigger: 0
   m_Enabled: 1
   m_Radius: 0.5
   m_Height: 2
@@ -335,22 +335,19 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 3c2e3785a7d045c459d7d0ed0e9e83f8, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  startPosition: {fileID: 0}
+  maxHealth: 100
   aggroRadius: 8
   chaseRadius: 10
   attackRadius: 2
   attackTurnTime: 0.1
-  attackCooldown: 2
   swingAudio: {fileID: 8300000, guid: cf35a39ed3f005d49bf846fdd9eee7a0, type: 3}
   weaponCollision:
     left: {fileID: 6038813082762205337}
     right: {fileID: 3307369488650264671}
     front: {fileID: 127407807063853148}
   hitFX: {fileID: 106912, guid: fcffa92183167eb40a61f473372a665e, type: 3}
-  locomotionTransitionDampen: 0.2
-  enemyLayerMask:
-    serializedVersion: 2
-    m_Bits: 512
+  canHitAllies: 0
+  startPosition: {fileID: 0}
 --- !u!82 &4218727707431289537
 AudioSource:
   m_ObjectHideFlags: 0

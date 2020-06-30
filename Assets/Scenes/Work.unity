@@ -380,6 +380,23 @@ PrefabInstance:
   m_Modification:
     m_TransformParent: {fileID: 0}
     m_Modifications:
+    - target: {fileID: 11736965, guid: 74e37ff97bae04b41973d7ef34c663ab, type: 3}
+      propertyPath: canHitAllies
+      value: 1
+      objectReference: {fileID: 0}
+    - target: {fileID: 11736965, guid: 74e37ff97bae04b41973d7ef34c663ab, type: 3}
+      propertyPath: swingAudio
+      value: 
+      objectReference: {fileID: 8300000, guid: 60fdfa301881bae48ae59759cc83b842, type: 3}
+    - target: {fileID: 11736965, guid: 74e37ff97bae04b41973d7ef34c663ab, type: 3}
+      propertyPath: hitFX
+      value: 
+      objectReference: {fileID: 159846, guid: 68af2043a4d961246900114c37323b51, type: 3}
+    - target: {fileID: 1571452644999446257, guid: 74e37ff97bae04b41973d7ef34c663ab,
+        type: 3}
+      propertyPath: m_Materials.Array.data[0]
+      value: 
+      objectReference: {fileID: 2100000, guid: 685714bc4595f7b4c8e75a582e09e6d3, type: 2}
     - target: {fileID: 6062212063775308525, guid: 74e37ff97bae04b41973d7ef34c663ab,
         type: 3}
       propertyPath: m_LocalPosition.x
@@ -438,7 +455,7 @@ PrefabInstance:
     - target: {fileID: 6067938762425300025, guid: 74e37ff97bae04b41973d7ef34c663ab,
         type: 3}
       propertyPath: m_Name
-      value: Enemy (2)
+      value: enemy that can hit enemie
       objectReference: {fileID: 0}
     - target: {fileID: 6067938762425300025, guid: 74e37ff97bae04b41973d7ef34c663ab,
         type: 3}
@@ -8528,12 +8545,12 @@ PrefabInstance:
     - target: {fileID: 6757189585852288483, guid: 96d12988ed0a16f41ac639aa1b1300d7,
         type: 3}
       propertyPath: m_LocalRotation.y
-      value: -0.35575584
+      value: -0.3557559
       objectReference: {fileID: 0}
     - target: {fileID: 6757189585852288483, guid: 96d12988ed0a16f41ac639aa1b1300d7,
         type: 3}
       propertyPath: m_LocalRotation.z
-      value: 0.14144525
+      value: 0.14144528
       objectReference: {fileID: 0}
     - target: {fileID: 6757189585852288483, guid: 96d12988ed0a16f41ac639aa1b1300d7,
         type: 3}
@@ -8543,7 +8560,7 @@ PrefabInstance:
     - target: {fileID: 6757189585852288483, guid: 96d12988ed0a16f41ac639aa1b1300d7,
         type: 3}
       propertyPath: m_LocalRotation.x
-      value: 0.34086633
+      value: 0.34086636
       objectReference: {fileID: 0}
     - target: {fileID: 6757189585852288483, guid: 96d12988ed0a16f41ac639aa1b1300d7,
         type: 3}
@@ -8598,12 +8615,12 @@ PrefabInstance:
     - target: {fileID: 6757189587678310368, guid: 96d12988ed0a16f41ac639aa1b1300d7,
         type: 3}
       propertyPath: m_LocalRotation.y
-      value: -0.35575584
+      value: -0.3557559
       objectReference: {fileID: 0}
     - target: {fileID: 6757189587678310368, guid: 96d12988ed0a16f41ac639aa1b1300d7,
         type: 3}
       propertyPath: m_LocalRotation.z
-      value: 0.14144525
+      value: 0.14144528
       objectReference: {fileID: 0}
     - target: {fileID: 6757189587678310368, guid: 96d12988ed0a16f41ac639aa1b1300d7,
         type: 3}
@@ -8613,7 +8630,7 @@ PrefabInstance:
     - target: {fileID: 6757189587678310368, guid: 96d12988ed0a16f41ac639aa1b1300d7,
         type: 3}
       propertyPath: m_LocalRotation.x
-      value: 0.34086633
+      value: 0.34086636
       objectReference: {fileID: 0}
     - target: {fileID: 6757189587678310368, guid: 96d12988ed0a16f41ac639aa1b1300d7,
         type: 3}

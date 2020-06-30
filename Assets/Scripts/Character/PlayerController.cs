@@ -62,6 +62,9 @@ namespace ofr.grim {
     protected bool attackMovement = false;
     protected List<CombatTarget> attackHits;
 
+    private Coroutine moveRoutine = null;
+    private Coroutine turnRoutine = null;
+
     // TODO: remove this lock player to ground, prevent falls or jumps
     private float airTurnDampMultiplier = 0.5f;
     private float fallMultiplier = 1.5f;
@@ -111,6 +114,10 @@ namespace ofr.grim {
 
       if (debugMode)
         debugText.text = isGrounded ? controlState.ToString("g") : "airborne";
+
+      if (Input.GetMouseButtonDown(1)) {
+        GetHit(transform.position + Vector3.up - transform.forward, 0);
+      }
 
       ApplyGravity();
 
@@ -284,13 +291,13 @@ namespace ofr.grim {
         // locked on
         if (debugMode) debug.GetComponent<PlayerDebug>().UpdateLockLine(lockDir, lockOnCastDistance);
 
-        StartCoroutine(HandleTurningAsync(lockDir, attackTurnTime));
+        turnRoutine = StartCoroutine(HandleTurningAsync(lockDir, attackTurnTime));
 
         if (lockDir.magnitude > gapCloseMaxReach) {
-          StartCoroutine(HandleMovingAsync(transform.position + Vector3.ClampMagnitude(lockDir, (lockDir.magnitude - gapCloseMinReach)), gapCloseSpeed));
+          moveRoutine = StartCoroutine(HandleMovingAsync(transform.position + Vector3.ClampMagnitude(lockDir, (lockDir.magnitude - gapCloseMinReach)), gapCloseSpeed));
         }
       } else {
-        StartCoroutine(HandleTurningAsync((transform.position + castDirection) - transform.position, attackTurnTime));
+        turnRoutine = StartCoroutine(HandleTurningAsync((transform.position + castDirection) - transform.position, attackTurnTime));
       }
 
       // TODO: track lock target?
@@ -353,19 +360,24 @@ namespace ofr.grim {
 
         if (tgt != null && !attackHits.Exists((t) => GameObject.ReferenceEquals(t, tgt))) {
           attackHits.Add(tgt);
-          tgt.GetHit(transform.position);
-          Destroy(Instantiate(hitFX, hit.ClosestPoint(transform.position + Vector3.up), transform.rotation), 2f);
+          bool didHit = tgt.GetHit(transform.position);
+
+          if (didHit)
+            Destroy(Instantiate(hitFX, hit.ClosestPoint(transform.position + Vector3.up), transform.rotation), 2f);
         }
       }
     }
 
-    public override void GetHit(Vector3 attackPosition, float damage = 10f) {
-      if (isDead) return;
+    public override bool GetHit(Vector3 attackPosition, float damage = 10f) {
+      if (isDead || controlState == ControlState.Dodge) return false;
+
       Interrupt();
       TakeDamage(damage);
+      print(currentHealth);
       anim.SetTrigger("hit");
       controlState = ControlState.Hit;
       controller.Move((transform.position - attackPosition).normalized * 0.05f);
+      return true;
     }
 
     protected override void Die() {
@@ -374,7 +386,13 @@ namespace ofr.grim {
     }
 
     private void Interrupt() {
+      attackMovement = false;
+      anim.SetFloat("speed", 0);
 
+      if (moveRoutine != null)
+        StopCoroutine(moveRoutine);
+      if (turnRoutine != null)
+        StopCoroutine(turnRoutine);
     }
 
     protected void ToggleBlock(bool blockOn) {
@@ -452,7 +470,6 @@ namespace ofr.grim {
       if (message == "end") {
         controlState = ControlState.Locomotion;
         attackMovement = false;
-        // canAttack = true;
         anim.ResetTrigger("attack");
       }
     }

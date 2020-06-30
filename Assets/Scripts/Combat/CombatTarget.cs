@@ -11,7 +11,9 @@ namespace ofr.grim {
 
     protected void Start() { currentHealth = maxHealth; }
 
-    public virtual void GetHit(Vector3 hitPosition, float damage = 20f) {}
+    public virtual bool GetHit(Vector3 hitPosition, float damage = 20f) {
+      return true;
+    }
 
     protected virtual void Die() {
       isDead = true;
