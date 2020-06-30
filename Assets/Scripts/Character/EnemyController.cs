@@ -150,13 +150,16 @@ namespace ofr.grim {
       TakeDamage(damage);
       anim.SetTrigger("hit");
       transform.rotation = Quaternion.LookRotation(attackPosition - transform.position);
-      navAgent.Move(transform.forward * -0.05f);
+      // transform.position = transform.position - (transform.forward * 0.5f);
+      StartCoroutine(HandleMovingAsync(transform.position - (transform.forward * 0.5f), 0.1f));
       return true;
     }
 
     protected override void Die() {
       isDead = true;
       anim.SetBool("die", true);
+      navAgent.enabled = false;
+      GetComponent<Collider>().enabled = false;
     }
 
     private void Interrupt() {
@@ -200,6 +203,19 @@ namespace ofr.grim {
         timeTaken += Time.deltaTime;
         turnT = timeTaken / turnTime;
         transform.rotation = Quaternion.Lerp(startRotation, targetRotation, turnT);
+        yield return true;
+      }
+    }
+
+    private IEnumerator HandleMovingAsync(Vector3 targetPosition, float timeToReach) {
+      Vector3 startPos = transform.position;
+      float timeTaken = 0f;
+      float turnT = 0f;
+
+      while (turnT <= 1f) {
+        timeTaken += Time.deltaTime;
+        turnT = timeTaken / timeToReach;
+        transform.position = Vector3.Lerp(startPos, targetPosition, turnT);
         yield return true;
       }
     }
