@@ -12,36 +12,40 @@ namespace ofr.grim {
     Reset
   }
 
-  public class EnemyController : MonoBehaviour, CombatTarget {
+  public class EnemyController : CombatTarget {
     private NavMeshAgent navAgent;
     private Rigidbody rBody;
-    private AIState state = AIState.Idle;
-
-    private Vector3 resetPosition;
-
-    [SerializeField]
-    private Transform startPosition;
+    private Animator anim;
+    private AudioSource audio;
 
     public float aggroRadius = 8f;
     public float chaseRadius = 10f;
     public float attackRadius = 3f;
-
     public float attackTurnTime = 0.2f;
-    public float attackCooldown = 2f;
+    private float attackCooldown = 2f;
+    [SerializeField] private AudioClip swingAudio;
+    [SerializeField] private WeaponCollision weaponCollision;
+    [SerializeField] protected GameObject hitFX;
 
+    [SerializeField] private Transform startPosition;
+
+    private AIState state = AIState.Idle;
+    private Vector3 resetPosition;
+    protected List<CombatTarget> attackHits;
     private bool isAttacking = false;
     private float nextAttackTime = 0f;
 
     void Awake() {
       anim = GetComponent<Animator>();
       audio = GetComponent<AudioSource>();
-      // attackState = AttackState.End;
       attackHits = new List<CombatTarget>();
       navAgent = GetComponent<NavMeshAgent>();
       rBody = GetComponent<Rigidbody>();
     }
 
-    void Start() {
+    new void Start() {
+      base.Start();
+
       if (startPosition)
         resetPosition = startPosition.position;
       else
@@ -49,6 +53,8 @@ namespace ofr.grim {
     }
 
     void Update() {
+      if (isDead) return;
+
       switch (state) {
         case AIState.Combat:
           HandleCombatControl();
@@ -122,11 +128,9 @@ namespace ofr.grim {
     private void AttackPlayer() {
       Vector3 lookDir = GameManager.player.transform.position - transform.position;
       lookDir.y = 0f;
-      // TODO: only call stop if moving
       if (navAgent.velocity.sqrMagnitude > 0f)
         StartCoroutine(HandleStoppingAsync(attackTurnTime));
       StartCoroutine(HandleTurningAsync(lookDir, attackTurnTime));
-      // navAgent.isStopped = true;
 
       if (nextAttackTime < Time.time) {
         anim.SetTrigger("attack");
@@ -139,11 +143,24 @@ namespace ofr.grim {
       navAgent.SetDestination(targetPos);
     }
 
-    public void GetHit(Vector3 attackPosition) {
+    public override void GetHit(Vector3 attackPosition, float damage = 20f) {
+      if (isDead) return;
       Interrupt();
+      TakeDamage(damage);
       anim.SetTrigger("hit");
       transform.rotation = Quaternion.LookRotation(attackPosition - transform.position);
       navAgent.Move(transform.forward * -0.05f);
+    }
+
+    protected override void Die() {
+      isDead = true;
+      anim.SetBool("die", true);
+    }
+
+    private void Interrupt() {
+      isAttacking = false;
+      navAgent.velocity = Vector3.zero;
+      nextAttackTime = Time.time + attackCooldown;
     }
 
     private bool CheckForPlayerDistance(float radius) {
@@ -199,54 +216,20 @@ namespace ofr.grim {
       AnimateLocomotion(0);
     }
 
-    private void Interrupt() {
-      isAttacking = false;
-      navAgent.velocity = Vector3.zero;
-      nextAttackTime = Time.time + attackCooldown;
+    // TODO: duped with player controller
+    private void AttackCollision(WeaponCollider collider) {
+      Collider[] hits = Physics.OverlapSphere(collider.transform.position, collider.radius);
+
+      foreach (Collider hit in hits) {
+        CombatTarget tgt = hit.GetComponent<CombatTarget>();
+
+        if (tgt != null && tgt != this && !attackHits.Exists((t) => GameObject.ReferenceEquals(t, tgt))) {
+          attackHits.Add(tgt);
+          tgt.GetHit(transform.position);
+          Destroy(Instantiate(hitFX, hit.ClosestPoint(transform.position + Vector3.up), transform.rotation), 2f);
+        }
+      }
     }
-
-    // DUDE CONTROLLER STUFF
-    protected Animator anim;
-    protected AudioSource audio;
-
-    [SerializeField]
-    private AudioClip swingAudio;
-
-    // [SerializeField]
-    // private WeaponCollision weaponCollision;
-
-    // [SerializeField]
-    // protected GameObject hitFX;
-
-    [SerializeField]
-    private float locomotionTransitionDampen = 0.2f;
-
-    // [SerializeField] protected LayerMask enemyLayerMask;
-
-    // protected MovementState movementState { get; set; }
-    // protected AttackState attackState { get; set; }
-
-    // protected bool dodgeMovement = false;
-
-    protected List<CombatTarget> attackHits;
-
-    // private void AttackCollision(WeaponCollider collider) {
-    //   Collider[] hits = Physics.OverlapSphere(collider.transform.position, collider.radius, enemyLayerMask);
-
-    //   foreach (Collider hit in hits) {
-    //     CombatTarget tgt = hit.GetComponent<CombatTarget>();
-
-    //     if (tgt != null && !attackHits.Exists((t) => GameObject.ReferenceEquals(t, tgt))) {
-    //       attackHits.Add(tgt);
-    //       tgt.GetHit(transform.position);
-    //       Destroy(Instantiate(hitFX, hit.ClosestPoint(transform.position + Vector3.up), transform.rotation), 2f);
-    //     }
-    //   }
-    // }
-
-    // public virtual void Die() {
-    //   print("i dead");
-    // }
 
     protected void AnimateLocomotion(float speed) {
       anim.SetFloat("speed", speed);
@@ -298,28 +281,29 @@ namespace ofr.grim {
         audio.PlayOneShot(swingAudio);
       }
 
-      // if (message.Contains("collide")) {
-      //   string[] split = message.Split('.');
+      if (message.Contains("collide")) {
+        string[] split = message.Split('.');
 
-      //   if (split.Length > 1) {
-      //     switch (split[1]) {
-      //       case "left":
-      //         AttackCollision(weaponCollision.left);
-      //         break;
-      //       case "right":
-      //         AttackCollision(weaponCollision.right);
-      //         break;
-      //       default:
-      //         AttackCollision(weaponCollision.front);
-      //         break;
-      //     }
-      //   } else {
-      //     AttackCollision(weaponCollision.front);
-      //   }
-      // }
+        if (split.Length > 1) {
+          switch (split[1]) {
+            case "left":
+              AttackCollision(weaponCollision.left);
+              break;
+            case "right":
+              AttackCollision(weaponCollision.right);
+              break;
+            default:
+              AttackCollision(weaponCollision.front);
+              break;
+          }
+        } else {
+          AttackCollision(weaponCollision.front);
+        }
+      }
 
       if (message == "end") {
         isAttacking = false;
+        attackHits.Clear();
         anim.ResetTrigger("attack");
       }
     }

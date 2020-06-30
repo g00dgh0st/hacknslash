@@ -1120,9 +1120,23 @@ ModelImporter:
         floatParameter: 0
         intParameter: 0
         messageOptions: 0
+      - time: 0.3471224
+        functionName: AttackEvent
+        data: swing
+        objectReferenceParameter: {instanceID: 0}
+        floatParameter: 0
+        intParameter: 0
+        messageOptions: 0
       - time: 0.9962687
         functionName: AttackEvent
         data: end
+        objectReferenceParameter: {instanceID: 0}
+        floatParameter: 0
+        intParameter: 0
+        messageOptions: 0
+      - time: 0.3898305
+        functionName: AttackEvent
+        data: collide.
         objectReferenceParameter: {instanceID: 0}
         floatParameter: 0
         intParameter: 0

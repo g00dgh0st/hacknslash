@@ -6,7 +6,7 @@ using UnityEngine;
 using UnityEngine.UI;
 
 namespace ofr.grim {
-  public enum MovementState {
+  public enum ControlState {
     Locomotion,
     Attack,
     Dodge,
@@ -20,36 +20,51 @@ namespace ofr.grim {
     End
   }
 
-  public class PlayerController : MonoBehaviour, CombatTarget {
+  public class PlayerController : CombatTarget {
     // DEBUG STUFF
     public bool debugMode = false;
-    [SerializeField]
-    private GameObject debug;
+    [SerializeField] private GameObject debug;
     public Text debugText;
     // END DEBUGT STUFF
 
+    // dependencies
     private Camera mainCam;
     private CharacterController controller;
+    private Animator anim;
+    private AudioSource audio;
 
+    // player control config
+    private float locomotionTransitionDampen = 0.2f;
     private float turnDamped = 10f;
-    private float airTurnDampMultiplier = 0.5f;
     private float attackTurnTime = 0.1f;
     private float moveSpeed = 5f;
     private float blockMaxMoveInput = 0.4f;
     private float rollSpeed = 12f;
-    private float fallMultiplier = 1.5f;
     private float groundCheckDistance = 0.4f;
-    float lockOnCastRadius = 0.8f;
-    float lockOnCastDistance = 3.5f;
+    private float lockOnCastRadius = 0.8f;
+    private float lockOnCastDistance = 3.5f;
+    [SerializeField] protected LayerMask enemyLayerMask;
 
     // This should be part of a weapon object
     float gapCloseMaxReach = 2.05f;
     float gapCloseMinReach = 1.3f;
     float gapCloseSpeed = 0.15f;
+    [SerializeField] private AudioClip swingAudio;
+    [SerializeField] private WeaponCollision weaponCollision;
+    [SerializeField] protected GameObject hitFX;
+    // end weapon config
 
+    // state vars
     private Vector3 moveVector;
+    protected ControlState controlState { get; set; }
+    protected AttackState attackState { get; set; }
+    protected bool dodgeMovement = false;
+    protected bool attackMovement = false;
+    protected List<CombatTarget> attackHits;
 
-    // TODO: remove this
+    // TODO: remove this lock player to ground, prevent falls or jumps
+    private float airTurnDampMultiplier = 0.5f;
+    private float fallMultiplier = 1.5f;
     [SerializeField] protected LayerMask groundCheckLayer;
     private bool _isGrounded;
     protected bool isGrounded {
@@ -59,7 +74,7 @@ namespace ofr.grim {
       set {
         if (value == true && this._isGrounded == false) {
           // if grounded, reset to locomotion state
-          this.movementState = MovementState.Locomotion;
+          this.controlState = ControlState.Locomotion;
         }
         this._isGrounded = value;
         anim.SetBool("grounded", this._isGrounded);
@@ -75,8 +90,10 @@ namespace ofr.grim {
       mainCam = Camera.main;
     }
 
-    void Start() {
-      movementState = MovementState.Locomotion;
+    new void Start() {
+      base.Start();
+
+      controlState = ControlState.Locomotion;
 
       if (debugMode)
         debug.SetActive(true);
@@ -90,24 +107,26 @@ namespace ofr.grim {
     }
 
     void Update() {
+      if (isDead) return;
+
       if (debugMode)
-        debugText.text = isGrounded ? movementState.ToString("g") : "airborne";
+        debugText.text = isGrounded ? controlState.ToString("g") : "airborne";
 
       ApplyGravity();
 
       if (isGrounded) {
         // grounded control
-        switch (movementState) {
-          case MovementState.Locomotion:
+        switch (controlState) {
+          case ControlState.Locomotion:
             HandleGroundedControl();
             break;
-          case MovementState.Dodge:
+          case ControlState.Dodge:
             HandleDodgeControl();
             break;
-          case MovementState.Attack:
+          case ControlState.Attack:
             HandleAttackControl();
             break;
-          case MovementState.Block:
+          case ControlState.Block:
             HandleBlockControl();
             break;
           default:
@@ -193,6 +212,21 @@ namespace ofr.grim {
       AnimateLocomotion(inputMagnitude);
     }
 
+    private IEnumerator HandleMovingAsync(Vector3 targetPosition, float timeToReach) {
+      attackMovement = false;
+
+      Vector3 startPos = transform.position;
+      float timeTaken = 0f;
+      float turnT = 0f;
+
+      while (turnT <= 1f) {
+        timeTaken += Time.deltaTime;
+        turnT = timeTaken / timeToReach;
+        controller.Move(Vector3.Lerp(startPos, targetPosition, turnT) - transform.position);
+        yield return true;
+      }
+    }
+
     private void HandleTurning(Vector3 moveInput, float multiplier = 1f) {
       if (moveInput.magnitude == 0f) return;
 
@@ -253,7 +287,7 @@ namespace ofr.grim {
         StartCoroutine(HandleTurningAsync(lockDir, attackTurnTime));
 
         if (lockDir.magnitude > gapCloseMaxReach) {
-          StartCoroutine(AttackMove(transform.position + Vector3.ClampMagnitude(lockDir, (lockDir.magnitude - gapCloseMinReach)), gapCloseSpeed));
+          StartCoroutine(HandleMovingAsync(transform.position + Vector3.ClampMagnitude(lockDir, (lockDir.magnitude - gapCloseMinReach)), gapCloseSpeed));
         }
       } else {
         StartCoroutine(HandleTurningAsync((transform.position + castDirection) - transform.position, attackTurnTime));
@@ -262,21 +296,6 @@ namespace ofr.grim {
       // TODO: track lock target?
 
       AnimateAttack();
-    }
-
-    private IEnumerator AttackMove(Vector3 targetPosition, float timeToReach) {
-      attackMovement = false;
-
-      Vector3 startPos = transform.position;
-      float timeTaken = 0f;
-      float turnT = 0f;
-
-      while (turnT <= 1f) {
-        timeTaken += Time.deltaTime;
-        turnT = timeTaken / timeToReach;
-        controller.Move(Vector3.Lerp(startPos, targetPosition, turnT) - transform.position);
-        yield return true;
-      }
     }
 
     private void Dodge(Vector3 moveDir) {
@@ -326,32 +345,6 @@ namespace ofr.grim {
       return forward * verticalAxis + right * horizontalAxis;
     }
 
-    ///// DUDE CONTROOLLER STUFF
-    protected Animator anim;
-    protected AudioSource audio;
-
-    [SerializeField]
-    private AudioClip swingAudio;
-
-    [SerializeField]
-    private WeaponCollision weaponCollision;
-
-    [SerializeField]
-    protected GameObject hitFX;
-
-    [SerializeField]
-    private float locomotionTransitionDampen = 0.2f;
-
-    [SerializeField] protected LayerMask enemyLayerMask;
-
-    protected MovementState movementState { get; set; }
-    protected AttackState attackState { get; set; }
-
-    protected bool dodgeMovement = false;
-    protected bool attackMovement = false;
-
-    protected List<CombatTarget> attackHits;
-
     private void AttackCollision(WeaponCollider collider) {
       Collider[] hits = Physics.OverlapSphere(collider.transform.position, collider.radius, enemyLayerMask);
 
@@ -366,14 +359,28 @@ namespace ofr.grim {
       }
     }
 
-    public virtual void GetHit(Vector3 hitPosition) {
-      // TODO: need hit state logic 
-      // movementState = MovementState.Hit;
+    public override void GetHit(Vector3 attackPosition, float damage = 10f) {
+      if (isDead) return;
+      Interrupt();
+      TakeDamage(damage);
       anim.SetTrigger("hit");
+      controlState = ControlState.Hit;
+      controller.Move((transform.position - attackPosition).normalized * 0.05f);
     }
 
-    public virtual void Die() {
-      print("i dead");
+    protected override void Die() {
+      isDead = true;
+      anim.SetBool("die", true);
+    }
+
+    private void Interrupt() {
+
+    }
+
+    protected void ToggleBlock(bool blockOn) {
+      anim.SetBool("block", blockOn);
+      if (blockOn) controlState = ControlState.Block;
+      else controlState = ControlState.Locomotion;
     }
 
     protected void AnimateLocomotion(float speed) {
@@ -382,18 +389,12 @@ namespace ofr.grim {
     }
 
     protected void AnimateDodge() {
-      movementState = MovementState.Dodge;
+      controlState = ControlState.Dodge;
       anim.SetTrigger("dodge");
     }
 
     protected void AnimateAttack() {
       anim.SetTrigger("attack");
-    }
-
-    protected void ToggleBlock(bool blockOn) {
-      anim.SetBool("block", blockOn);
-      if (blockOn) movementState = MovementState.Block;
-      else movementState = MovementState.Locomotion;
     }
 
     /// ANIMATION EVENTS
@@ -413,13 +414,13 @@ namespace ofr.grim {
       if (message == "end") {
         dodgeMovement = false;
         anim.ResetTrigger("dodge");
-        movementState = MovementState.Locomotion;
+        controlState = ControlState.Locomotion;
       }
     }
 
     protected void AttackEvent(string message) {
       if (message == "start") {
-        movementState = MovementState.Attack;
+        controlState = ControlState.Attack;
         attackMovement = true;
       }
 
@@ -449,7 +450,7 @@ namespace ofr.grim {
       }
 
       if (message == "end") {
-        movementState = MovementState.Locomotion;
+        controlState = ControlState.Locomotion;
         attackMovement = false;
         // canAttack = true;
         anim.ResetTrigger("attack");
@@ -458,12 +459,11 @@ namespace ofr.grim {
 
     protected void HitEvent(string message) {
       if (message == "start") {
-        print("HOTT");
-        movementState = MovementState.Hit;
+        controlState = ControlState.Hit;
       }
 
       if (message == "end") {
-        movementState = MovementState.Locomotion;
+        controlState = ControlState.Locomotion;
       }
     }
 

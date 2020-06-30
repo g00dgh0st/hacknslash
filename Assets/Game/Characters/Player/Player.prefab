@@ -69,6 +69,12 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 7e92f4efedb1fd848aee369fafbde0c5, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
+  debugMode: 0
+  debug: {fileID: 6647345435680394043}
+  debugText: {fileID: 0}
+  groundCheckLayer:
+    serializedVersion: 2
+    m_Bits: 256
   swingAudio: {fileID: 8300000, guid: 08b5a5b778d6952438c6b3bedaa1e6af, type: 3}
   weaponCollision:
     left: {fileID: 2056001626036309599}
@@ -76,15 +82,9 @@ MonoBehaviour:
     front: {fileID: 4669578428398927827}
   hitFX: {fileID: 106912, guid: 4c6dbb08de5abb84a9e7c01b4e0213ca, type: 3}
   locomotionTransitionDampen: 0.2
-  groundCheckLayer:
-    serializedVersion: 2
-    m_Bits: 256
   enemyLayerMask:
     serializedVersion: 2
     m_Bits: 512
-  debugMode: 0
-  debug: {fileID: 6647345435680394043}
-  debugText: {fileID: 0}
 --- !u!143 &7842574875209293745
 CharacterController:
   m_ObjectHideFlags: 0
