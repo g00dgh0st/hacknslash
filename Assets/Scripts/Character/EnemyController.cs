@@ -135,7 +135,6 @@ namespace ofr.grim {
 
       if (nextAttackTime < Time.time) {
         anim.SetTrigger("attack");
-        isAttacking = true;
         nextAttackTime = Time.time + attackCooldown;
       }
     }
@@ -146,11 +145,10 @@ namespace ofr.grim {
 
     public override bool GetHit(Vector3 attackPosition, float damage = 20f) {
       if (isDead) return false;
-      Interrupt();
       TakeDamage(damage);
+      Interrupt();
       anim.SetTrigger("hit");
       transform.rotation = Quaternion.LookRotation(attackPosition - transform.position);
-      // transform.position = transform.position - (transform.forward * 0.5f);
       StartCoroutine(HandleMovingAsync(transform.position - (transform.forward * 0.5f), 0.1f));
       return true;
     }

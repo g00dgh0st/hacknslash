@@ -40,10 +40,10 @@ namespace ofr.grim {
     private float moveSpeed = 5f;
     private float blockMaxMoveInput = 0.4f;
     private float rollSpeed = 12f;
-    private float groundCheckDistance = 0.4f;
     private float lockOnCastRadius = 0.8f;
     private float lockOnCastDistance = 3.5f;
     [SerializeField] protected LayerMask enemyLayerMask;
+    [SerializeField] protected LayerMask groundCheckLayer;
 
     // This should be part of a weapon object
     float gapCloseMaxReach = 2.05f;
@@ -64,25 +64,6 @@ namespace ofr.grim {
 
     private Coroutine moveRoutine = null;
     private Coroutine turnRoutine = null;
-
-    // TODO: remove this lock player to ground, prevent falls or jumps
-    private float airTurnDampMultiplier = 0.5f;
-    private float fallMultiplier = 1.5f;
-    [SerializeField] protected LayerMask groundCheckLayer;
-    private bool _isGrounded;
-    protected bool isGrounded {
-      get {
-        return this._isGrounded;
-      }
-      set {
-        if (value == true && this._isGrounded == false) {
-          // if grounded, reset to locomotion state
-          this.controlState = ControlState.Locomotion;
-        }
-        this._isGrounded = value;
-        anim.SetBool("grounded", this._isGrounded);
-      }
-    }
 
     void Awake() {
       anim = GetComponent<Animator>();
@@ -113,36 +94,30 @@ namespace ofr.grim {
       if (isDead) return;
 
       if (debugMode)
-        debugText.text = isGrounded ? controlState.ToString("g") : "airborne";
+        debugText.text = controlState.ToString("g");
 
-      if (Input.GetMouseButtonDown(1)) {
-        GetHit(transform.position + Vector3.up - transform.forward, 0);
-      }
+      // if (Input.GetMouseButtonDown(1)) {
+      //   GetHit(transform.position + Vector3.up - transform.forward, 0);
+      // }
 
       ApplyGravity();
 
-      if (isGrounded) {
-        // grounded control
-        switch (controlState) {
-          case ControlState.Locomotion:
-            HandleGroundedControl();
-            break;
-          case ControlState.Dodge:
-            HandleDodgeControl();
-            break;
-          case ControlState.Attack:
-            HandleAttackControl();
-            break;
-          case ControlState.Block:
-            HandleBlockControl();
-            break;
-          default:
-            // should not happen
-            break;
-        }
-      } else {
-        // aerial control
-        HandleAirborneControl();
+      switch (controlState) {
+        case ControlState.Locomotion:
+          HandleGroundedControl();
+          break;
+        case ControlState.Dodge:
+          HandleDodgeControl();
+          break;
+        case ControlState.Attack:
+          HandleAttackControl();
+          break;
+        case ControlState.Block:
+          HandleBlockControl();
+          break;
+        default:
+          // should not happen
+          break;
       }
 
       MakeMove();
@@ -168,10 +143,6 @@ namespace ofr.grim {
       }
 
       HandleMoving(moveInput.normalized);
-    }
-
-    private void HandleAirborneControl() {
-      HandleTurning(GetInputDirectionByCamera(), airTurnDampMultiplier);
     }
 
     private void HandleDodgeControl() {
@@ -210,6 +181,13 @@ namespace ofr.grim {
         ToggleBlock(false);
         return;
       }
+
+      if (Input.GetButtonDown("Jump")) {
+        ToggleBlock(false);
+        Dodge(moveInput);
+        return;
+      }
+
     }
 
     private void HandleMoving(Vector3 moveInput) {
@@ -316,16 +294,15 @@ namespace ofr.grim {
 
     private bool ApplyGravity() {
       if (controller.isGrounded) {
-        isGrounded = true;
         moveVector = Physics.gravity * Time.deltaTime;
         return true;
-      } else if (moveVector.y <= 0 && Physics.Raycast(transform.position, Vector3.down, groundCheckDistance, groundCheckLayer)) {
-        isGrounded = true;
-        moveVector = Vector3.down * groundCheckDistance / Time.deltaTime;
+      } else if (Physics.Raycast((transform.position + Vector3.up), Vector3.down, out RaycastHit hit, 100f, groundCheckLayer)) {
+        moveVector = (hit.point - transform.position) / Time.deltaTime;
         return true;
       }
-      isGrounded = false;
-      moveVector += Physics.gravity * Time.deltaTime * (moveVector.y <= 0 ? fallMultiplier : 1f);
+
+      Debug.LogError("PlayerController: Can't find ground");
+      moveVector = new Vector3(0f, moveVector.y + (Physics.gravity.y * Time.deltaTime), 0f);
       return false;
     }
 
@@ -371,12 +348,20 @@ namespace ofr.grim {
     public override bool GetHit(Vector3 attackPosition, float damage = 10f) {
       if (isDead || controlState == ControlState.Dodge) return false;
 
-      Interrupt();
-      TakeDamage(damage);
-      print(currentHealth);
+      if (controlState == ControlState.Block) {
+        // block hit
+        turnRoutine = StartCoroutine(HandleTurningAsync((attackPosition - transform.position), attackTurnTime));
+      } else if (controlState == ControlState.Attack && attackState == AttackState.Swing) {
+        Interrupt();
+        TakeDamage(damage);
+      } else {
+        Interrupt();
+        TakeDamage(damage);
+        controlState = ControlState.Hit;
+        controller.Move((transform.position - attackPosition).normalized * 0.05f);
+      }
+
       anim.SetTrigger("hit");
-      controlState = ControlState.Hit;
-      controller.Move((transform.position - attackPosition).normalized * 0.05f);
       return true;
     }
 
@@ -424,8 +409,20 @@ namespace ofr.grim {
       }
     }
 
+    public void AttackMachineCallback(bool startStop) {
+      if (startStop) {
+        controlState = ControlState.Attack;
+        attackMovement = true;
+      } else {
+        controlState = ControlState.Locomotion;
+        attackMovement = false;
+        anim.ResetTrigger("attack");
+      }
+    }
+
     protected void DodgeEvent(string message) {
       if (message == "start") {
+        controlState = ControlState.Dodge;
         dodgeMovement = true;
       }
 
@@ -437,11 +434,6 @@ namespace ofr.grim {
     }
 
     protected void AttackEvent(string message) {
-      if (message == "start") {
-        controlState = ControlState.Attack;
-        attackMovement = true;
-      }
-
       if (message == "swing") {
         // TEMP: just trying out audio
         audio.PlayOneShot(swingAudio);
@@ -468,9 +460,8 @@ namespace ofr.grim {
       }
 
       if (message == "end") {
-        controlState = ControlState.Locomotion;
-        attackMovement = false;
-        anim.ResetTrigger("attack");
+        // when transitioning to dodge or hit, since it bypasses the statemachineexit on the attackmachine
+        AttackMachineCallback(false);
       }
     }
 
