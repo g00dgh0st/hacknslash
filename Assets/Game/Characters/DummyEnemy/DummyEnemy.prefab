@@ -873,6 +873,10 @@ PrefabInstance:
       propertyPath: m_Layer
       value: 9
       objectReference: {fileID: 0}
+    - target: {fileID: 184960, guid: 616cc160fcb3b124b8e0fc587258594b, type: 3}
+      propertyPath: m_IsActive
+      value: 1
+      objectReference: {fileID: 0}
     - target: {fileID: 186574, guid: 616cc160fcb3b124b8e0fc587258594b, type: 3}
       propertyPath: m_Layer
       value: 9
@@ -963,3 +967,103 @@ Transform:
     type: 3}
   m_PrefabInstance: {fileID: 1571452644996362909}
   m_PrefabAsset: {fileID: 0}
+--- !u!4 &1571452644996510913 stripped
+Transform:
+  m_CorrespondingSourceObject: {fileID: 411228, guid: 616cc160fcb3b124b8e0fc587258594b,
+    type: 3}
+  m_PrefabInstance: {fileID: 1571452644996362909}
+  m_PrefabAsset: {fileID: 0}
+--- !u!1001 &6614787469320499047
+PrefabInstance:
+  m_ObjectHideFlags: 0
+  serializedVersion: 2
+  m_Modification:
+    m_TransformParent: {fileID: 1571452644996510913}
+    m_Modifications:
+    - target: {fileID: 4753262783690565319, guid: 141f3f609789b414a8c281b482f10ee0,
+        type: 3}
+      propertyPath: m_LocalPosition.y
+      value: 0.358
+      objectReference: {fileID: 0}
+    - target: {fileID: 4753262783690565319, guid: 141f3f609789b414a8c281b482f10ee0,
+        type: 3}
+      propertyPath: m_LocalPosition.z
+      value: 0.042
+      objectReference: {fileID: 0}
+    - target: {fileID: 4753262783690565319, guid: 141f3f609789b414a8c281b482f10ee0,
+        type: 3}
+      propertyPath: m_LocalPosition.x
+      value: -0
+      objectReference: {fileID: 0}
+    - target: {fileID: 5273684158096722182, guid: 141f3f609789b414a8c281b482f10ee0,
+        type: 3}
+      propertyPath: m_Name
+      value: EquippedSword
+      objectReference: {fileID: 0}
+    - target: {fileID: 5273684158096722183, guid: 141f3f609789b414a8c281b482f10ee0,
+        type: 3}
+      propertyPath: m_LocalPosition.x
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 5273684158096722183, guid: 141f3f609789b414a8c281b482f10ee0,
+        type: 3}
+      propertyPath: m_LocalPosition.y
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 5273684158096722183, guid: 141f3f609789b414a8c281b482f10ee0,
+        type: 3}
+      propertyPath: m_LocalPosition.z
+      value: 4
+      objectReference: {fileID: 0}
+    - target: {fileID: 5273684158096722183, guid: 141f3f609789b414a8c281b482f10ee0,
+        type: 3}
+      propertyPath: m_LocalRotation.x
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 5273684158096722183, guid: 141f3f609789b414a8c281b482f10ee0,
+        type: 3}
+      propertyPath: m_LocalRotation.y
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 5273684158096722183, guid: 141f3f609789b414a8c281b482f10ee0,
+        type: 3}
+      propertyPath: m_LocalRotation.z
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 5273684158096722183, guid: 141f3f609789b414a8c281b482f10ee0,
+        type: 3}
+      propertyPath: m_LocalRotation.w
+      value: 1
+      objectReference: {fileID: 0}
+    - target: {fileID: 5273684158096722183, guid: 141f3f609789b414a8c281b482f10ee0,
+        type: 3}
+      propertyPath: m_RootOrder
+      value: 3
+      objectReference: {fileID: 0}
+    - target: {fileID: 5273684158096722183, guid: 141f3f609789b414a8c281b482f10ee0,
+        type: 3}
+      propertyPath: m_LocalEulerAnglesHint.x
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 5273684158096722183, guid: 141f3f609789b414a8c281b482f10ee0,
+        type: 3}
+      propertyPath: m_LocalEulerAnglesHint.y
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 5273684158096722183, guid: 141f3f609789b414a8c281b482f10ee0,
+        type: 3}
+      propertyPath: m_LocalEulerAnglesHint.z
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 6631248680208621238, guid: 141f3f609789b414a8c281b482f10ee0,
+        type: 3}
+      propertyPath: TrailModule.ribbonCount
+      value: 1
+      objectReference: {fileID: 0}
+    - target: {fileID: 6631248680208621238, guid: 141f3f609789b414a8c281b482f10ee0,
+        type: 3}
+      propertyPath: TrailModule.textureMode
+      value: 0
+      objectReference: {fileID: 0}
+    m_RemovedComponents: []
+  m_SourcePrefab: {fileID: 100100000, guid: 141f3f609789b414a8c281b482f10ee0, type: 3}

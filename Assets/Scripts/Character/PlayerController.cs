@@ -40,7 +40,7 @@ namespace ofr.grim {
     private float moveSpeed = 5f;
     private float blockMaxMoveInput = 0.4f;
     private float rollSpeed = 12f;
-    private float lockOnCastRadius = 0.8f;
+    private float lockOnCastRadius = 1f;
     private float lockOnCastDistance = 3.5f;
     [SerializeField] protected LayerMask enemyLayerMask;
     [SerializeField] protected LayerMask groundCheckLayer;
@@ -98,9 +98,9 @@ namespace ofr.grim {
       if (debugMode)
         debugText.text = controlState.ToString("g");
 
-      if (Input.GetMouseButtonDown(1)) {
-        GetHit(transform.position + Vector3.up - transform.forward, 0, hitFX);
-      }
+      // if (Input.GetMouseButtonDown(1)) {
+      //   GetHit(transform.position + Vector3.up - transform.forward, 0, hitFX);
+      // }
 
       ApplyGravity();
 
@@ -286,6 +286,7 @@ namespace ofr.grim {
     }
 
     private void Dodge(Vector3 moveDir) {
+      attackMovement = false;
       HandleTurnInstant(moveDir);
       AnimateDodge();
     }
@@ -462,10 +463,10 @@ namespace ofr.grim {
         }
       }
 
-      if (message == "end") {
-        // when transitioning to dodge or hit, since it bypasses the statemachineexit on the attackmachine
-        AttackMachineCallback(false);
-      }
+      // if (message == "end") {
+      //   // when transitioning to dodge or hit, since it bypasses the statemachineexit on the attackmachine
+      //   AttackMachineCallback(false);
+      // }
     }
 
     protected void HitEvent(string message) {

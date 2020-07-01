@@ -1,5 +1,4 @@
-﻿using System;
-using System.Collections;
+﻿using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.AI;
@@ -27,7 +26,9 @@ namespace ofr.grim {
     [SerializeField] private AudioClip swingAudio;
     [SerializeField] private WeaponCollision weaponCollision;
     [SerializeField] protected GameObject hitFX;
-    [SerializeField] private bool canHitAllies = false;
+
+    // NOTE: this should be on a per attack level
+    private bool canHitAllies = false;
 
     [SerializeField] private Transform startPosition;
 
@@ -76,6 +77,10 @@ namespace ofr.grim {
       if (isAttacking) {
         // attack animations only atm
         transform.position += anim.deltaPosition;
+        // transform.forward = anim.deltaRotation * transform.forward;
+
+        Quaternion targetRotation = Quaternion.LookRotation(GameManager.player.transform.position - transform.position);
+        transform.rotation = Quaternion.Lerp(transform.rotation, targetRotation, 0.3f);
       }
     }
 
@@ -135,6 +140,8 @@ namespace ofr.grim {
       StartCoroutine(HandleTurningAsync(lookDir, attackTurnTime));
 
       if (nextAttackTime < Time.time) {
+        //// TEMP: need way to configure all attacks instead of random
+        anim.SetInteger("attackType", Random.Range(0f, 1f) > 0.8f ? 1 : 0);
         anim.SetTrigger("attack");
         nextAttackTime = Time.time + attackCooldown;
       }
@@ -163,8 +170,7 @@ namespace ofr.grim {
     }
 
     private void Interrupt() {
-      attackHits.Clear();
-      isAttacking = false;
+      EndAttack();
       navAgent.velocity = Vector3.zero;
       nextAttackTime = Time.time + attackCooldown;
       StopAllCoroutines();
@@ -294,12 +300,15 @@ namespace ofr.grim {
 
     protected void AttackEvent(string message) {
       if (message == "start") {
-        isAttacking = true;
+        StartAttack();
       }
 
       if (message == "swing") {
         // TEMP: just trying out audio
         audio.PlayOneShot(swingAudio);
+
+        // TEMP: probably need a different event to reset
+        attackHits.Clear();
       }
 
       if (message.Contains("collide")) {
@@ -314,6 +323,7 @@ namespace ofr.grim {
               AttackCollision(weaponCollision.right);
               break;
             default:
+              print("Attacck");
               AttackCollision(weaponCollision.front);
               break;
           }
@@ -323,9 +333,7 @@ namespace ofr.grim {
       }
 
       if (message == "end") {
-        isAttacking = false;
-        attackHits.Clear();
-        anim.ResetTrigger("attack");
+        EndAttack();
       }
     }
 
@@ -339,5 +347,17 @@ namespace ofr.grim {
     //     movementState = MovementState.Locomotion;
     //   }
     // }
+
+    private void StartAttack() {
+      isAttacking = true;
+      // navAgent.enabled = false;
+    }
+
+    private void EndAttack() {
+      isAttacking = false;
+      // navAgent.enabled = true;
+      attackHits.Clear();
+      anim.ResetTrigger("attack");
+    }
   }
 }
