@@ -21,7 +21,7 @@ namespace ofr.grim {
     }
 
     protected void TakeDamage(float damage) {
-      // currentHealth -= damage;
+      currentHealth -= damage;
       if (currentHealth <= 0f) {
         Die();
       }

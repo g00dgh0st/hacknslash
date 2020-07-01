@@ -163,6 +163,7 @@ namespace ofr.grim {
     }
 
     private void Interrupt() {
+      attackHits.Clear();
       isAttacking = false;
       navAgent.velocity = Vector3.zero;
       nextAttackTime = Time.time + attackCooldown;

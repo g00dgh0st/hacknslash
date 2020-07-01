@@ -98,9 +98,9 @@ namespace ofr.grim {
       if (debugMode)
         debugText.text = controlState.ToString("g");
 
-      // if (Input.GetMouseButtonDown(1)) {
-      //   GetHit(transform.position + Vector3.up - transform.forward, 0);
-      // }
+      if (Input.GetMouseButtonDown(1)) {
+        GetHit(transform.position + Vector3.up - transform.forward, 0, hitFX);
+      }
 
       ApplyGravity();
 
@@ -351,10 +351,12 @@ namespace ofr.grim {
       if (controlState == ControlState.Block) {
         // block hit
         turnRoutine = StartCoroutine(HandleTurningAsync((hitterPosition - transform.position), attackTurnTime));
-      } else if (controlState == ControlState.Attack && attackState == AttackState.Swing) {
-        Interrupt();
-        TakeDamage(damage);
-      } else {
+      }
+      //  else if (controlState == ControlState.Attack && attackState == AttackState.Swing) {
+      //   Interrupt();
+      //   TakeDamage(damage);
+      // }
+      else {
         Interrupt();
         TakeDamage(damage);
         controlState = ControlState.Hit;
