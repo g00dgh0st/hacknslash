@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using UnityEngine;
 
 namespace ofr.grim {
+  [RequireComponent(typeof(Collider))]
   public class CombatTarget : MonoBehaviour {
 
     [SerializeField] protected float maxHealth = 100f;
@@ -11,7 +12,7 @@ namespace ofr.grim {
 
     protected void Start() { currentHealth = maxHealth; }
 
-    public virtual bool GetHit(Vector3 hitPosition, float damage = 20f) {
+    public virtual bool GetHit(Vector3 hitterPosition, float damage, GameObject hitFX) {
       return true;
     }
 
@@ -20,7 +21,7 @@ namespace ofr.grim {
     }
 
     protected void TakeDamage(float damage) {
-      currentHealth -= damage;
+      // currentHealth -= damage;
       if (currentHealth <= 0f) {
         Die();
       }

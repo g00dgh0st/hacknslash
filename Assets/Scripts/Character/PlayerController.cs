@@ -49,6 +49,7 @@ namespace ofr.grim {
     float gapCloseMaxReach = 2.05f;
     float gapCloseMinReach = 1.3f;
     float gapCloseSpeed = 0.15f;
+    float attackDamage = 20f;
     [SerializeField] private AudioClip swingAudio;
     [SerializeField] private WeaponCollision weaponCollision;
     [SerializeField] protected GameObject hitFX;
@@ -90,6 +91,7 @@ namespace ofr.grim {
       }
     }
 
+    float timer = 0f;
     void Update() {
       if (isDead) return;
 
@@ -337,20 +339,18 @@ namespace ofr.grim {
 
         if (tgt != null && !attackHits.Exists((t) => GameObject.ReferenceEquals(t, tgt))) {
           attackHits.Add(tgt);
-          bool didHit = tgt.GetHit(transform.position);
+          tgt.GetHit(transform.position, attackDamage, hitFX);
 
-          if (didHit)
-            Destroy(Instantiate(hitFX, hit.ClosestPoint(transform.position + Vector3.up), transform.rotation), 2f);
         }
       }
     }
 
-    public override bool GetHit(Vector3 attackPosition, float damage = 10f) {
+    public override bool GetHit(Vector3 hitterPosition, float damage, GameObject fx) {
       if (isDead || controlState == ControlState.Dodge) return false;
 
       if (controlState == ControlState.Block) {
         // block hit
-        turnRoutine = StartCoroutine(HandleTurningAsync((attackPosition - transform.position), attackTurnTime));
+        turnRoutine = StartCoroutine(HandleTurningAsync((hitterPosition - transform.position), attackTurnTime));
       } else if (controlState == ControlState.Attack && attackState == AttackState.Swing) {
         Interrupt();
         TakeDamage(damage);
@@ -358,9 +358,10 @@ namespace ofr.grim {
         Interrupt();
         TakeDamage(damage);
         controlState = ControlState.Hit;
-        controller.Move((transform.position - attackPosition).normalized * 0.05f);
+        controller.Move((transform.position - hitterPosition).normalized * 0.1f);
       }
 
+      Destroy(Instantiate(fx, transform.position + (Vector3.up * 1.5f), transform.rotation), 2f);
       anim.SetTrigger("hit");
       return true;
     }

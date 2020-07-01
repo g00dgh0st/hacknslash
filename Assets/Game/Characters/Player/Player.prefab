@@ -69,9 +69,13 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 7e92f4efedb1fd848aee369fafbde0c5, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
+  maxHealth: 100
   debugMode: 0
   debug: {fileID: 6647345435680394043}
   debugText: {fileID: 0}
+  enemyLayerMask:
+    serializedVersion: 2
+    m_Bits: 512
   groundCheckLayer:
     serializedVersion: 2
     m_Bits: 256
@@ -80,11 +84,7 @@ MonoBehaviour:
     left: {fileID: 2056001626036309599}
     right: {fileID: 1341509355176298994}
     front: {fileID: 4669578428398927827}
-  hitFX: {fileID: 106912, guid: 4c6dbb08de5abb84a9e7c01b4e0213ca, type: 3}
-  locomotionTransitionDampen: 0.2
-  enemyLayerMask:
-    serializedVersion: 2
-    m_Bits: 512
+  hitFX: {fileID: 106912, guid: 18c03f316fa6d1040ab46baf6e46a105, type: 3}
 --- !u!143 &7842574875209293745
 CharacterController:
   m_ObjectHideFlags: 0

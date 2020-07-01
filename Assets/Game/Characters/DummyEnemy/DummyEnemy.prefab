@@ -340,12 +340,14 @@ MonoBehaviour:
   chaseRadius: 10
   attackRadius: 2
   attackTurnTime: 0.1
+  attackCooldown: 2
+  attackDamage: 10
   swingAudio: {fileID: 8300000, guid: cf35a39ed3f005d49bf846fdd9eee7a0, type: 3}
   weaponCollision:
     left: {fileID: 6038813082762205337}
     right: {fileID: 3307369488650264671}
     front: {fileID: 127407807063853148}
-  hitFX: {fileID: 106912, guid: fcffa92183167eb40a61f473372a665e, type: 3}
+  hitFX: {fileID: 106912, guid: afbdeac5d6ff25e46ae6bb518f70f0a9, type: 3}
   canHitAllies: 0
   startPosition: {fileID: 0}
 --- !u!82 &4218727707431289537

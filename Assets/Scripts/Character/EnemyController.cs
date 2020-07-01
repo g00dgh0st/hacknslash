@@ -22,7 +22,8 @@ namespace ofr.grim {
     public float chaseRadius = 10f;
     public float attackRadius = 3f;
     public float attackTurnTime = 0.2f;
-    private float attackCooldown = 2f;
+    public float attackCooldown = 2f;
+    public float attackDamage = 10f;
     [SerializeField] private AudioClip swingAudio;
     [SerializeField] private WeaponCollision weaponCollision;
     [SerializeField] protected GameObject hitFX;
@@ -143,13 +144,14 @@ namespace ofr.grim {
       navAgent.SetDestination(targetPos);
     }
 
-    public override bool GetHit(Vector3 attackPosition, float damage = 20f) {
+    public override bool GetHit(Vector3 hitterPosition, float damage, GameObject fx) {
       if (isDead) return false;
       TakeDamage(damage);
       Interrupt();
       anim.SetTrigger("hit");
-      transform.rotation = Quaternion.LookRotation(attackPosition - transform.position);
+      transform.rotation = Quaternion.LookRotation(hitterPosition - transform.position);
       StartCoroutine(HandleMovingAsync(transform.position - (transform.forward * 0.5f), 0.1f));
+      Destroy(Instantiate(fx, transform.position + (Vector3.up * 1.5f), transform.rotation), 2f);
       return true;
     }
 
@@ -244,10 +246,7 @@ namespace ofr.grim {
 
         if (tgt != null && tgt != this && !attackHits.Exists((t) => GameObject.ReferenceEquals(t, tgt))) {
           attackHits.Add(tgt);
-          bool didHit = tgt.GetHit(transform.position);
-
-          if (didHit)
-            Destroy(Instantiate(hitFX, hit.ClosestPoint(transform.position + Vector3.up), transform.rotation), 2f);
+          tgt.GetHit(transform.position, attackDamage, hitFX);
         }
       }
     }
