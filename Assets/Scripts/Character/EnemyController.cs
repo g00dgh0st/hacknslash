@@ -22,9 +22,11 @@ namespace ofr.grim {
     public float attackRadius = 3f;
     public float attackTurnTime = 0.2f;
     public float attackCooldown = 2f;
+    [SerializeField] private Attack[] attacks;
+    [SerializeField] private WeaponCollision weaponCollision;
+
     public float attackDamage = 10f;
     [SerializeField] private AudioClip swingAudio;
-    [SerializeField] private WeaponCollision weaponCollision;
     [SerializeField] protected GameObject hitFX;
 
     // NOTE: this should be on a per attack level
@@ -36,7 +38,11 @@ namespace ofr.grim {
     private Vector3 resetPosition;
     protected List<CombatTarget> attackHits;
     private bool isAttacking = false;
+    private bool isPowerfulAttacking = false;
     private float nextAttackTime = 0f;
+
+    //TEMP:::
+    public GameObject powerAttackIcon;
 
     void Awake() {
       anim = GetComponent<Animator>();
@@ -47,6 +53,8 @@ namespace ofr.grim {
     }
 
     new void Start() {
+      powerAttackIcon.SetActive(false);
+
       base.Start();
 
       if (startPosition)
@@ -141,8 +149,12 @@ namespace ofr.grim {
 
       if (nextAttackTime < Time.time) {
         //// TEMP: need way to configure all attacks instead of random
-        anim.SetInteger("attackType", Random.Range(0f, 1f) > 0.8f ? 1 : 0);
+        int atIdx = Random.Range(0f, 1f) > 0.8f ? 1 : 0;
+        Attack atk = attacks[atIdx];
+        anim.SetInteger("attackType", atk.id);
         anim.SetTrigger("attack");
+        isPowerfulAttacking = atk.isPowerul;
+        powerAttackIcon.SetActive(atk.isPowerul);
         nextAttackTime = Time.time + attackCooldown;
       }
     }
@@ -151,7 +163,7 @@ namespace ofr.grim {
       navAgent.SetDestination(targetPos);
     }
 
-    public override bool GetHit(Vector3 hitterPosition, float damage, GameObject fx) {
+    public override bool GetHit(Vector3 hitterPosition, float damage, bool powerful, GameObject fx) {
       if (isDead) return false;
       TakeDamage(damage);
       Interrupt();
@@ -253,7 +265,7 @@ namespace ofr.grim {
 
         if (tgt != null && tgt != this && !attackHits.Exists((t) => GameObject.ReferenceEquals(t, tgt))) {
           attackHits.Add(tgt);
-          tgt.GetHit(transform.position, attackDamage, hitFX);
+          tgt.GetHit(transform.position, attackDamage, isPowerfulAttacking, hitFX);
         }
       }
     }
@@ -323,7 +335,6 @@ namespace ofr.grim {
               AttackCollision(weaponCollision.right);
               break;
             default:
-              print("Attacck");
               AttackCollision(weaponCollision.front);
               break;
           }
@@ -355,9 +366,11 @@ namespace ofr.grim {
 
     private void EndAttack() {
       isAttacking = false;
+      isPowerfulAttacking = false;
       // navAgent.enabled = true;
       attackHits.Clear();
       anim.ResetTrigger("attack");
+      powerAttackIcon.SetActive(false);
     }
   }
 }

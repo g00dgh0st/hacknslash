@@ -39,6 +39,7 @@ namespace ofr.grim {
     private float attackTurnTime = 0.1f;
     private float moveSpeed = 5f;
     private float blockMaxMoveInput = 0.4f;
+    private float counterTime = 0.3f;
     private float rollSpeed = 12f;
     private float lockOnCastRadius = 1f;
     private float lockOnCastDistance = 3.5f;
@@ -53,6 +54,7 @@ namespace ofr.grim {
     [SerializeField] private AudioClip swingAudio;
     [SerializeField] private WeaponCollision weaponCollision;
     [SerializeField] protected GameObject hitFX;
+    [SerializeField] protected GameObject blockFX;
     // end weapon config
 
     // state vars
@@ -61,6 +63,7 @@ namespace ofr.grim {
     protected AttackState attackState { get; set; }
     protected bool dodgeMovement = false;
     protected bool attackMovement = false;
+    protected bool hitMovement = false;
     protected List<CombatTarget> attackHits;
 
     private Coroutine moveRoutine = null;
@@ -85,7 +88,7 @@ namespace ofr.grim {
     }
 
     void OnAnimatorMove() {
-      if (attackMovement) {
+      if (attackMovement || hitMovement) {
         // attack animations only atm
         controller.Move(anim.deltaPosition);
       }
@@ -98,9 +101,9 @@ namespace ofr.grim {
       if (debugMode)
         debugText.text = controlState.ToString("g");
 
-      // if (Input.GetMouseButtonDown(1)) {
-      //   GetHit(transform.position + Vector3.up - transform.forward, 0, hitFX);
-      // }
+      if (Input.GetKeyDown(KeyCode.E)) {
+        GetHit(transform.position + Vector3.up - transform.forward, 0, false, hitFX);
+      }
 
       ApplyGravity();
 
@@ -140,7 +143,7 @@ namespace ofr.grim {
       }
 
       if (Input.GetMouseButton(1)) {
-        Block(true);
+        ToggleBlock(true);
         return;
       }
 
@@ -291,10 +294,6 @@ namespace ofr.grim {
       AnimateDodge();
     }
 
-    private void Block(bool blockOn) {
-      ToggleBlock(blockOn);
-    }
-
     private bool ApplyGravity() {
       if (controller.isGrounded) {
         moveVector = Physics.gravity * Time.deltaTime;
@@ -340,18 +339,19 @@ namespace ofr.grim {
 
         if (tgt != null && !attackHits.Exists((t) => GameObject.ReferenceEquals(t, tgt))) {
           attackHits.Add(tgt);
-          tgt.GetHit(transform.position, attackDamage, hitFX);
+          tgt.GetHit(transform.position, attackDamage, false, hitFX);
 
         }
       }
     }
 
-    public override bool GetHit(Vector3 hitterPosition, float damage, GameObject fx) {
+    public override bool GetHit(Vector3 hitterPosition, float damage, bool isPowerful, GameObject fx) {
       if (isDead || controlState == ControlState.Dodge) return false;
 
-      if (controlState == ControlState.Block) {
+      if (controlState == ControlState.Block && !isPowerful) {
         // block hit
         turnRoutine = StartCoroutine(HandleTurningAsync((hitterPosition - transform.position), attackTurnTime));
+        Destroy(Instantiate(blockFX, transform.position + (Vector3.up * 1.5f), transform.rotation), 2f);
       }
       //  else if (controlState == ControlState.Attack && attackState == AttackState.Swing) {
       //   Interrupt();
@@ -359,12 +359,15 @@ namespace ofr.grim {
       // }
       else {
         Interrupt();
+        ToggleBlock(false);
         TakeDamage(damage);
         controlState = ControlState.Hit;
         controller.Move((transform.position - hitterPosition).normalized * 0.1f);
+        Destroy(Instantiate(fx, transform.position + (Vector3.up * 1.5f), transform.rotation), 2f);
       }
 
-      Destroy(Instantiate(fx, transform.position + (Vector3.up * 1.5f), transform.rotation), 2f);
+      hitMovement = isPowerful;
+      anim.SetBool("bigHit", isPowerful);
       anim.SetTrigger("hit");
       return true;
     }
@@ -474,7 +477,8 @@ namespace ofr.grim {
         controlState = ControlState.Hit;
       }
 
-      if (message == "end") {
+      if (message == "end" && controlState == ControlState.Hit) {
+        hitMovement = false;
         controlState = ControlState.Locomotion;
       }
     }

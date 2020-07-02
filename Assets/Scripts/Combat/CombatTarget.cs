@@ -12,7 +12,7 @@ namespace ofr.grim {
 
     protected void Start() { currentHealth = maxHealth; }
 
-    public virtual bool GetHit(Vector3 hitterPosition, float damage, GameObject hitFX) {
+    public virtual bool GetHit(Vector3 hitterPosition, float damage, bool powerful, GameObject hitFX) {
       return true;
     }
 
