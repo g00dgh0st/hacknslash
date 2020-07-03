@@ -120,8 +120,10 @@ namespace ofr.grim {
         ResetAggro();
         return;
       } else if (CheckForPlayerDistance(attackRadius) && CheckForPlayerLOS(attackRadius)) {
+        print("attack");
         AttackPlayer();
       } else {
+        print("moving");
         MoveTo(GameManager.player.gameObject.transform.position);
       }
 
@@ -154,8 +156,8 @@ namespace ofr.grim {
 
       if (nextAttackTime < Time.time) {
         //// TEMP: need way to configure all attacks instead of random
-        // int atIdx = Random.Range(0f, 1f) > 0.8f ? 1 : 0;
-        Attack atk = attacks[0];
+        int atIdx = Random.Range(0f, 1f) > 0.8f ? 1 : 0;
+        Attack atk = attacks[atIdx];
         anim.SetInteger("attackType", atk.id);
         anim.SetTrigger("attack");
         isPowerfulAttacking = atk.isPowerul;
@@ -171,12 +173,17 @@ namespace ofr.grim {
 
     public override bool GetHit(Vector3 hitterPosition, float damage, bool powerful, GameObject fx) {
       if (isDead) return false;
+
       TakeDamage(damage);
-      Interrupt();
-      anim.SetTrigger("hit");
-      transform.rotation = Quaternion.LookRotation(hitterPosition - transform.position);
-      StartCoroutine(HandleMovingAsync(transform.position - (transform.forward * 0.5f), 0.1f));
       Destroy(Instantiate(fx, transform.position + (Vector3.up * 1.5f), transform.rotation), 2f);
+
+      if (!isPowerfulAttacking) {
+        Interrupt();
+        anim.SetTrigger("hit");
+        transform.rotation = Quaternion.LookRotation(hitterPosition - transform.position);
+        StartCoroutine(HandleMovingAsync(transform.position - (transform.forward * 0.5f), 0.1f));
+      }
+
       return true;
     }
 
@@ -279,9 +286,9 @@ namespace ofr.grim {
       foreach (Collider hit in hits) {
         CombatTarget tgt = hit.GetComponent<CombatTarget>();
 
-        if (!canHitAllies && tgt.tag != "Player") continue;
+        if (tgt == null || (!canHitAllies && tgt.tag != "Player")) continue;
 
-        if (tgt != null && tgt != this && !attackHits.Exists((t) => GameObject.ReferenceEquals(t, tgt))) {
+        if (tgt != this && !attackHits.Exists((t) => GameObject.ReferenceEquals(t, tgt))) {
           attackHits.Add(tgt);
           tgt.GetHit(transform.position, attackDamage, isPowerfulAttacking, hitFX);
         }
