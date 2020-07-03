@@ -347,10 +347,12 @@ namespace ofr.grim {
 
     public override bool GetHit(Vector3 hitterPosition, float damage, bool isPowerful, GameObject fx) {
       if (isDead || controlState == ControlState.Dodge) return false;
+      Vector3 hitDir = (hitterPosition - transform.position).normalized;
+      hitDir.y = 0f;
 
       if (controlState == ControlState.Block && !isPowerful) {
         // block hit
-        turnRoutine = StartCoroutine(HandleTurningAsync((hitterPosition - transform.position), attackTurnTime));
+        turnRoutine = StartCoroutine(HandleTurningAsync(hitDir, attackTurnTime));
         Destroy(Instantiate(blockFX, transform.position + (Vector3.up * 1.5f), transform.rotation), 2f);
       }
       //  else if (controlState == ControlState.Attack && attackState == AttackState.Swing) {
@@ -362,7 +364,7 @@ namespace ofr.grim {
         ToggleBlock(false);
         TakeDamage(damage);
         controlState = ControlState.Hit;
-        controller.Move((transform.position - hitterPosition).normalized * 0.1f);
+        controller.Move(hitDir * -0.1f);
         Destroy(Instantiate(fx, transform.position + (Vector3.up * 1.5f), transform.rotation), 2f);
       }
 

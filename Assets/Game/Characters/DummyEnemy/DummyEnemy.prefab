@@ -341,6 +341,11 @@ MonoBehaviour:
   chaseRadius: 10
   attackRadius: 2
   attackTurnTime: 0.1
+  startPosition: {fileID: 0}
+  weaponCollision:
+    left: {fileID: 6038813082762205337}
+    right: {fileID: 3307369488650264671}
+    front: {fileID: 127407807063853148}
   attackCooldown: 2
   attacks:
   - swingAudio: {fileID: 0}
@@ -353,14 +358,9 @@ MonoBehaviour:
     attackDamage: 15
     isPowerul: 1
     id: 1
-  weaponCollision:
-    left: {fileID: 6038813082762205337}
-    right: {fileID: 3307369488650264671}
-    front: {fileID: 127407807063853148}
   attackDamage: 10
   swingAudio: {fileID: 8300000, guid: cf35a39ed3f005d49bf846fdd9eee7a0, type: 3}
   hitFX: {fileID: 106912, guid: afbdeac5d6ff25e46ae6bb518f70f0a9, type: 3}
-  startPosition: {fileID: 0}
   powerAttackIcon: {fileID: 605817526667656608}
 --- !u!82 &4218727707431289537
 AudioSource:

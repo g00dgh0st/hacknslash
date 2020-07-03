@@ -11,6 +11,9 @@ namespace ofr.grim {
     Reset
   }
 
+  // require enemy ui
+  // require enemyAttackController
+
   public class EnemyController : CombatTarget {
     private NavMeshAgent navAgent;
     private Rigidbody rBody;
@@ -21,28 +24,30 @@ namespace ofr.grim {
     public float chaseRadius = 10f;
     public float attackRadius = 3f;
     public float attackTurnTime = 0.2f;
+    [SerializeField] private Transform startPosition;
+    [SerializeField] private WeaponCollision weaponCollision;
+
+    private AIState state = AIState.Idle;
+    private Vector3 resetPosition;
+
+    // Attack config
     public float attackCooldown = 2f;
     [SerializeField] private Attack[] attacks;
-    [SerializeField] private WeaponCollision weaponCollision;
 
     public float attackDamage = 10f;
     [SerializeField] private AudioClip swingAudio;
     [SerializeField] protected GameObject hitFX;
 
-    // NOTE: this should be on a per attack level
     private bool canHitAllies = false;
-
-    [SerializeField] private Transform startPosition;
-
-    private AIState state = AIState.Idle;
-    private Vector3 resetPosition;
     protected List<CombatTarget> attackHits;
+
     private bool isAttacking = false;
     private bool isPowerfulAttacking = false;
     private float nextAttackTime = 0f;
 
     //TEMP:::
     public GameObject powerAttackIcon;
+    public EnemyProjectile projectile;
 
     void Awake() {
       anim = GetComponent<Animator>();
@@ -114,7 +119,7 @@ namespace ofr.grim {
       if (!CheckForPlayerDistance(chaseRadius)) {
         ResetAggro();
         return;
-      } else if (CheckForPlayerDistance(attackRadius)) {
+      } else if (CheckForPlayerDistance(attackRadius) && CheckForPlayerLOS(attackRadius)) {
         AttackPlayer();
       } else {
         MoveTo(GameManager.player.gameObject.transform.position);
@@ -149,8 +154,8 @@ namespace ofr.grim {
 
       if (nextAttackTime < Time.time) {
         //// TEMP: need way to configure all attacks instead of random
-        int atIdx = Random.Range(0f, 1f) > 0.8f ? 1 : 0;
-        Attack atk = attacks[atIdx];
+        // int atIdx = Random.Range(0f, 1f) > 0.8f ? 1 : 0;
+        Attack atk = attacks[0];
         anim.SetInteger("attackType", atk.id);
         anim.SetTrigger("attack");
         isPowerfulAttacking = atk.isPowerul;
@@ -160,6 +165,7 @@ namespace ofr.grim {
     }
 
     private void MoveTo(Vector3 targetPos) {
+      navAgent.isStopped = false;
       navAgent.SetDestination(targetPos);
     }
 
@@ -193,6 +199,16 @@ namespace ofr.grim {
         return true;
       else
         return false;
+    }
+
+    private bool CheckForPlayerLOS(float distance) {
+      bool hitSomething = Physics.Raycast(transform.position + Vector3.up, (GameManager.player.transform.position + Vector3.up) - (transform.position + Vector3.up), out RaycastHit hit, distance);
+
+      if (hitSomething && hit.collider.tag == "Player") {
+        return true;
+      }
+
+      return false;
     }
 
     private bool CheckForNavAgentReachedDestination() {
@@ -251,11 +267,13 @@ namespace ofr.grim {
         AnimateLocomotion(GetAnimatorSpeed());
         yield return true;
       }
+
+      navAgent.isStopped = true;
       AnimateLocomotion(0);
     }
 
     // TODO: duped with player controller
-    private void AttackCollision(WeaponCollider collider) {
+    private void FireMeleeAttack(WeaponCollider collider) {
       Collider[] hits = Physics.OverlapSphere(collider.transform.position, collider.radius);
 
       foreach (Collider hit in hits) {
@@ -268,6 +286,11 @@ namespace ofr.grim {
           tgt.GetHit(transform.position, attackDamage, isPowerfulAttacking, hitFX);
         }
       }
+    }
+
+    private void FireRangedAttack() {
+      EnemyProjectile proj = Instantiate<EnemyProjectile>(projectile, transform.position + transform.forward + (Vector3.up * 1.2f), transform.rotation);
+      proj.Fire(GameManager.player.transform.position - proj.transform.position);
     }
 
     protected void AnimateLocomotion(float speed) {
@@ -323,23 +346,27 @@ namespace ofr.grim {
         attackHits.Clear();
       }
 
+      if (message == "projectile") {
+        FireRangedAttack();
+      }
+
       if (message.Contains("collide")) {
         string[] split = message.Split('.');
 
         if (split.Length > 1) {
           switch (split[1]) {
             case "left":
-              AttackCollision(weaponCollision.left);
+              FireMeleeAttack(weaponCollision.left);
               break;
             case "right":
-              AttackCollision(weaponCollision.right);
+              FireMeleeAttack(weaponCollision.right);
               break;
             default:
-              AttackCollision(weaponCollision.front);
+              FireMeleeAttack(weaponCollision.front);
               break;
           }
         } else {
-          AttackCollision(weaponCollision.front);
+          FireMeleeAttack(weaponCollision.front);
         }
       }
 
