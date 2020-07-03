@@ -354,23 +354,18 @@ namespace ofr.grim {
         // block hit
         turnRoutine = StartCoroutine(HandleTurningAsync(hitDir, attackTurnTime));
         Destroy(Instantiate(blockFX, transform.position + (Vector3.up * 1.5f), transform.rotation), 2f);
-      }
-      //  else if (controlState == ControlState.Attack && attackState == AttackState.Swing) {
-      //   Interrupt();
-      //   TakeDamage(damage);
-      // }
-      else {
+      } else {
         Interrupt();
         ToggleBlock(false);
         TakeDamage(damage);
         controlState = ControlState.Hit;
         controller.Move(hitDir * -0.1f);
         Destroy(Instantiate(fx, transform.position + (Vector3.up * 1.5f), transform.rotation), 2f);
+        hitMovement = isPowerful;
+        anim.SetBool("bigHit", isPowerful);
+        anim.SetTrigger("hit");
       }
 
-      hitMovement = isPowerful;
-      anim.SetBool("bigHit", isPowerful);
-      anim.SetTrigger("hit");
       return true;
     }
 

@@ -263,7 +263,7 @@ Animator:
   m_GameObject: {fileID: 6067938762425300025}
   m_Enabled: 1
   m_Avatar: {fileID: 9000000, guid: b69174d668ba02d44b14a084b217670a, type: 3}
-  m_Controller: {fileID: 9100000, guid: 4a7276a46fa41354cb9c076fab446a9a, type: 2}
+  m_Controller: {fileID: 9100000, guid: 45f48d406235a504f8bd209b6b033e8b, type: 2}
   m_CullingMode: 1
   m_UpdateMode: 0
   m_ApplyRootMotion: 1
@@ -361,6 +361,7 @@ MonoBehaviour:
   attackDamage: 10
   swingAudio: {fileID: 8300000, guid: cf35a39ed3f005d49bf846fdd9eee7a0, type: 3}
   hitFX: {fileID: 106912, guid: afbdeac5d6ff25e46ae6bb518f70f0a9, type: 3}
+  canHitAllies: 0
   powerAttackIcon: {fileID: 605817526667656608}
   projectile: {fileID: 0}
 --- !u!82 &4218727707431289537

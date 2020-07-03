@@ -38,7 +38,8 @@ namespace ofr.grim {
     [SerializeField] private AudioClip swingAudio;
     [SerializeField] protected GameObject hitFX;
 
-    private bool canHitAllies = false;
+    public bool canHitAllies = false;
+    public bool bigBoy = false;
     protected List<CombatTarget> attackHits;
 
     private bool isAttacking = false;
@@ -174,15 +175,15 @@ namespace ofr.grim {
     public override bool GetHit(Vector3 hitterPosition, float damage, bool powerful, GameObject fx) {
       if (isDead) return false;
 
-      TakeDamage(damage);
-      Destroy(Instantiate(fx, transform.position + (Vector3.up * 1.5f), transform.rotation), 2f);
-
-      if (!isPowerfulAttacking) {
+      if (!isPowerfulAttacking && !bigBoy) {
         Interrupt();
         anim.SetTrigger("hit");
         transform.rotation = Quaternion.LookRotation(hitterPosition - transform.position);
         StartCoroutine(HandleMovingAsync(transform.position - (transform.forward * 0.5f), 0.1f));
       }
+
+      TakeDamage(damage);
+      Destroy(Instantiate(fx, transform.position + (Vector3.up * 1.5f), transform.rotation), 2f);
 
       return true;
     }
@@ -301,7 +302,7 @@ namespace ofr.grim {
     }
 
     protected void AnimateLocomotion(float speed) {
-      anim.SetFloat("speed", speed);
+      anim.SetFloat("speed", speed, 0.2f, Time.deltaTime);
     }
 
     // protected void AnimateDodge() {
