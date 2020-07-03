@@ -342,6 +342,7 @@ MonoBehaviour:
   chaseRadius: 12
   attackRadius: 3
   attackTurnTime: 0.2
+  attackingTurnSpeed: 45
   startPosition: {fileID: 0}
   weaponCollision:
     left: {fileID: 6038813082762205337}
@@ -362,6 +363,8 @@ MonoBehaviour:
   attackDamage: 10
   swingAudio: {fileID: 8300000, guid: 60fdfa301881bae48ae59759cc83b842, type: 3}
   hitFX: {fileID: 132680, guid: b0bad241702d21444a4cf49f8dfa2374, type: 3}
+  canHitAllies: 0
+  bigBoy: 0
   powerAttackIcon: {fileID: 605817526667656608}
   projectile: {fileID: 0}
 --- !u!82 &4218727707431289537

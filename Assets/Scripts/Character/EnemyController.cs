@@ -24,6 +24,8 @@ namespace ofr.grim {
     public float chaseRadius = 10f;
     public float attackRadius = 3f;
     public float attackTurnTime = 0.2f;
+    public float attackingTurnSpeed = 45f;
+    public float combatIdleTurnSpeed = 100f;
     [SerializeField] private Transform startPosition;
     [SerializeField] private WeaponCollision weaponCollision;
 
@@ -91,10 +93,7 @@ namespace ofr.grim {
       if (isAttacking) {
         // attack animations only atm
         transform.position += anim.deltaPosition;
-        // transform.forward = anim.deltaRotation * transform.forward;
-
-        Quaternion targetRotation = Quaternion.LookRotation(GameManager.player.transform.position - transform.position);
-        transform.rotation = Quaternion.Lerp(transform.rotation, targetRotation, 0.3f);
+        HandleTurningToPlayer(attackingTurnSpeed);
       }
     }
 
@@ -121,10 +120,12 @@ namespace ofr.grim {
         ResetAggro();
         return;
       } else if (CheckForPlayerDistance(attackRadius) && CheckForPlayerLOS(attackRadius)) {
-        print("attack");
-        AttackPlayer();
+        if (nextAttackTime < Time.time) {
+          AttackPlayer();
+        } else {
+          HandleTurningToPlayer(combatIdleTurnSpeed);
+        }
       } else {
-        print("moving");
         MoveTo(GameManager.player.gameObject.transform.position);
       }
 
@@ -155,16 +156,14 @@ namespace ofr.grim {
         StartCoroutine(HandleStoppingAsync(attackTurnTime));
       StartCoroutine(HandleTurningAsync(lookDir, attackTurnTime));
 
-      if (nextAttackTime < Time.time) {
-        //// TEMP: need way to configure all attacks instead of random
-        int atIdx = Random.Range(0f, 1f) > 0.8f ? 1 : 0;
-        Attack atk = attacks[atIdx];
-        anim.SetInteger("attackType", atk.id);
-        anim.SetTrigger("attack");
-        isPowerfulAttacking = atk.isPowerul;
-        powerAttackIcon.SetActive(atk.isPowerul);
-        nextAttackTime = Time.time + attackCooldown;
-      }
+      //// TEMP: need way to configure all attacks instead of random
+      int atIdx = Random.Range(0f, 1f) > 0.8f ? 1 : 0;
+      Attack atk = attacks[atIdx];
+      anim.SetInteger("attackType", atk.id);
+      anim.SetTrigger("attack");
+      isPowerfulAttacking = atk.isPowerul;
+      powerAttackIcon.SetActive(atk.isPowerul);
+      nextAttackTime = Time.time + attackCooldown;
     }
 
     private void MoveTo(Vector3 targetPos) {
@@ -232,6 +231,11 @@ namespace ofr.grim {
 
     private float GetAnimatorSpeed() {
       return navAgent.velocity.magnitude / navAgent.speed;
+    }
+
+    private void HandleTurningToPlayer(float turnSpeed) {
+      Quaternion targetRotation = Quaternion.LookRotation(GameManager.player.transform.position - transform.position);
+      transform.rotation = Quaternion.RotateTowards(transform.rotation, targetRotation, turnSpeed * Time.deltaTime);
     }
 
     // NOTE: duped with player
