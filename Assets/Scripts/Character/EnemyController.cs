@@ -91,9 +91,11 @@ namespace ofr.grim {
     void OnAnimatorMove() {
       if (isAttacking || isStaggering) {
         // attack animations only atm
-        navAgent.Move(anim.deltaPosition);
-        HandleTurningToPlayer(attackingTurnSpeed);
+        transform.position += anim.deltaPosition;
       }
+
+      if (isAttacking)
+        HandleTurningToPlayer(attackingTurnSpeed);
     }
 
     private void HandleResetControl() {
@@ -111,7 +113,7 @@ namespace ofr.grim {
     }
 
     private void HandleCombatControl() {
-      if (isAttacking) {
+      if (isAttacking || isStaggering) {
         return;
       }
 
@@ -170,7 +172,6 @@ namespace ofr.grim {
     }
 
     private void MoveTo(Vector3 targetPos) {
-      navAgent.isStopped = false;
       navAgent.SetDestination(targetPos);
     }
 
@@ -212,7 +213,7 @@ namespace ofr.grim {
       anim.SetTrigger("hit");
       anim.SetBool("bigHit", bigHit);
       transform.rotation = Quaternion.LookRotation(hitterPosition - transform.position);
-      StartCoroutine(HandleMovingAsync(transform.position - (transform.forward * 0.5f), 0.1f));
+      // StartCoroutine(HandleMovingAsync(transform.position - (transform.forward * 0.5f), 0.1f));
     }
 
     private bool CheckForPlayerDistance(float radius) {
@@ -294,8 +295,7 @@ namespace ofr.grim {
         yield return true;
       }
 
-      if (navAgent.enabled)
-        navAgent.isStopped = true;
+      navAgent.ResetPath();
       AnimateLocomotion(0);
     }
 

@@ -42,7 +42,7 @@ namespace ofr.grim {
     private float rollSpeed = 12f;
     private float lockOnCastRadius = 1f;
     private float lockOnCastDistance = 3.5f;
-    private float parryTime = 0.3f;
+    private float parryTime = 0.2f;
     [SerializeField] private LayerMask enemyLayerMask;
     [SerializeField] private LayerMask groundCheckLayer;
 
