@@ -38,9 +38,9 @@ namespace ofr.grim {
       }
 
       if (canHitAllies && tgt.tag == "Enemy") {
-        tgt.GetHit(transform.position, damage, isPowerful, hitFX);
+        tgt.GetHit(gameObject, damage, isPowerful, hitFX);
       } else if (tgt.tag == "Player") {
-        tgt.GetHit(transform.position, damage, isPowerful, hitFX);
+        tgt.GetHit(gameObject, damage, isPowerful, hitFX);
       }
 
       Destroy(gameObject);

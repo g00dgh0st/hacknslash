@@ -337,10 +337,13 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   maxHealth: 100
+  icons: {fileID: 1110483449225183842}
   aggroRadius: 8
   chaseRadius: 10
   attackRadius: 2
   attackTurnTime: 0.1
+  attackingTurnSpeed: 45
+  combatIdleTurnSpeed: 100
   startPosition: {fileID: 0}
   weaponCollision:
     left: {fileID: 6038813082762205337}
@@ -362,7 +365,7 @@ MonoBehaviour:
   swingAudio: {fileID: 8300000, guid: cf35a39ed3f005d49bf846fdd9eee7a0, type: 3}
   hitFX: {fileID: 106912, guid: afbdeac5d6ff25e46ae6bb518f70f0a9, type: 3}
   canHitAllies: 0
-  powerAttackIcon: {fileID: 605817526667656608}
+  bigBoy: 0
   projectile: {fileID: 0}
 --- !u!82 &4218727707431289537
 AudioSource:
@@ -999,20 +1002,10 @@ PrefabInstance:
       propertyPath: m_Name
       value: CharacterIcons
       objectReference: {fileID: 0}
-    - target: {fileID: 2271860768255325210, guid: c96bf35dcccb1014ca03731f12674505,
+    - target: {fileID: 3067955573456162903, guid: c96bf35dcccb1014ca03731f12674505,
         type: 3}
-      propertyPath: m_LocalScale.x
-      value: 0.58162
-      objectReference: {fileID: 0}
-    - target: {fileID: 2271860768255325210, guid: c96bf35dcccb1014ca03731f12674505,
-        type: 3}
-      propertyPath: m_LocalScale.y
-      value: 0.58162
-      objectReference: {fileID: 0}
-    - target: {fileID: 2271860768255325210, guid: c96bf35dcccb1014ca03731f12674505,
-        type: 3}
-      propertyPath: m_LocalScale.z
-      value: 0.58162
+      propertyPath: m_IsActive
+      value: 0
       objectReference: {fileID: 0}
     - target: {fileID: 8595122378004695738, guid: c96bf35dcccb1014ca03731f12674505,
         type: 3}
@@ -1069,6 +1062,11 @@ PrefabInstance:
       propertyPath: m_LocalEulerAnglesHint.z
       value: 0
       objectReference: {fileID: 0}
+    - target: {fileID: 8885465351724396848, guid: c96bf35dcccb1014ca03731f12674505,
+        type: 3}
+      propertyPath: m_IsActive
+      value: 0
+      objectReference: {fileID: 0}
     m_RemovedComponents: []
   m_SourcePrefab: {fileID: 100100000, guid: c96bf35dcccb1014ca03731f12674505, type: 3}
 --- !u!4 &6175517841669285709 stripped
@@ -1077,12 +1075,18 @@ Transform:
     type: 3}
   m_PrefabInstance: {fileID: 2520848670290865655}
   m_PrefabAsset: {fileID: 0}
---- !u!1 &605817526667656608 stripped
-GameObject:
-  m_CorrespondingSourceObject: {fileID: 3067955573456162903, guid: c96bf35dcccb1014ca03731f12674505,
+--- !u!114 &1110483449225183842 stripped
+MonoBehaviour:
+  m_CorrespondingSourceObject: {fileID: 3283933721991278485, guid: c96bf35dcccb1014ca03731f12674505,
     type: 3}
   m_PrefabInstance: {fileID: 2520848670290865655}
   m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 0cb21b2fc3b2ad74581c254939e38de6, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
 --- !u!1001 &6614787469320499047
 PrefabInstance:
   m_ObjectHideFlags: 0

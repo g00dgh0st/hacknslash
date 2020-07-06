@@ -230,7 +230,7 @@ GameObject:
   - component: {fileID: 11736965}
   - component: {fileID: 4218727707431289537}
   m_Layer: 9
-  m_Name: RangedDummyEnemy
+  m_Name: RangedEnemy
   m_TagString: Enemy
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
@@ -337,10 +337,13 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   maxHealth: 60
+  icons: {fileID: 1110483449225183842}
   aggroRadius: 10
   chaseRadius: 12
   attackRadius: 10
   attackTurnTime: 0.1
+  attackingTurnSpeed: 45
+  combatIdleTurnSpeed: 100
   startPosition: {fileID: 0}
   weaponCollision:
     left: {fileID: 6038813082762205337}
@@ -355,13 +358,14 @@ MonoBehaviour:
     id: 0
   - swingAudio: {fileID: 0}
     hitEffect: {fileID: 0}
-    attackDamage: 15
-    isPowerul: 1
+    attackDamage: 10
+    isPowerul: 0
     id: 1
   attackDamage: 10
   swingAudio: {fileID: 8300000, guid: cf35a39ed3f005d49bf846fdd9eee7a0, type: 3}
   hitFX: {fileID: 106912, guid: afbdeac5d6ff25e46ae6bb518f70f0a9, type: 3}
-  powerAttackIcon: {fileID: 605817526667656608}
+  canHitAllies: 0
+  bigBoy: 0
   projectile: {fileID: 8293572011914268557, guid: b0716a5407f1152478ad7c96deba9903,
     type: 3}
 --- !u!82 &4218727707431289537
@@ -1139,6 +1143,11 @@ PrefabInstance:
       propertyPath: m_LocalScale.z
       value: 0.58162
       objectReference: {fileID: 0}
+    - target: {fileID: 3067955573456162903, guid: c96bf35dcccb1014ca03731f12674505,
+        type: 3}
+      propertyPath: m_IsActive
+      value: 0
+      objectReference: {fileID: 0}
     - target: {fileID: 8595122378004695738, guid: c96bf35dcccb1014ca03731f12674505,
         type: 3}
       propertyPath: m_LocalPosition.x
@@ -1194,6 +1203,11 @@ PrefabInstance:
       propertyPath: m_LocalEulerAnglesHint.z
       value: 0
       objectReference: {fileID: 0}
+    - target: {fileID: 8885465351724396848, guid: c96bf35dcccb1014ca03731f12674505,
+        type: 3}
+      propertyPath: m_IsActive
+      value: 0
+      objectReference: {fileID: 0}
     m_RemovedComponents: []
   m_SourcePrefab: {fileID: 100100000, guid: c96bf35dcccb1014ca03731f12674505, type: 3}
 --- !u!4 &6175517841669285709 stripped
@@ -1202,9 +1216,15 @@ Transform:
     type: 3}
   m_PrefabInstance: {fileID: 2520848670290865655}
   m_PrefabAsset: {fileID: 0}
---- !u!1 &605817526667656608 stripped
-GameObject:
-  m_CorrespondingSourceObject: {fileID: 3067955573456162903, guid: c96bf35dcccb1014ca03731f12674505,
+--- !u!114 &1110483449225183842 stripped
+MonoBehaviour:
+  m_CorrespondingSourceObject: {fileID: 3283933721991278485, guid: c96bf35dcccb1014ca03731f12674505,
     type: 3}
   m_PrefabInstance: {fileID: 2520848670290865655}
   m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 0cb21b2fc3b2ad74581c254939e38de6, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 

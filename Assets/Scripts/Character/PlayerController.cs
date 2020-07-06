@@ -39,12 +39,12 @@ namespace ofr.grim {
     private float attackTurnTime = 0.1f;
     private float moveSpeed = 5f;
     private float blockMaxMoveInput = 0.4f;
-    private float counterTime = 0.3f;
     private float rollSpeed = 12f;
     private float lockOnCastRadius = 1f;
     private float lockOnCastDistance = 3.5f;
-    [SerializeField] protected LayerMask enemyLayerMask;
-    [SerializeField] protected LayerMask groundCheckLayer;
+    private float parryTime = 0.3f;
+    [SerializeField] private LayerMask enemyLayerMask;
+    [SerializeField] private LayerMask groundCheckLayer;
 
     // This should be part of a weapon object
     float gapCloseMaxReach = 2.05f;
@@ -53,18 +53,20 @@ namespace ofr.grim {
     float attackDamage = 20f;
     [SerializeField] private AudioClip swingAudio;
     [SerializeField] private WeaponCollision weaponCollision;
-    [SerializeField] protected GameObject hitFX;
-    [SerializeField] protected GameObject blockFX;
+    [SerializeField] private GameObject hitFX;
+    [SerializeField] private GameObject blockFX;
+    [SerializeField] private GameObject parryFX;
     // end weapon config
 
     // state vars
     private Vector3 moveVector;
-    protected ControlState controlState { get; set; }
-    protected AttackState attackState { get; set; }
-    protected bool dodgeMovement = false;
-    protected bool attackMovement = false;
-    protected bool hitMovement = false;
-    protected List<CombatTarget> attackHits;
+    private ControlState controlState { get; set; }
+    private AttackState attackState { get; set; }
+    private bool dodgeMovement = false;
+    private bool attackMovement = false;
+    private bool hitMovement = false;
+    private float lastBlockTime;
+    private List<CombatTarget> attackHits;
 
     private Coroutine moveRoutine = null;
     private Coroutine turnRoutine = null;
@@ -101,9 +103,9 @@ namespace ofr.grim {
       if (debugMode)
         debugText.text = controlState.ToString("g");
 
-      if (Input.GetKeyDown(KeyCode.E)) {
-        GetHit(transform.position + Vector3.up - transform.forward, 0, false, hitFX);
-      }
+      // if (Input.GetKeyDown(KeyCode.E)) {
+      //   GetHit(transform.position + Vector3.up - transform.forward, 0, false, hitFX);
+      // }
 
       ApplyGravity();
 
@@ -174,6 +176,10 @@ namespace ofr.grim {
         }
 
         return;
+      }
+
+      if (Input.GetMouseButton(1)) {
+        if (attackState != AttackState.Swing) ToggleBlock(true);
       }
     }
 
@@ -339,21 +345,31 @@ namespace ofr.grim {
 
         if (tgt != null && !attackHits.Exists((t) => GameObject.ReferenceEquals(t, tgt))) {
           attackHits.Add(tgt);
-          tgt.GetHit(transform.position, attackDamage, false, hitFX);
+          tgt.GetHit(gameObject, attackDamage, false, hitFX);
 
         }
       }
     }
 
-    public override bool GetHit(Vector3 hitterPosition, float damage, bool isPowerful, GameObject fx) {
+    public override bool GetHit(GameObject hitter, float damage, bool isPowerful, GameObject fx) {
       if (isDead || controlState == ControlState.Dodge) return false;
+      Vector3 hitterPosition = hitter.transform.position;
       Vector3 hitDir = (hitterPosition - transform.position).normalized;
       hitDir.y = 0f;
 
       if (controlState == ControlState.Block && !isPowerful) {
-        // block hit
         turnRoutine = StartCoroutine(HandleTurningAsync(hitDir, attackTurnTime));
-        Destroy(Instantiate(blockFX, transform.position + (Vector3.up * 1.5f), transform.rotation), 2f);
+        if (lastBlockTime + parryTime > Time.time) {
+          // parry
+          EnemyController enemy = hitter.GetComponent<EnemyController>();
+
+          if (enemy != null) {
+            enemy.GetParried(gameObject, parryFX);
+          }
+        } else {
+          // block hit
+          Destroy(Instantiate(blockFX, transform.position + (Vector3.up * 1.5f), transform.rotation), 2f);
+        }
       } else {
         Interrupt();
         ToggleBlock(false);
@@ -385,6 +401,7 @@ namespace ofr.grim {
     }
 
     protected void ToggleBlock(bool blockOn) {
+      if (blockOn) lastBlockTime = Time.time;
       anim.SetBool("block", blockOn);
       if (blockOn) controlState = ControlState.Block;
       else controlState = ControlState.Locomotion;

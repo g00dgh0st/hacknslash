@@ -338,11 +338,13 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   maxHealth: 200
+  icons: {fileID: 1110483449225183842}
   aggroRadius: 10
   chaseRadius: 12
   attackRadius: 3
   attackTurnTime: 0.2
   attackingTurnSpeed: 45
+  combatIdleTurnSpeed: 100
   startPosition: {fileID: 0}
   weaponCollision:
     left: {fileID: 6038813082762205337}
@@ -365,7 +367,6 @@ MonoBehaviour:
   hitFX: {fileID: 132680, guid: b0bad241702d21444a4cf49f8dfa2374, type: 3}
   canHitAllies: 0
   bigBoy: 0
-  powerAttackIcon: {fileID: 605817526667656608}
   projectile: {fileID: 0}
 --- !u!82 &4218727707431289537
 AudioSource:
@@ -1009,17 +1010,17 @@ PrefabInstance:
     - target: {fileID: 2271860768255325210, guid: c96bf35dcccb1014ca03731f12674505,
         type: 3}
       propertyPath: m_LocalScale.x
-      value: 0.58162
+      value: 0.4
       objectReference: {fileID: 0}
     - target: {fileID: 2271860768255325210, guid: c96bf35dcccb1014ca03731f12674505,
         type: 3}
       propertyPath: m_LocalScale.y
-      value: 0.58162
+      value: 0.4
       objectReference: {fileID: 0}
     - target: {fileID: 2271860768255325210, guid: c96bf35dcccb1014ca03731f12674505,
         type: 3}
       propertyPath: m_LocalScale.z
-      value: 0.58162
+      value: 0.4
       objectReference: {fileID: 0}
     - target: {fileID: 8595122378004695738, guid: c96bf35dcccb1014ca03731f12674505,
         type: 3}
@@ -1029,7 +1030,7 @@ PrefabInstance:
     - target: {fileID: 8595122378004695738, guid: c96bf35dcccb1014ca03731f12674505,
         type: 3}
       propertyPath: m_LocalPosition.y
-      value: 3.75
+      value: 4.16
       objectReference: {fileID: 0}
     - target: {fileID: 8595122378004695738, guid: c96bf35dcccb1014ca03731f12674505,
         type: 3}
@@ -1084,12 +1085,18 @@ Transform:
     type: 3}
   m_PrefabInstance: {fileID: 2520848670290865655}
   m_PrefabAsset: {fileID: 0}
---- !u!1 &605817526667656608 stripped
-GameObject:
-  m_CorrespondingSourceObject: {fileID: 3067955573456162903, guid: c96bf35dcccb1014ca03731f12674505,
+--- !u!114 &1110483449225183842 stripped
+MonoBehaviour:
+  m_CorrespondingSourceObject: {fileID: 3283933721991278485, guid: c96bf35dcccb1014ca03731f12674505,
     type: 3}
   m_PrefabInstance: {fileID: 2520848670290865655}
   m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 0cb21b2fc3b2ad74581c254939e38de6, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
 --- !u!1001 &5786820530424076369
 PrefabInstance:
   m_ObjectHideFlags: 0

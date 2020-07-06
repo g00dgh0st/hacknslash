@@ -19,6 +19,7 @@ namespace ofr.grim {
     private Rigidbody rBody;
     private Animator anim;
     private AudioSource audio;
+    [SerializeField] private EnemyIcons icons;
 
     public float aggroRadius = 8f;
     public float chaseRadius = 10f;
@@ -45,11 +46,11 @@ namespace ofr.grim {
     protected List<CombatTarget> attackHits;
 
     private bool isAttacking = false;
+    private bool isStaggering = false;
     private bool isPowerfulAttacking = false;
     private float nextAttackTime = 0f;
 
     //TEMP:::
-    public GameObject powerAttackIcon;
     public EnemyProjectile projectile;
 
     void Awake() {
@@ -61,8 +62,6 @@ namespace ofr.grim {
     }
 
     new void Start() {
-      powerAttackIcon.SetActive(false);
-
       base.Start();
 
       if (startPosition)
@@ -90,9 +89,9 @@ namespace ofr.grim {
     }
 
     void OnAnimatorMove() {
-      if (isAttacking) {
+      if (isAttacking || isStaggering) {
         // attack animations only atm
-        transform.position += anim.deltaPosition;
+        navAgent.Move(anim.deltaPosition);
         HandleTurningToPlayer(attackingTurnSpeed);
       }
     }
@@ -162,7 +161,11 @@ namespace ofr.grim {
       anim.SetInteger("attackType", atk.id);
       anim.SetTrigger("attack");
       isPowerfulAttacking = atk.isPowerul;
-      powerAttackIcon.SetActive(atk.isPowerul);
+      if (isPowerfulAttacking) {
+        icons.PowerAttack(true);
+      } else {
+        icons.NormalAttack(true);
+      }
       nextAttackTime = Time.time + attackCooldown;
     }
 
@@ -171,20 +174,23 @@ namespace ofr.grim {
       navAgent.SetDestination(targetPos);
     }
 
-    public override bool GetHit(Vector3 hitterPosition, float damage, bool powerful, GameObject fx) {
+    public override bool GetHit(GameObject hitter, float damage, bool powerful, GameObject fx) {
       if (isDead) return false;
-
-      if (!isPowerfulAttacking && !bigBoy) {
-        Interrupt();
-        anim.SetTrigger("hit");
-        transform.rotation = Quaternion.LookRotation(hitterPosition - transform.position);
-        StartCoroutine(HandleMovingAsync(transform.position - (transform.forward * 0.5f), 0.1f));
-      }
+      Vector3 hitterPosition = hitter.transform.position;
 
       TakeDamage(damage);
       Destroy(Instantiate(fx, transform.position + (Vector3.up * 1.5f), transform.rotation), 2f);
 
+      if ((!isPowerfulAttacking && !bigBoy) || isDead) {
+        Stagger(hitterPosition, false);
+      }
+
       return true;
+    }
+
+    public void GetParried(GameObject hitter, GameObject fx) {
+      Stagger(hitter.transform.position, true);
+      Destroy(Instantiate(fx, transform.position + (Vector3.up * 1.5f), transform.rotation), 2f);
     }
 
     protected override void Die() {
@@ -197,8 +203,16 @@ namespace ofr.grim {
     private void Interrupt() {
       EndAttack();
       navAgent.velocity = Vector3.zero;
-      nextAttackTime = Time.time + attackCooldown;
+      // nextAttackTime = Time.time + attackCooldown;
       StopAllCoroutines();
+    }
+
+    private void Stagger(Vector3 hitterPosition, bool bigHit) {
+      Interrupt();
+      anim.SetTrigger("hit");
+      anim.SetBool("bigHit", bigHit);
+      transform.rotation = Quaternion.LookRotation(hitterPosition - transform.position);
+      StartCoroutine(HandleMovingAsync(transform.position - (transform.forward * 0.5f), 0.1f));
     }
 
     private bool CheckForPlayerDistance(float radius) {
@@ -209,7 +223,7 @@ namespace ofr.grim {
     }
 
     private bool CheckForPlayerLOS(float distance) {
-      bool hitSomething = Physics.Raycast(transform.position + Vector3.up, (GameManager.player.transform.position + Vector3.up) - (transform.position + Vector3.up), out RaycastHit hit, distance);
+      bool hitSomething = Physics.Raycast(transform.position + Vector3.up, (GameManager.player.transform.position + Vector3.up) - (transform.position + Vector3.up), out RaycastHit hit, distance, LayerMask.NameToLayer("Enemy"));
 
       if (hitSomething && hit.collider.tag == "Player") {
         return true;
@@ -280,7 +294,8 @@ namespace ofr.grim {
         yield return true;
       }
 
-      navAgent.isStopped = true;
+      if (navAgent.enabled)
+        navAgent.isStopped = true;
       AnimateLocomotion(0);
     }
 
@@ -295,7 +310,7 @@ namespace ofr.grim {
 
         if (tgt != this && !attackHits.Exists((t) => GameObject.ReferenceEquals(t, tgt))) {
           attackHits.Add(tgt);
-          tgt.GetHit(transform.position, attackDamage, isPowerfulAttacking, hitFX);
+          tgt.GetHit(gameObject, attackDamage, isPowerfulAttacking, hitFX);
         }
       }
     }
@@ -387,29 +402,34 @@ namespace ofr.grim {
       }
     }
 
-    // protected void HitEvent(string message) {
-    //   if (message == "start") {
-    //     print("HOTT");
-    //     movementState = MovementState.Hit;
-    //   }
+    protected void HitEvent(string message) {
+      if (message == "start") {
+        StartStagger();
+      }
 
-    //   if (message == "end") {
-    //     movementState = MovementState.Locomotion;
-    //   }
-    // }
+      if (message == "end") {
+        EndStagger();
+      }
+    }
 
     private void StartAttack() {
       isAttacking = true;
-      // navAgent.enabled = false;
     }
 
     private void EndAttack() {
       isAttacking = false;
       isPowerfulAttacking = false;
-      // navAgent.enabled = true;
       attackHits.Clear();
       anim.ResetTrigger("attack");
-      powerAttackIcon.SetActive(false);
+      icons.DisableIcons();
+    }
+
+    private void StartStagger() {
+      isStaggering = true;
+    }
+
+    private void EndStagger() {
+      isStaggering = false;
     }
   }
 }
