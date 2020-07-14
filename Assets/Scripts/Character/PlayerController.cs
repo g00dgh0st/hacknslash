@@ -364,7 +364,8 @@ namespace ofr.grim {
           EnemyController enemy = hitter.GetComponent<EnemyController>();
 
           if (enemy != null) {
-            enemy.GetParried(gameObject, parryFX);
+            enemy.GetParried(gameObject);
+            Destroy(Instantiate(parryFX, transform.position + (Vector3.up * 1.5f), transform.rotation), 2f);
           }
         } else {
           // block hit

@@ -25,7 +25,7 @@ namespace ofr.grim {
     public float chaseRadius = 10f;
     public float attackRadius = 3f;
     public float attackTurnTime = 0.2f;
-    public float attackingTurnSpeed = 45f;
+    public float attackingTurnSpeed = 70f;
     public float combatIdleTurnSpeed = 100f;
     [SerializeField] private Transform startPosition;
     [SerializeField] private WeaponCollision weaponCollision;
@@ -35,23 +35,14 @@ namespace ofr.grim {
 
     // Attack config
     public float attackCooldown = 2f;
-    [SerializeField] private Attack[] attacks;
-
-    public float attackDamage = 10f;
-    [SerializeField] private AudioClip swingAudio;
-    [SerializeField] protected GameObject hitFX;
-
-    public bool canHitAllies = false;
+    [SerializeField] private AttackSet attacks;
     public bool bigBoy = false;
-    protected List<CombatTarget> attackHits;
 
+    private Attack currentAttack;
+    protected List<CombatTarget> attackHits;
     private bool isAttacking = false;
     private bool isStaggering = false;
-    private bool isPowerfulAttacking = false;
     private float nextAttackTime = 0f;
-
-    //TEMP:::
-    public EnemyProjectile projectile;
 
     void Awake() {
       anim = GetComponent<Animator>();
@@ -158,12 +149,10 @@ namespace ofr.grim {
       StartCoroutine(HandleTurningAsync(lookDir, attackTurnTime));
 
       //// TEMP: need way to configure all attacks instead of random
-      int atIdx = Random.Range(0f, 1f) > 0.8f ? 1 : 0;
-      Attack atk = attacks[atIdx];
-      anim.SetInteger("attackType", atk.id);
+      currentAttack = attacks.GetByRandomSeed(Random.Range(0f, 1f));
+      anim.SetInteger("attackType", currentAttack.animId);
       anim.SetTrigger("attack");
-      isPowerfulAttacking = atk.isPowerul;
-      if (isPowerfulAttacking) {
+      if (currentAttack.isPowerul) {
         icons.PowerAttack(true);
       } else {
         icons.NormalAttack(true);
@@ -182,16 +171,16 @@ namespace ofr.grim {
       TakeDamage(damage);
       Destroy(Instantiate(fx, transform.position + (Vector3.up * 1.5f), transform.rotation), 2f);
 
-      if ((!isPowerfulAttacking && !bigBoy) || isDead) {
+      if ((!(isAttacking && currentAttack.isPowerul) && !bigBoy) || isDead) {
         Stagger(hitterPosition, false);
       }
 
       return true;
     }
 
-    public void GetParried(GameObject hitter, GameObject fx) {
+    // NOTE: this is called from Player's GetHit, so attack is already executed
+    public void GetParried(GameObject hitter) {
       Stagger(hitter.transform.position, true);
-      Destroy(Instantiate(fx, transform.position + (Vector3.up * 1.5f), transform.rotation), 2f);
     }
 
     protected override void Die() {
@@ -204,7 +193,6 @@ namespace ofr.grim {
     private void Interrupt() {
       EndAttack();
       navAgent.velocity = Vector3.zero;
-      // nextAttackTime = Time.time + attackCooldown;
       StopAllCoroutines();
     }
 
@@ -306,17 +294,21 @@ namespace ofr.grim {
       foreach (Collider hit in hits) {
         CombatTarget tgt = hit.GetComponent<CombatTarget>();
 
-        if (tgt == null || (!canHitAllies && tgt.tag != "Player")) continue;
+        // handle if they get interrupted during this call
+        if (!isAttacking)
+          return;
+
+        if (tgt == null || (!currentAttack.canHitAllies && tgt.tag != "Player")) continue;
 
         if (tgt != this && !attackHits.Exists((t) => GameObject.ReferenceEquals(t, tgt))) {
           attackHits.Add(tgt);
-          tgt.GetHit(gameObject, attackDamage, isPowerfulAttacking, hitFX);
+          tgt.GetHit(gameObject, currentAttack.damage, currentAttack.isPowerul, currentAttack.hitEffect);
         }
       }
     }
 
     private void FireRangedAttack() {
-      EnemyProjectile proj = Instantiate<EnemyProjectile>(projectile, transform.position + transform.forward + (Vector3.up * 1.2f), transform.rotation);
+      EnemyProjectile proj = Instantiate<EnemyProjectile>(currentAttack.projectile, transform.position + transform.forward + (Vector3.up * 1.2f), transform.rotation);
       proj.Fire(GameManager.player.transform.position - proj.transform.position);
     }
 
@@ -367,7 +359,7 @@ namespace ofr.grim {
 
       if (message == "swing") {
         // TEMP: just trying out audio
-        audio.PlayOneShot(swingAudio);
+        audio.PlayOneShot(currentAttack.audio);
 
         // TEMP: probably need a different event to reset
         attackHits.Clear();
@@ -418,7 +410,8 @@ namespace ofr.grim {
 
     private void EndAttack() {
       isAttacking = false;
-      isPowerfulAttacking = false;
+      currentAttack = null;
+      nextAttackTime = Time.time + attackCooldown;
       attackHits.Clear();
       anim.ResetTrigger("attack");
       icons.DisableIcons();

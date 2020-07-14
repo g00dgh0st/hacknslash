@@ -10,7 +10,7 @@ namespace ofr.grim {
     private Rigidbody rBody;
 
     private float lifeTime = 20f;
-    public float speed = 4f;
+    public float speed = 20f;
     public float damage = 10f;
     public bool isPowerful = false;
     public GameObject hitFX;
@@ -47,9 +47,11 @@ namespace ofr.grim {
     }
 
     public void Fire(Vector3 direction) {
+      direction.Normalize();
       direction.y = 0;
       transform.forward = direction;
       rBody.velocity = direction * speed;
+      Debug.Log(rBody.velocity.magnitude);
       deathTime = Time.time + lifeTime;
     }
   }

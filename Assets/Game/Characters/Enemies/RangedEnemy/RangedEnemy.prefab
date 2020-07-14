@@ -224,10 +224,10 @@ GameObject:
   m_Component:
   - component: {fileID: 6062212063775308525}
   - component: {fileID: 6153401651833723893}
+  - component: {fileID: 11736965}
   - component: {fileID: 6066643290064697621}
   - component: {fileID: 6554931067197810176}
   - component: {fileID: 11736964}
-  - component: {fileID: 11736965}
   - component: {fileID: 4218727707431289537}
   m_Layer: 9
   m_Name: RangedEnemy
@@ -272,6 +272,34 @@ Animator:
   m_HasTransformHierarchy: 1
   m_AllowConstantClipSamplingOptimization: 1
   m_KeepAnimatorControllerStateOnDisable: 0
+--- !u!114 &11736965
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 6067938762425300025}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 3c2e3785a7d045c459d7d0ed0e9e83f8, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  maxHealth: 60
+  icons: {fileID: 1110483449225183842}
+  aggroRadius: 10
+  chaseRadius: 12
+  attackRadius: 10
+  attackTurnTime: 0.1
+  attackingTurnSpeed: 70
+  combatIdleTurnSpeed: 100
+  startPosition: {fileID: 0}
+  weaponCollision:
+    left: {fileID: 6038813082762205337}
+    right: {fileID: 3307369488650264671}
+    front: {fileID: 127407807063853148}
+  attackCooldown: 4
+  attacks: {fileID: 11400000, guid: 75b23793dcae3b345b3d8c9381185c41, type: 2}
+  bigBoy: 0
 --- !u!195 &6066643290064697621
 NavMeshAgent:
   m_ObjectHideFlags: 0
@@ -324,50 +352,6 @@ Rigidbody:
   m_Interpolate: 0
   m_Constraints: 0
   m_CollisionDetection: 3
---- !u!114 &11736965
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 6067938762425300025}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 3c2e3785a7d045c459d7d0ed0e9e83f8, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: 
-  maxHealth: 60
-  icons: {fileID: 1110483449225183842}
-  aggroRadius: 10
-  chaseRadius: 12
-  attackRadius: 10
-  attackTurnTime: 0.1
-  attackingTurnSpeed: 45
-  combatIdleTurnSpeed: 100
-  startPosition: {fileID: 0}
-  weaponCollision:
-    left: {fileID: 6038813082762205337}
-    right: {fileID: 3307369488650264671}
-    front: {fileID: 127407807063853148}
-  attackCooldown: 2
-  attacks:
-  - swingAudio: {fileID: 0}
-    hitEffect: {fileID: 0}
-    attackDamage: 10
-    isPowerul: 0
-    id: 0
-  - swingAudio: {fileID: 0}
-    hitEffect: {fileID: 0}
-    attackDamage: 10
-    isPowerul: 0
-    id: 1
-  attackDamage: 10
-  swingAudio: {fileID: 8300000, guid: cf35a39ed3f005d49bf846fdd9eee7a0, type: 3}
-  hitFX: {fileID: 106912, guid: afbdeac5d6ff25e46ae6bb518f70f0a9, type: 3}
-  canHitAllies: 0
-  bigBoy: 0
-  projectile: {fileID: 8293572011914268557, guid: b0716a5407f1152478ad7c96deba9903,
-    type: 3}
 --- !u!82 &4218727707431289537
 AudioSource:
   m_ObjectHideFlags: 0

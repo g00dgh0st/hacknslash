@@ -3,12 +3,24 @@ using System.Collections.Generic;
 using UnityEngine;
 
 namespace ofr.grim {
-  [System.Serializable]
-  public class Attack {
-    public AudioClip swingAudio;
-    public GameObject hitEffect;
-    public float attackDamage;
-    public bool isPowerul;
-    public int id;
+  public enum AttackType {
+    Ranged,
+    Melee,
+    Special
   }
+
+  [CreateAssetMenu(fileName = "Attack", menuName = "Scriptables/Attack", order = 0)]
+  public class Attack : ScriptableObject {
+    public int animId;
+    public AttackType type;
+    public AudioClip audio;
+    public bool isPowerul;
+    public bool canHitAllies;
+
+    public GameObject hitEffect;
+    public float damage;
+
+    public EnemyProjectile projectile;
+  }
+
 }
