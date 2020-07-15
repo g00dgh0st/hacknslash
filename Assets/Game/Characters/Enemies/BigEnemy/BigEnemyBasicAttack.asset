@@ -12,7 +12,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 985d50b2cbc321945b7d5c27c140f95e, type: 3}
   m_Name: BigEnemyBasicAttack
   m_EditorClassIdentifier: 
-  animId: 1
+  animId: 0
   type: 1
   audio: {fileID: 8300000, guid: f82a7d93926f978479349ce3a9e025f6, type: 3}
   isPowerul: 0

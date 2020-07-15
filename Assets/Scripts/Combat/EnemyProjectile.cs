@@ -51,7 +51,6 @@ namespace ofr.grim {
       direction.y = 0;
       transform.forward = direction;
       rBody.velocity = direction * speed;
-      Debug.Log(rBody.velocity.magnitude);
       deathTime = Time.time + lifeTime;
     }
   }

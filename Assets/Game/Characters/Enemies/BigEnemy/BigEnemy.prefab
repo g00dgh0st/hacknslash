@@ -264,7 +264,7 @@ Animator:
   m_GameObject: {fileID: 6067938762425300025}
   m_Enabled: 1
   m_Avatar: {fileID: 9000000, guid: a50cd06a0668d1a418d586a2944e3ed5, type: 3}
-  m_Controller: {fileID: 9100000, guid: 4a7276a46fa41354cb9c076fab446a9a, type: 2}
+  m_Controller: {fileID: 22100000, guid: 7254c3625f2ff5e4888edc6e2bb68c63, type: 2}
   m_CullingMode: 1
   m_UpdateMode: 0
   m_ApplyRootMotion: 1
@@ -289,17 +289,15 @@ MonoBehaviour:
   icons: {fileID: 1110483449225183842}
   aggroRadius: 10
   chaseRadius: 12
+  combatRadius: 6
   attackRadius: 3
-  attackTurnTime: 0.2
-  attackingTurnSpeed: 45
-  combatIdleTurnSpeed: 100
   startPosition: {fileID: 0}
   weaponCollision:
     left: {fileID: 6038813082762205337}
     right: {fileID: 3307369488650264671}
     front: {fileID: 127407807063853148}
-  attackCooldown: 3
   attacks: {fileID: 11400000, guid: fc8e9af8a53356f4ea197be3e6e0c998, type: 2}
+  attackCooldown: 3
   bigBoy: 1
 --- !u!195 &6066643290064697621
 NavMeshAgent:
@@ -315,7 +313,7 @@ NavMeshAgent:
   m_Acceleration: 15
   avoidancePriority: 50
   m_AngularSpeed: 200
-  m_StoppingDistance: 3
+  m_StoppingDistance: 1.5
   m_AutoTraverseOffMeshLink: 1
   m_AutoBraking: 1
   m_AutoRepath: 1

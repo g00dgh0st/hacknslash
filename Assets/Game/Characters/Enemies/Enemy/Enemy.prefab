@@ -288,17 +288,15 @@ MonoBehaviour:
   icons: {fileID: 1110483449225183842}
   aggroRadius: 8
   chaseRadius: 10
+  combatRadius: 4
   attackRadius: 2
-  attackTurnTime: 0.1
-  attackingTurnSpeed: 70
-  combatIdleTurnSpeed: 100
   startPosition: {fileID: 0}
   weaponCollision:
     left: {fileID: 6038813082762205337}
     right: {fileID: 3307369488650264671}
     front: {fileID: 127407807063853148}
-  attackCooldown: 2
   attacks: {fileID: 11400000, guid: 91807893511b75a4ba9a2cf8df80b146, type: 2}
+  attackCooldown: 2
   bigBoy: 0
 --- !u!195 &6066643290064697621
 NavMeshAgent:
@@ -314,7 +312,7 @@ NavMeshAgent:
   m_Acceleration: 20
   avoidancePriority: 50
   m_AngularSpeed: 260
-  m_StoppingDistance: 2
+  m_StoppingDistance: 0.5
   m_AutoTraverseOffMeshLink: 1
   m_AutoBraking: 1
   m_AutoRepath: 1

@@ -22,11 +22,12 @@ namespace ofr.grim {
     [SerializeField] private EnemyIcons icons;
 
     public float aggroRadius = 8f;
-    public float chaseRadius = 10f;
-    public float attackRadius = 3f;
-    public float attackTurnTime = 0.2f;
-    public float attackingTurnSpeed = 70f;
-    public float combatIdleTurnSpeed = 100f;
+    public float chaseRadius = 12f;
+    public float combatRadius = 4f;
+    public float attackRadius = 2f;
+    private float attackTurnTime = 0.2f;
+    private float attackingTurnSpeed = 70f;
+    private float combatIdleTurnSpeed = 100f;
     [SerializeField] private Transform startPosition;
     [SerializeField] private WeaponCollision weaponCollision;
 
@@ -34,8 +35,8 @@ namespace ofr.grim {
     private Vector3 resetPosition;
 
     // Attack config
-    public float attackCooldown = 2f;
     [SerializeField] private AttackSet attacks;
+    public float attackCooldown = 2f;
     public bool bigBoy = false;
 
     private Attack currentAttack;
@@ -43,6 +44,7 @@ namespace ofr.grim {
     private bool isAttacking = false;
     private bool isStaggering = false;
     private float nextAttackTime = 0f;
+    private float attackGiveUpTime = 0f;
 
     void Awake() {
       anim = GetComponent<Animator>();
@@ -111,10 +113,18 @@ namespace ofr.grim {
       if (!CheckForPlayerDistance(chaseRadius)) {
         ResetAggro();
         return;
-      } else if (CheckForPlayerDistance(attackRadius) && CheckForPlayerLOS(attackRadius)) {
+      } else if (CheckForPlayerDistance(combatRadius) && CheckForPlayerLOS(chaseRadius)) {
+        if (nextAttackTime == 0f)
+          nextAttackTime = Time.time + attackCooldown;
+        // In combat position
         if (nextAttackTime < Time.time) {
-          AttackPlayer();
+          if (CheckForPlayerDistance(attackRadius))
+            AttackPlayer();
+          else
+            MoveTo(GameManager.player.gameObject.transform.position);
         } else {
+          if (navAgent.velocity.sqrMagnitude > 0f)
+            StartCoroutine(HandleStoppingAsync(attackTurnTime));
           HandleTurningToPlayer(combatIdleTurnSpeed);
         }
       } else {
@@ -142,6 +152,9 @@ namespace ofr.grim {
     }
 
     private void AttackPlayer() {
+      if (isAttacking) return;
+      StartAttack();
+
       Vector3 lookDir = GameManager.player.transform.position - transform.position;
       lookDir.y = 0f;
       if (navAgent.velocity.sqrMagnitude > 0f)
@@ -157,7 +170,6 @@ namespace ofr.grim {
       } else {
         icons.NormalAttack(true);
       }
-      nextAttackTime = Time.time + attackCooldown;
     }
 
     private void MoveTo(Vector3 targetPos) {
@@ -199,7 +211,7 @@ namespace ofr.grim {
     private void Stagger(Vector3 hitterPosition, bool bigHit) {
       Interrupt();
       anim.SetTrigger("hit");
-      anim.SetBool("bigHit", bigHit);
+      anim.SetBool("bigHit", bigBoy ? false : bigHit);
       transform.rotation = Quaternion.LookRotation(hitterPosition - transform.position);
       // StartCoroutine(HandleMovingAsync(transform.position - (transform.forward * 0.5f), 0.1f));
     }
@@ -354,7 +366,7 @@ namespace ofr.grim {
 
     protected void AttackEvent(string message) {
       if (message == "start") {
-        StartAttack();
+        // StartAttack();
       }
 
       if (message == "swing") {
@@ -423,6 +435,18 @@ namespace ofr.grim {
 
     private void EndStagger() {
       isStaggering = false;
+    }
+
+    /// DEbug stuff
+    private void OnDrawGizmosSelected() {
+      Gizmos.color = Color.white;
+      Gizmos.DrawWireSphere(transform.position, aggroRadius);
+      Gizmos.color = Color.green;
+      Gizmos.DrawWireSphere(transform.position, chaseRadius);
+      Gizmos.color = Color.yellow;
+      Gizmos.DrawWireSphere(transform.position, combatRadius);
+      Gizmos.color = Color.red;
+      Gizmos.DrawWireSphere(transform.position, attackRadius);
     }
   }
 }
