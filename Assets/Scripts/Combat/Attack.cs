@@ -12,14 +12,14 @@ namespace ofr.grim {
   [CreateAssetMenu(fileName = "Attack", menuName = "Scriptables/Attack", order = 0)]
   public class Attack : ScriptableObject {
     public int animId;
-    public AttackType type;
     public AudioClip audio;
-    public bool isPowerul;
+    public AttackType type;
+    public bool isPowerful;
     public bool canHitAllies;
-
-    public GameObject hitEffect;
     public float damage;
+    public GameObject hitEffect;
 
+    public float projectileSpeed;
     public EnemyProjectile projectile;
   }
 

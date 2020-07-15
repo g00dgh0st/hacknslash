@@ -15,8 +15,9 @@ MonoBehaviour:
   animId: 1
   type: 1
   audio: {fileID: 8300000, guid: cf35a39ed3f005d49bf846fdd9eee7a0, type: 3}
-  isPowerul: 1
+  isPowerful: 1
   canHitAllies: 1
-  hitEffect: {fileID: 169604, guid: 50f7f40acea204c4181d510fe41fa746, type: 3}
   damage: 20
+  hitEffect: {fileID: 169604, guid: 50f7f40acea204c4181d510fe41fa746, type: 3}
+  projectileSpeed: 0
   projectile: {fileID: 0}

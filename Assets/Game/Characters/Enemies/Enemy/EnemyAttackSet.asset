@@ -13,7 +13,7 @@ MonoBehaviour:
   m_Name: EnemyAttackSet
   m_EditorClassIdentifier: 
   attacks:
-  - attack: {fileID: 11400000, guid: b94df2f7f9367594c89d21e3c615d9bb, type: 2}
-    weight: 0.1
   - attack: {fileID: 11400000, guid: 71a8d3023cbfe6f40b7316392fafe1a1, type: 2}
     weight: 1
+  - attack: {fileID: 11400000, guid: b94df2f7f9367594c89d21e3c615d9bb, type: 2}
+    weight: 0.1

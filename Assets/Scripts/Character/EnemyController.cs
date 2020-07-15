@@ -165,7 +165,7 @@ namespace ofr.grim {
       currentAttack = attacks.GetByRandomSeed(Random.Range(0f, 1f));
       anim.SetInteger("attackType", currentAttack.animId);
       anim.SetTrigger("attack");
-      if (currentAttack.isPowerul) {
+      if (currentAttack.isPowerful) {
         icons.PowerAttack(true);
       } else {
         icons.NormalAttack(true);
@@ -183,7 +183,7 @@ namespace ofr.grim {
       TakeDamage(damage);
       Destroy(Instantiate(fx, transform.position + (Vector3.up * 1.5f), transform.rotation), 2f);
 
-      if ((!(isAttacking && currentAttack.isPowerul) && !bigBoy) || isDead) {
+      if ((!(isAttacking && currentAttack.isPowerful) && !bigBoy) || isDead) {
         Stagger(hitterPosition, false);
       }
 
@@ -314,14 +314,14 @@ namespace ofr.grim {
 
         if (tgt != this && !attackHits.Exists((t) => GameObject.ReferenceEquals(t, tgt))) {
           attackHits.Add(tgt);
-          tgt.GetHit(gameObject, currentAttack.damage, currentAttack.isPowerul, currentAttack.hitEffect);
+          tgt.GetHit(gameObject, currentAttack.damage, currentAttack.isPowerful, currentAttack.hitEffect);
         }
       }
     }
 
     private void FireRangedAttack() {
       EnemyProjectile proj = Instantiate<EnemyProjectile>(currentAttack.projectile, transform.position + transform.forward + (Vector3.up * 1.2f), transform.rotation);
-      proj.Fire(GameManager.player.transform.position - proj.transform.position);
+      proj.Fire(GameManager.player.transform.position - proj.transform.position, currentAttack);
     }
 
     protected void AnimateLocomotion(float speed) {

@@ -9,24 +9,13 @@ namespace ofr.grim {
   public class EnemyProjectile : MonoBehaviour {
     private Rigidbody rBody;
 
-    private float lifeTime = 20f;
-    public float speed = 20f;
-    public float damage = 10f;
-    public bool isPowerful = false;
-    public GameObject hitFX;
+    private Attack attack;
 
-    private float deathTime;
-    private bool canHitAllies;
-    private Vector3 direction;
+    // probably could use a global projectile lifetime
+    private float lifeTime = 20f;
 
     void Awake() {
       rBody = GetComponent<Rigidbody>();
-    }
-
-    void FixedUpdate() {
-      if (Time.time > deathTime) {
-        Destroy(gameObject);
-      }
     }
 
     void OnTriggerEnter(Collider other) {
@@ -37,21 +26,23 @@ namespace ofr.grim {
         return;
       }
 
-      if (canHitAllies && tgt.tag == "Enemy") {
-        tgt.GetHit(gameObject, damage, isPowerful, hitFX);
+      if (attack.canHitAllies && tgt.tag == "Enemy") {
+        tgt.GetHit(gameObject, attack.damage, attack.isPowerful, attack.hitEffect);
       } else if (tgt.tag == "Player") {
-        tgt.GetHit(gameObject, damage, isPowerful, hitFX);
+        tgt.GetHit(gameObject, attack.damage, attack.isPowerful, attack.hitEffect);
       }
 
       Destroy(gameObject);
     }
 
-    public void Fire(Vector3 direction) {
+    public void Fire(Vector3 direction, Attack atk) {
+      attack = atk;
       direction.Normalize();
       direction.y = 0;
       transform.forward = direction;
-      rBody.velocity = direction * speed;
-      deathTime = Time.time + lifeTime;
+      rBody.velocity = direction * attack.projectileSpeed;
+
+      Destroy(gameObject, Time.time + lifeTime);
     }
   }
 }
