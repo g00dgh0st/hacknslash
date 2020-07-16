@@ -6,13 +6,17 @@ namespace ofr.grim {
 
   [RequireComponent(typeof(Rigidbody))]
   [RequireComponent(typeof(Collider))]
-  public class EnemyProjectile : MonoBehaviour {
-    private Rigidbody rBody;
+  public class EnemyProjectile : Projectile {
+    [HideInInspector]
+    public Rigidbody rBody;
 
-    private Attack attack;
+    [HideInInspector]
+    public Attack attack;
 
     // probably could use a global projectile lifetime
     private float lifeTime = 20f;
+    private bool isDeflected = false;
+    private float deflectDamage;
 
     void Awake() {
       rBody = GetComponent<Rigidbody>();
@@ -26,13 +30,23 @@ namespace ofr.grim {
         return;
       }
 
-      if (attack.canHitAllies && tgt.tag == "Enemy") {
-        tgt.GetHit(gameObject, attack.damage, attack.isPowerful, attack.hitEffect);
-      } else if (tgt.tag == "Player") {
-        tgt.GetHit(gameObject, attack.damage, attack.isPowerful, attack.hitEffect);
+      switch (tgt.tag) {
+        case "Enemy":
+          if (isDeflected || attack.canHitAllies) {
+            tgt.GetHit(gameObject, isDeflected ? deflectDamage : attack.damage, attack.isPowerful, attack.hitEffect);
+            Destroy(gameObject);
+          }
+          break;
+        case "Player":
+          if (!isDeflected) {
+            tgt.GetHit(gameObject, attack.damage, attack.isPowerful, attack.hitEffect);
+            Destroy(gameObject);
+          }
+          break;
+        default:
+          Destroy(gameObject);
+          break;
       }
-
-      Destroy(gameObject);
     }
 
     public void Fire(Vector3 direction, Attack atk) {
@@ -43,6 +57,16 @@ namespace ofr.grim {
       rBody.velocity = direction * attack.projectileSpeed;
 
       Destroy(gameObject, Time.time + lifeTime);
+    }
+
+    public void Deflect(EnemyProjectile original, float damageMultiplier) {
+      GetComponent<Collider>().enabled = false;
+      attack = original.attack;
+      transform.forward = -original.transform.forward;
+      rBody.velocity = -original.rBody.velocity;
+      isDeflected = true;
+      deflectDamage = damageMultiplier * attack.damage;
+      GetComponent<Collider>().enabled = true;
     }
   }
 }

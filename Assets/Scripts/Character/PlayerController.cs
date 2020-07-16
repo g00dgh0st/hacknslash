@@ -43,6 +43,7 @@ namespace ofr.grim {
     private float lockOnCastRadius = 1f;
     private float lockOnCastDistance = 3.5f;
     private float parryTime = 0.2f;
+    private float deflectedProjectileDamageMultiplier = 2f;
     [SerializeField] private LayerMask enemyLayerMask;
     [SerializeField] private LayerMask groundCheckLayer;
 
@@ -351,8 +352,8 @@ namespace ofr.grim {
       }
     }
 
-    public override bool GetHit(GameObject hitter, float damage, bool isPowerful, GameObject fx) {
-      if (isDead || controlState == ControlState.Dodge) return false;
+    public override void GetHit(GameObject hitter, float damage, bool isPowerful, GameObject fx) {
+      if (isDead || controlState == ControlState.Dodge) return;
       Vector3 hitterPosition = hitter.transform.position;
       Vector3 hitDir = (hitterPosition - transform.position).normalized;
       hitDir.y = 0f;
@@ -362,10 +363,17 @@ namespace ofr.grim {
         if (lastBlockTime + parryTime > Time.time) {
           // parry
           EnemyController enemy = hitter.GetComponent<EnemyController>();
+          EnemyProjectile projectile = hitter.GetComponent<EnemyProjectile>();
 
           if (enemy != null) {
             enemy.GetParried(gameObject);
             Destroy(Instantiate(parryFX, transform.position + (Vector3.up * 1.5f), transform.rotation), 2f);
+          } else if (projectile != null) {
+            EnemyProjectile deflected = Instantiate(projectile) as EnemyProjectile;
+            deflected.Deflect(projectile, deflectedProjectileDamageMultiplier);
+          } else {
+            // block hit
+            Destroy(Instantiate(blockFX, transform.position + (Vector3.up * 1.5f), transform.rotation), 2f);
           }
         } else {
           // block hit
@@ -382,8 +390,6 @@ namespace ofr.grim {
         anim.SetBool("bigHit", isPowerful);
         anim.SetTrigger("hit");
       }
-
-      return true;
     }
 
     protected override void Die() {

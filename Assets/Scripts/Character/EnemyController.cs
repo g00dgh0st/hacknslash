@@ -176,8 +176,8 @@ namespace ofr.grim {
       navAgent.SetDestination(targetPos);
     }
 
-    public override bool GetHit(GameObject hitter, float damage, bool powerful, GameObject fx) {
-      if (isDead) return false;
+    public override void GetHit(GameObject hitter, float damage, bool powerful, GameObject fx) {
+      if (isDead) return;
       Vector3 hitterPosition = hitter.transform.position;
 
       TakeDamage(damage);
@@ -187,7 +187,6 @@ namespace ofr.grim {
         Stagger(hitterPosition, false);
       }
 
-      return true;
     }
 
     // NOTE: this is called from Player's GetHit, so attack is already executed

@@ -13,12 +13,12 @@ MonoBehaviour:
   m_Name: RangedEnemyBasicAttack
   m_EditorClassIdentifier: 
   animId: 0
-  type: 0
   audio: {fileID: 0}
+  type: 0
   isPowerful: 0
   canHitAllies: 0
   damage: 10
   hitEffect: {fileID: 151260, guid: 63982e2446eb7374caf0cf6f475093e8, type: 3}
-  projectileSpeed: 20
+  projectileSpeed: 15
   projectile: {fileID: 8293572011914268557, guid: b0716a5407f1152478ad7c96deba9903,
     type: 3}
