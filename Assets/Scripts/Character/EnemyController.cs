@@ -50,6 +50,7 @@ namespace ofr.grim {
     private bool isStaggering = false;
     private float attackGiveUpTime = 0f;
     private bool attemptingAttack = false;
+    private bool inAttackQueue = false;
 
     void Awake() {
       anim = GetComponent<Animator>();
@@ -127,7 +128,9 @@ namespace ofr.grim {
         ResetAggro();
         return;
       } else if (CheckForPlayerDistance(combatRadius) && CheckForPlayerLOS(chaseRadius)) {
-        GameManager.enemyManager.EnterAttackQueue(this);
+        if (!inAttackQueue) {
+          inAttackQueue = GameManager.enemyManager.EnterAttackQueue(this);
+        }
         // In combat position
         if (attemptingAttack) {
           if (CheckForPlayerDistance(attackRadius))
@@ -238,7 +241,7 @@ namespace ofr.grim {
         (GameManager.player.transform.position + Vector3.up) - (transform.position + Vector3.up),
         out RaycastHit hit,
         distance,
-        type == EnemyType.Ranged ? Physics.DefaultRaycastLayers : LayerMask.NameToLayer("Enemy")
+        type == EnemyType.Ranged ? LayerMask.NameToLayer("Enemy") : Physics.DefaultRaycastLayers
       );
 
       if (hitSomething && hit.collider.tag == "Player") {
@@ -440,6 +443,7 @@ namespace ofr.grim {
 
     private void EndAttack() {
       attemptingAttack = false;
+      inAttackQueue = false;
       isAttacking = false;
       currentAttack = null;
       attackHits.Clear();

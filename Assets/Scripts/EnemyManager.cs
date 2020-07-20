@@ -18,8 +18,8 @@ namespace ofr.grim {
   }
 
   public class EnemyManager : MonoBehaviour {
-    private float attackCooldown = 1f;
-    private float repeatAttackerCooldown = 3f;
+    private float attackCooldown = 2f;
+    private float repeatAttackerCooldown = 4f;
 
     private EnemyQueue meleeQueue;
     private EnemyQueue rangedQueue;
@@ -29,8 +29,8 @@ namespace ofr.grim {
       rangedQueue = new EnemyQueue(EnemyType.Ranged);
     }
 
-    public void EnterAttackQueue(EnemyController enemy) {
-      AddToQueue(enemy, enemy.GetType());
+    public bool EnterAttackQueue(EnemyController enemy) {
+      return AddToQueue(enemy, enemy.GetType());
     }
 
     void Update() {
@@ -59,11 +59,12 @@ namespace ofr.grim {
       }
     }
 
-    private void AddToQueue(EnemyController enemy, EnemyType queueType) {
+    private bool AddToQueue(EnemyController enemy, EnemyType queueType) {
       Queue<EnemyController> enemies = GetQueueByType(queueType).enemies;
 
-      if (enemies.Contains(enemy)) return;
+      if (enemies.Contains(enemy)) return false;
       enemies.Enqueue(enemy);
+      return true;
     }
 
     private EnemyQueue GetQueueByType(EnemyType queueType) {
