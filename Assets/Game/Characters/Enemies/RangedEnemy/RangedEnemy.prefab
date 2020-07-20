@@ -286,6 +286,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   maxHealth: 60
   icons: {fileID: 1110483449225183842}
+  type: 1
   aggroRadius: 12
   chaseRadius: 14
   combatRadius: 10
@@ -296,7 +297,6 @@ MonoBehaviour:
     right: {fileID: 3307369488650264671}
     front: {fileID: 127407807063853148}
   attacks: {fileID: 11400000, guid: 75b23793dcae3b345b3d8c9381185c41, type: 2}
-  attackCooldown: 2
   bigBoy: 0
 --- !u!195 &6066643290064697621
 NavMeshAgent:

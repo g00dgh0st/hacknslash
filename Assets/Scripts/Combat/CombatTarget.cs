@@ -16,6 +16,10 @@ namespace ofr.grim {
       return;
     }
 
+    public bool IsDead() {
+      return isDead;
+    }
+
     protected virtual void Die() {
       isDead = true;
     }

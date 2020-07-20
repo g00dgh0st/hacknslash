@@ -11,6 +11,11 @@ namespace ofr.grim {
     Reset
   }
 
+  public enum EnemyType {
+    Melee,
+    Ranged
+  }
+
   // require enemy ui
   // require enemyAttackController
 
@@ -21,6 +26,7 @@ namespace ofr.grim {
     private AudioSource audio;
     [SerializeField] private EnemyIcons icons;
 
+    [SerializeField] private EnemyType type;
     public float aggroRadius = 8f;
     public float chaseRadius = 12f;
     public float combatRadius = 4f;
@@ -36,15 +42,14 @@ namespace ofr.grim {
 
     // Attack config
     [SerializeField] private AttackSet attacks;
-    public float attackCooldown = 2f;
     public bool bigBoy = false;
 
     private Attack currentAttack;
     protected List<CombatTarget> attackHits;
     private bool isAttacking = false;
     private bool isStaggering = false;
-    private float nextAttackTime = 0f;
     private float attackGiveUpTime = 0f;
+    private bool attemptingAttack = false;
 
     void Awake() {
       anim = GetComponent<Animator>();
@@ -91,6 +96,14 @@ namespace ofr.grim {
         HandleTurningToPlayer(attackingTurnSpeed);
     }
 
+    public void AttemptAttack() {
+      attemptingAttack = true;
+    }
+
+    public EnemyType GetType() {
+      return type;
+    }
+
     private void HandleResetControl() {
       if (CheckForNavAgentReachedDestination()) {
         ResetIdle();
@@ -114,10 +127,9 @@ namespace ofr.grim {
         ResetAggro();
         return;
       } else if (CheckForPlayerDistance(combatRadius) && CheckForPlayerLOS(chaseRadius)) {
-        if (nextAttackTime == 0f)
-          nextAttackTime = Time.time + attackCooldown;
+        GameManager.enemyManager.EnterAttackQueue(this);
         // In combat position
-        if (nextAttackTime < Time.time) {
+        if (attemptingAttack) {
           if (CheckForPlayerDistance(attackRadius))
             AttackPlayer();
           else
@@ -148,7 +160,7 @@ namespace ofr.grim {
     private void ResetIdle() {
       state = AIState.Idle;
       Interrupt();
-      AnimateLocomotion(0);
+      StartCoroutine(HandleStoppingAsync(attackTurnTime));
     }
 
     private void AttackPlayer() {
@@ -161,7 +173,6 @@ namespace ofr.grim {
         StartCoroutine(HandleStoppingAsync(attackTurnTime));
       StartCoroutine(HandleTurningAsync(lookDir, attackTurnTime));
 
-      //// TEMP: need way to configure all attacks instead of random
       currentAttack = attacks.GetByRandomSeed(Random.Range(0f, 1f));
       anim.SetInteger("attackType", currentAttack.animId);
       anim.SetTrigger("attack");
@@ -212,7 +223,6 @@ namespace ofr.grim {
       anim.SetTrigger("hit");
       anim.SetBool("bigHit", bigBoy ? false : bigHit);
       transform.rotation = Quaternion.LookRotation(hitterPosition - transform.position);
-      // StartCoroutine(HandleMovingAsync(transform.position - (transform.forward * 0.5f), 0.1f));
     }
 
     private bool CheckForPlayerDistance(float radius) {
@@ -223,7 +233,13 @@ namespace ofr.grim {
     }
 
     private bool CheckForPlayerLOS(float distance) {
-      bool hitSomething = Physics.Raycast(transform.position + Vector3.up, (GameManager.player.transform.position + Vector3.up) - (transform.position + Vector3.up), out RaycastHit hit, distance, LayerMask.NameToLayer("Enemy"));
+      bool hitSomething = Physics.Raycast(
+        transform.position + Vector3.up,
+        (GameManager.player.transform.position + Vector3.up) - (transform.position + Vector3.up),
+        out RaycastHit hit,
+        distance,
+        type == EnemyType.Ranged ? Physics.DefaultRaycastLayers : LayerMask.NameToLayer("Enemy")
+      );
 
       if (hitSomething && hit.collider.tag == "Player") {
         return true;
@@ -295,7 +311,7 @@ namespace ofr.grim {
       }
 
       navAgent.ResetPath();
-      AnimateLocomotion(0);
+      AnimateLocomotion(0, false);
     }
 
     // TODO: duped with player controller
@@ -323,8 +339,11 @@ namespace ofr.grim {
       proj.Fire(GameManager.player.transform.position - proj.transform.position, currentAttack);
     }
 
-    protected void AnimateLocomotion(float speed) {
-      anim.SetFloat("speed", speed, 0.2f, Time.deltaTime);
+    protected void AnimateLocomotion(float speed, bool lerpVal = true) {
+      if (lerpVal)
+        anim.SetFloat("speed", speed, 0.2f, Time.deltaTime);
+      else
+        anim.SetFloat("speed", speed);
     }
 
     // protected void AnimateDodge() {
@@ -420,9 +439,9 @@ namespace ofr.grim {
     }
 
     private void EndAttack() {
+      attemptingAttack = false;
       isAttacking = false;
       currentAttack = null;
-      nextAttackTime = Time.time + attackCooldown;
       attackHits.Clear();
       anim.ResetTrigger("attack");
       icons.DisableIcons();
