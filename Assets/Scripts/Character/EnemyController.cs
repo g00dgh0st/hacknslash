@@ -27,7 +27,8 @@ namespace ofr.grim {
     [SerializeField] private EnemyIcons icons;
 
     [SerializeField] private EnemyType type;
-    public float repeatAttackCooldown = 3f;
+    public float attemptAttackTime = 4f;
+    public float repeatAttackCooldown = 2f;
     public float aggroRadius = 8f;
     public float chaseRadius = 12f;
     public float combatRadius = 4f;
@@ -45,12 +46,12 @@ namespace ofr.grim {
     [SerializeField] private AttackSet attacks;
     public bool bigBoy = false;
 
+    private float attackGiveUpTime;
     private float repeatAttackTime;
     private Attack currentAttack;
     protected List<CombatTarget> attackHits;
     private bool isAttacking = false;
     private bool isStaggering = false;
-    private float attackGiveUpTime = 0f;
     private bool attemptingAttack = false;
     private bool inAttackQueue = false;
 
@@ -90,11 +91,9 @@ namespace ofr.grim {
     }
 
     void OnAnimatorMove() {
-      if (isAttacking)
-        print("ATtacking");
       if (isAttacking || isStaggering) {
         // attack animations only atm
-        transform.position += anim.deltaPosition;
+        navAgent.Move(anim.deltaPosition);
       }
 
       if (isAttacking)
@@ -102,6 +101,11 @@ namespace ofr.grim {
     }
 
     public void AttemptAttack() {
+      attemptingAttack = true;
+      attackGiveUpTime = Time.time + attemptAttackTime;
+    }
+
+    public void GiveUpAttack() {
       attemptingAttack = true;
     }
 
@@ -124,6 +128,7 @@ namespace ofr.grim {
     }
 
     private void HandleCombatControl() {
+      // TODO: this whole logic tree is a mess
       if (isAttacking || isStaggering) {
         return;
       }
@@ -132,16 +137,21 @@ namespace ofr.grim {
         ResetAggro();
         return;
       } else if (CheckForPlayerDistance(combatRadius) && CheckForPlayerLOS(chaseRadius)) {
+        // In combat position
         if (!inAttackQueue && repeatAttackTime < Time.time) {
           inAttackQueue = GameManager.enemyManager.EnterAttackQueue(this);
         }
-        // In combat position
-        if (attemptingAttack) {
+
+        if (attemptingAttack && attackGiveUpTime > Time.time) {
+          // move to attack range and attack
           if (CheckForPlayerDistance(attackRadius))
             AttackPlayer();
           else
             MoveTo(GameManager.player.gameObject.transform.position);
         } else {
+          if (attemptingAttack) EndAttack();
+
+          // waiting for turn to attack
           if (navAgent.velocity.sqrMagnitude > 0f)
             StartCoroutine(HandleStoppingAsync(attackTurnTime));
           HandleTurningToPlayer(combatIdleTurnSpeed);

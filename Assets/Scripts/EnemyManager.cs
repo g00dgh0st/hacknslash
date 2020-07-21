@@ -18,7 +18,7 @@ namespace ofr.grim {
   }
 
   public class EnemyManager : MonoBehaviour {
-    private float attackCooldown = 1.5f;
+    private float attackCooldown = 1f;
 
     private EnemyQueue meleeQueue;
     private EnemyQueue rangedQueue;

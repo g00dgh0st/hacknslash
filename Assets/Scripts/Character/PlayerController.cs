@@ -384,6 +384,9 @@ namespace ofr.grim {
         ToggleBlock(false);
         TakeDamage(damage);
         controlState = ControlState.Hit;
+        if (isPowerful)
+          turnRoutine = StartCoroutine(HandleTurningAsync(hitDir, attackTurnTime));
+
         controller.Move(hitDir * -0.1f);
         Destroy(Instantiate(fx, transform.position + (Vector3.up * 1.5f), transform.rotation), 2f);
         hitMovement = isPowerful;
