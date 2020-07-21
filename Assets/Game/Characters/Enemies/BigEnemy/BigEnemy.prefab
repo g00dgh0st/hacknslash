@@ -288,7 +288,7 @@ MonoBehaviour:
   maxHealth: 200
   icons: {fileID: 1110483449225183842}
   type: 0
-  repeatAttackCooldown: 3
+  repeatAttackCooldown: 2
   aggroRadius: 10
   chaseRadius: 12
   combatRadius: 6
