@@ -725,10 +725,13 @@ ModelImporter:
     second: upperarm_twist_01_r
   - first:
       74: 7400000
-    second: Frank_RPG_Warrior_Combo01_All
+    second: Attack-Frank_RPG_Warrior_Combo01_All
   - first:
       95: 9500000
     second: //RootNode
+  - first:
+      74: 8894988783443136170
+    second: Ante-Frank_RPG_Warrior_Combo01_All
   externalObjects: {}
   materials:
     materialImportMode: 1
@@ -787,10 +790,10 @@ ModelImporter:
     extraUserProperties: []
     clipAnimations:
     - serializedVersion: 16
-      name: Frank_RPG_Warrior_Combo01_All
+      name: Attack-Frank_RPG_Warrior_Combo01_All
       takeName: Take 001
       internalID: 0
-      firstFrame: 0
+      firstFrame: 22
       lastFrame: 204
       wrapMode: 0
       orientationOffsetY: 0
@@ -811,118 +814,133 @@ ModelImporter:
       bodyMask: 01000000010000000100000001000000010000000100000001000000010000000100000001000000010000000100000001000000
       curves: []
       events:
-      - time: 0
-        functionName: AttackEvent
-        data: start
-        objectReferenceParameter: {instanceID: 0}
-        floatParameter: 0
-        intParameter: 0
-        messageOptions: 0
-      - time: 0.11409397
+      - time: 0.0024434812
         functionName: AttackEvent
         data: swing
         objectReferenceParameter: {instanceID: 0}
         floatParameter: 0
         intParameter: 0
         messageOptions: 0
-      - time: 0.12416107
+      - time: 0.0125105865
         functionName: AttackEvent
         data: collide.right
         objectReferenceParameter: {instanceID: 0}
         floatParameter: 0
         intParameter: 0
         messageOptions: 0
-      - time: 0.13087249
+      - time: 0.019222002
         functionName: AttackEvent
         data: collide
         objectReferenceParameter: {instanceID: 0}
         floatParameter: 0
         intParameter: 0
         messageOptions: 0
-      - time: 0.13911816
+      - time: 0.02746768
         functionName: AttackEvent
         data: collide.left
         objectReferenceParameter: {instanceID: 0}
         floatParameter: 0
         intParameter: 0
         messageOptions: 0
-      - time: 0.23154363
+      - time: 0.13809703
         functionName: AttackEvent
         data: swing
         objectReferenceParameter: {instanceID: 0}
         floatParameter: 0
         intParameter: 0
         messageOptions: 0
-      - time: 0.26174498
+      - time: 0.16829838
         functionName: AttackEvent
         data: collide.left
         objectReferenceParameter: {instanceID: 0}
         floatParameter: 0
         intParameter: 0
         messageOptions: 0
-      - time: 0.2651007
+      - time: 0.17165409
         functionName: AttackEvent
         data: collide
         objectReferenceParameter: {instanceID: 0}
         floatParameter: 0
         intParameter: 0
         messageOptions: 0
-      - time: 0.27181208
+      - time: 0.17836548
         functionName: AttackEvent
         data: collide.right
         objectReferenceParameter: {instanceID: 0}
         floatParameter: 0
         intParameter: 0
         messageOptions: 0
-      - time: 0.43288592
+      - time: 0.36492476
         functionName: AttackEvent
         data: swing
         objectReferenceParameter: {instanceID: 0}
         floatParameter: 0
         intParameter: 0
         messageOptions: 0
-      - time: 0.4420423
+      - time: 0.37408113
         functionName: AttackEvent
         data: collide.left
         objectReferenceParameter: {instanceID: 0}
         floatParameter: 0
         intParameter: 0
         messageOptions: 0
-      - time: 0.6577181
-        functionName: AttackEvent
-        data: swing
-        objectReferenceParameter: {instanceID: 0}
-        floatParameter: 0
-        intParameter: 0
-        messageOptions: 0
-      - time: 0.9306297
-        functionName: AttackEvent
-        data: end
-        objectReferenceParameter: {instanceID: 0}
-        floatParameter: 0
-        intParameter: 0
-        messageOptions: 0
-      - time: 0.44966444
+      - time: 0.3817033
         functionName: AttackEvent
         data: collide
         objectReferenceParameter: {instanceID: 0}
         floatParameter: 0
         intParameter: 0
         messageOptions: 0
-      - time: 0.45637587
+      - time: 0.3884147
         functionName: AttackEvent
         data: collide.right
         objectReferenceParameter: {instanceID: 0}
         floatParameter: 0
         intParameter: 0
         messageOptions: 0
-      - time: 0.68456376
+      - time: 0.6188832
+        functionName: AttackEvent
+        data: swing
+        objectReferenceParameter: {instanceID: 0}
+        floatParameter: 0
+        intParameter: 0
+        messageOptions: 0
+      - time: 0.6457288
         functionName: AttackEvent
         data: collide
         objectReferenceParameter: {instanceID: 0}
         floatParameter: 0
         intParameter: 0
         messageOptions: 0
+      transformMask: []
+      maskType: 3
+      maskSource: {instanceID: 0}
+      additiveReferencePoseFrame: 0
+    - serializedVersion: 16
+      name: Ante-Frank_RPG_Warrior_Combo01_All
+      takeName: Take 001
+      internalID: 0
+      firstFrame: 0
+      lastFrame: 22
+      wrapMode: 0
+      orientationOffsetY: 0
+      level: 0
+      cycleOffset: 0
+      loop: 0
+      hasAdditiveReferencePose: 0
+      loopTime: 0
+      loopBlend: 0
+      loopBlendOrientation: 0
+      loopBlendPositionY: 0
+      loopBlendPositionXZ: 0
+      keepOriginalOrientation: 0
+      keepOriginalPositionY: 1
+      keepOriginalPositionXZ: 0
+      heightFromFeet: 0
+      mirror: 0
+      bodyMask: 01000000010000000100000001000000010000000100000001000000010000000100000001000000010000000100000001000000
+      curves: []
+      events: []
       transformMask: []
       maskType: 3
       maskSource: {instanceID: 0}

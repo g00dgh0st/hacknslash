@@ -486,11 +486,6 @@ namespace ofr.grim {
           AttackCollision(weaponCollision.front);
         }
       }
-
-      // if (message == "end") {
-      //   // when transitioning to dodge or hit, since it bypasses the statemachineexit on the attackmachine
-      //   AttackMachineCallback(false);
-      // }
     }
 
     protected void HitEvent(string message) {

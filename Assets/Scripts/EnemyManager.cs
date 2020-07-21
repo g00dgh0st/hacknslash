@@ -18,8 +18,7 @@ namespace ofr.grim {
   }
 
   public class EnemyManager : MonoBehaviour {
-    private float attackCooldown = 2f;
-    private float repeatAttackerCooldown = 4f;
+    private float attackCooldown = 1.5f;
 
     private EnemyQueue meleeQueue;
     private EnemyQueue rangedQueue;
@@ -49,12 +48,6 @@ namespace ofr.grim {
     private void CheckForAttack(ref EnemyQueue queue) {
       if (queue.enemies.Count > 0 && queue.nextAttackTime < Time.time) {
 
-        if (queue.lastAttackedEnemy == queue.enemies.Peek()) {
-          // if repeat attacker add extra time
-          queue.nextAttackTime += repeatAttackerCooldown;
-          queue.lastAttackedEnemy = null;
-          return;
-        }
         OrderAttack(ref queue);
       }
     }

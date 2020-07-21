@@ -286,9 +286,11 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   maxHealth: 100
   icons: {fileID: 1110483449225183842}
+  type: 0
+  repeatAttackCooldown: 3
   aggroRadius: 8
   chaseRadius: 10
-  combatRadius: 4
+  combatRadius: 5
   attackRadius: 2
   startPosition: {fileID: 0}
   weaponCollision:
@@ -296,7 +298,6 @@ MonoBehaviour:
     right: {fileID: 3307369488650264671}
     front: {fileID: 127407807063853148}
   attacks: {fileID: 11400000, guid: 91807893511b75a4ba9a2cf8df80b146, type: 2}
-  attackCooldown: 2
   bigBoy: 0
 --- !u!195 &6066643290064697621
 NavMeshAgent:

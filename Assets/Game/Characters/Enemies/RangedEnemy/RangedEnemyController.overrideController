@@ -9,5 +9,11 @@ AnimatorOverrideController:
   m_Name: RangedEnemyController
   m_Controller: {fileID: 9100000, guid: 45f48d406235a504f8bd209b6b033e8b, type: 2}
   m_Clips:
-  - m_OriginalClip: {fileID: 7400000, guid: 706404034a11ae84bad32751f666787b, type: 3}
-    m_OverrideClip: {fileID: 7400000, guid: 24d693751e9fd0b42ba8f9595d8b5f5e, type: 3}
+  - m_OriginalClip: {fileID: 7838255338271458902, guid: 706404034a11ae84bad32751f666787b,
+      type: 3}
+    m_OverrideClip: {fileID: 8101442245359822177, guid: 24d693751e9fd0b42ba8f9595d8b5f5e,
+      type: 3}
+  - m_OriginalClip: {fileID: 1398439576654399577, guid: 706404034a11ae84bad32751f666787b,
+      type: 3}
+    m_OverrideClip: {fileID: 3567989068479072110, guid: 24d693751e9fd0b42ba8f9595d8b5f5e,
+      type: 3}

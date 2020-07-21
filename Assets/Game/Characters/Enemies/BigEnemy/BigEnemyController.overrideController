@@ -9,7 +9,18 @@ AnimatorOverrideController:
   m_Name: BigEnemyController
   m_Controller: {fileID: 9100000, guid: 45f48d406235a504f8bd209b6b033e8b, type: 2}
   m_Clips:
-  - m_OriginalClip: {fileID: 7400000, guid: 706404034a11ae84bad32751f666787b, type: 3}
-    m_OverrideClip: {fileID: 7400000, guid: f4dedcb0ac221ba42826d0ea12839631, type: 3}
-  - m_OriginalClip: {fileID: 7400000, guid: f4dedcb0ac221ba42826d0ea12839631, type: 3}
+  - m_OriginalClip: {fileID: 7838255338271458902, guid: 706404034a11ae84bad32751f666787b,
+      type: 3}
+    m_OverrideClip: {fileID: -1765991229557360603, guid: f4dedcb0ac221ba42826d0ea12839631,
+      type: 3}
+  - m_OriginalClip: {fileID: 1398439576654399577, guid: 706404034a11ae84bad32751f666787b,
+      type: 3}
+    m_OverrideClip: {fileID: 8146196522895676335, guid: f4dedcb0ac221ba42826d0ea12839631,
+      type: 3}
+  - m_OriginalClip: {fileID: -1765991229557360603, guid: f4dedcb0ac221ba42826d0ea12839631,
+      type: 3}
+    m_OverrideClip: {fileID: 8894988783443136170, guid: 41123b1d356a8f348af4651f0f1198d4,
+      type: 3}
+  - m_OriginalClip: {fileID: 8146196522895676335, guid: f4dedcb0ac221ba42826d0ea12839631,
+      type: 3}
     m_OverrideClip: {fileID: 7400000, guid: 41123b1d356a8f348af4651f0f1198d4, type: 3}

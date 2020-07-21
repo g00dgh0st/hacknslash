@@ -27,6 +27,7 @@ namespace ofr.grim {
     [SerializeField] private EnemyIcons icons;
 
     [SerializeField] private EnemyType type;
+    public float repeatAttackCooldown = 3f;
     public float aggroRadius = 8f;
     public float chaseRadius = 12f;
     public float combatRadius = 4f;
@@ -44,6 +45,7 @@ namespace ofr.grim {
     [SerializeField] private AttackSet attacks;
     public bool bigBoy = false;
 
+    private float repeatAttackTime;
     private Attack currentAttack;
     protected List<CombatTarget> attackHits;
     private bool isAttacking = false;
@@ -88,6 +90,8 @@ namespace ofr.grim {
     }
 
     void OnAnimatorMove() {
+      if (isAttacking)
+        print("ATtacking");
       if (isAttacking || isStaggering) {
         // attack animations only atm
         transform.position += anim.deltaPosition;
@@ -128,7 +132,7 @@ namespace ofr.grim {
         ResetAggro();
         return;
       } else if (CheckForPlayerDistance(combatRadius) && CheckForPlayerLOS(chaseRadius)) {
-        if (!inAttackQueue) {
+        if (!inAttackQueue && repeatAttackTime < Time.time) {
           inAttackQueue = GameManager.enemyManager.EnterAttackQueue(this);
         }
         // In combat position
@@ -177,7 +181,7 @@ namespace ofr.grim {
       StartCoroutine(HandleTurningAsync(lookDir, attackTurnTime));
 
       currentAttack = attacks.GetByRandomSeed(Random.Range(0f, 1f));
-      anim.SetInteger("attackType", currentAttack.animId);
+      anim.SetFloat("attackType", currentAttack.animId);
       anim.SetTrigger("attack");
       if (currentAttack.isPowerful) {
         icons.PowerAttack(true);
@@ -205,6 +209,9 @@ namespace ofr.grim {
 
     // NOTE: this is called from Player's GetHit, so attack is already executed
     public void GetParried(GameObject hitter) {
+      // set repeatAttacktime 
+      repeatAttackTime = Time.time + repeatAttackCooldown;
+
       Stagger(hitter.transform.position, true);
     }
 
@@ -349,6 +356,7 @@ namespace ofr.grim {
         anim.SetFloat("speed", speed);
     }
 
+    // /// ANIMATION EVENTS
     // protected void AnimateDodge() {
     //   movementState = MovementState.Dodge;
     //   anim.SetTrigger("dodge");
@@ -364,7 +372,6 @@ namespace ofr.grim {
     //   else movementState = MovementState.Locomotion;
     // }
 
-    // /// ANIMATION EVENTS
     // public void AttackMachineCallback(AttackState state) {
     //   attackState = state;
 
@@ -385,11 +392,24 @@ namespace ofr.grim {
     //   }
     // }
 
-    protected void AttackEvent(string message) {
-      if (message == "start") {
-        // StartAttack();
-      }
+    /// ANIMATION EVENTS
+    public void AttackMachineCallback(bool startStop) {
+      if (startStop) {
+        // controlState = ControlState.Attack;
+        // attackMovement = true;
+      } else {
+        EndAttack();
 
+        // successful attack set repeatAttacktime
+        repeatAttackTime = Time.time + repeatAttackCooldown;
+
+        // controlState = ControlState.Locomotion;
+        // attackMovement = false;
+        // anim.ResetTrigger("attack");
+      }
+    }
+
+    protected void AttackEvent(string message) {
       if (message == "swing") {
         // TEMP: just trying out audio
         audio.PlayOneShot(currentAttack.audio);

@@ -342,6 +342,10 @@ PrefabInstance:
   m_Modification:
     m_TransformParent: {fileID: 0}
     m_Modifications:
+    - target: {fileID: 11736965, guid: 74e37ff97bae04b41973d7ef34c663ab, type: 3}
+      propertyPath: repeatAttackCooldown
+      value: 3
+      objectReference: {fileID: 0}
     - target: {fileID: 6062212063775308525, guid: 74e37ff97bae04b41973d7ef34c663ab,
         type: 3}
       propertyPath: m_LocalPosition.x
@@ -7716,6 +7720,10 @@ PrefabInstance:
   m_Modification:
     m_TransformParent: {fileID: 0}
     m_Modifications:
+    - target: {fileID: 11736965, guid: 74e37ff97bae04b41973d7ef34c663ab, type: 3}
+      propertyPath: repeatAttackCooldown
+      value: 3
+      objectReference: {fileID: 0}
     - target: {fileID: 6062212063775308525, guid: 74e37ff97bae04b41973d7ef34c663ab,
         type: 3}
       propertyPath: m_LocalPosition.x
@@ -8284,6 +8292,10 @@ PrefabInstance:
   m_Modification:
     m_TransformParent: {fileID: 0}
     m_Modifications:
+    - target: {fileID: 11736965, guid: 74e37ff97bae04b41973d7ef34c663ab, type: 3}
+      propertyPath: repeatAttackCooldown
+      value: 3
+      objectReference: {fileID: 0}
     - target: {fileID: 6062212063775308525, guid: 74e37ff97bae04b41973d7ef34c663ab,
         type: 3}
       propertyPath: m_LocalPosition.x
@@ -8658,6 +8670,10 @@ PrefabInstance:
   m_Modification:
     m_TransformParent: {fileID: 0}
     m_Modifications:
+    - target: {fileID: 11736965, guid: 74e37ff97bae04b41973d7ef34c663ab, type: 3}
+      propertyPath: repeatAttackCooldown
+      value: 3
+      objectReference: {fileID: 0}
     - target: {fileID: 6062212063775308525, guid: 74e37ff97bae04b41973d7ef34c663ab,
         type: 3}
       propertyPath: m_LocalPosition.x
@@ -8732,6 +8748,10 @@ PrefabInstance:
   m_Modification:
     m_TransformParent: {fileID: 0}
     m_Modifications:
+    - target: {fileID: 11736965, guid: 74e37ff97bae04b41973d7ef34c663ab, type: 3}
+      propertyPath: repeatAttackCooldown
+      value: 3
+      objectReference: {fileID: 0}
     - target: {fileID: 6062212063775308525, guid: 74e37ff97bae04b41973d7ef34c663ab,
         type: 3}
       propertyPath: m_LocalPosition.x
