@@ -31,7 +31,6 @@ namespace ofr.grim {
     public float repeatAttackCooldown = 2f;
     public float aggroRadius = 8f;
     public float chaseRadius = 12f;
-    public float combatRadius = 4f;
     public float attackRadius = 2f;
     private float attackTurnTime = 0.2f;
     private float attackingTurnSpeed = 70f;
@@ -136,7 +135,7 @@ namespace ofr.grim {
       if (!CheckForPlayerDistance(chaseRadius)) {
         ResetAggro();
         return;
-      } else if (CheckForPlayerDistance(combatRadius) && CheckForPlayerLOS(chaseRadius)) {
+      } else if (CheckForPlayerDistance(aggroRadius) && CheckForPlayerLOS(chaseRadius)) {
         // In combat position
         if (!inAttackQueue && repeatAttackTime < Time.time) {
           inAttackQueue = GameManager.enemyManager.EnterAttackQueue(this);
@@ -491,12 +490,10 @@ namespace ofr.grim {
 
     /// DEbug stuff
     private void OnDrawGizmosSelected() {
-      Gizmos.color = Color.white;
-      Gizmos.DrawWireSphere(transform.position, aggroRadius);
       Gizmos.color = Color.green;
+      Gizmos.DrawWireSphere(transform.position, aggroRadius);
+      Gizmos.color = Color.white;
       Gizmos.DrawWireSphere(transform.position, chaseRadius);
-      Gizmos.color = Color.yellow;
-      Gizmos.DrawWireSphere(transform.position, combatRadius);
       Gizmos.color = Color.red;
       Gizmos.DrawWireSphere(transform.position, attackRadius);
     }

@@ -285,13 +285,13 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 3c2e3785a7d045c459d7d0ed0e9e83f8, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  maxHealth: 200
+  maxHealth: 400
   icons: {fileID: 1110483449225183842}
   type: 0
-  repeatAttackCooldown: 2
+  attemptAttackTime: 4
+  repeatAttackCooldown: 1.5
   aggroRadius: 10
   chaseRadius: 12
-  combatRadius: 6
   attackRadius: 3
   startPosition: {fileID: 0}
   weaponCollision:
