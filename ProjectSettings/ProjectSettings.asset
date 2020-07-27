@@ -565,7 +565,7 @@ PlayerSettings:
   webGLThreadsSupport: 0
   webGLWasmStreaming: 0
   scriptingDefineSymbols:
-    1: INVECTOR_BASIC;INVECTOR_MELEE
+    1: INVECTOR_BASIC;INVECTOR_MELEE;INVECTOR_SHOOTER
   platformArchitecture: {}
   scriptingBackend: {}
   il2cppCompilerConfiguration: {}

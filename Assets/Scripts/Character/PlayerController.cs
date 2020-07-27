@@ -145,7 +145,7 @@ namespace ofr.grim {
         return;
       }
 
-      if (Input.GetMouseButton(1)) {
+      if (Input.GetKey(KeyCode.LeftShift)) {
         ToggleBlock(true);
         return;
       }
@@ -179,7 +179,7 @@ namespace ofr.grim {
         return;
       }
 
-      if (Input.GetMouseButton(1)) {
+      if (Input.GetKey(KeyCode.LeftShift)) {
         if (attackState != AttackState.Swing) ToggleBlock(true);
       }
     }
@@ -189,7 +189,7 @@ namespace ofr.grim {
       HandleTurning(moveInput);
       HandleMoving(Vector3.ClampMagnitude(moveInput, blockMaxMoveInput));
 
-      if (!Input.GetMouseButton(1)) {
+      if (!Input.GetKey(KeyCode.LeftShift)) {
         ToggleBlock(false);
         return;
       }
