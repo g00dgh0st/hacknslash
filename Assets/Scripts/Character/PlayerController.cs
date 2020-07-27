@@ -160,12 +160,10 @@ namespace ofr.grim {
     }
 
     private void HandleAttackControl() {
-      Vector3 moveInput = GetInputDirectionByCamera();
-
       if (Input.GetButtonDown("Jump") && attackState != AttackState.Swing) {
         // trigger the end event just to make sure attack state is cleared
         AttackEvent("end");
-        Dodge(moveInput);
+        Dodge(GetInputDirectionByCamera());
         return;
       }
 
