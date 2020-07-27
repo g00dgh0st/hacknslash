@@ -141,7 +141,7 @@ namespace ofr.grim {
       }
 
       if (Input.GetMouseButtonDown(0)) {
-        Attack(moveInput);
+        Attack(GetInputDirectionByMouse());
         return;
       }
 
@@ -171,7 +171,7 @@ namespace ofr.grim {
 
       if (Input.GetMouseButtonDown(0)) {
         if (attackState == AttackState.Continue) {
-          Attack(moveInput);
+          Attack(GetInputDirectionByMouse());
         } else if (attackState == AttackState.Swing) {
           /// Queue attack for next tick
         }
@@ -318,6 +318,15 @@ namespace ofr.grim {
     // Apply all movement at once, so there is only one Move call
     private void MakeMove() {
       controller.Move(moveVector * Time.deltaTime);
+    }
+
+    private Vector3 GetInputDirectionByMouse() {
+      Ray mouseRay = mainCam.ScreenPointToRay(Input.mousePosition);
+      Plane clickPlane = new Plane(Vector3.up, transform.position);
+
+      clickPlane.Raycast(mouseRay, out float hitDist);
+
+      return mouseRay.GetPoint(hitDist) - transform.position;
     }
 
     private Vector3 GetInputDirectionByCamera() {

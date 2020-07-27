@@ -15,10 +15,9 @@ namespace ofr.grim {
     void Awake() {
       Time.timeScale = timeScale;
       enemyManager = GetComponent<EnemyManager>();
-    }
-
-    void Start() {
       player = GameObject.Find("Player").GetComponent<PlayerController>();
     }
+
+    void Start() {}
   }
 }
