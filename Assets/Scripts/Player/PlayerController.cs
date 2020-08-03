@@ -114,9 +114,9 @@ namespace ofr.grim.player {
       if (debugMode)
         debugText.text = controlState.ToString("g");
 
-      // if (Input.GetKeyDown(KeyCode.E)) {
-      //   GetHit(transform.position + Vector3.up - transform.forward, 0, false, hitFX);
-      // }
+      if (Input.GetKeyDown(KeyCode.E)) {
+        GetHit(gameObject, 0, false, weapon.hitFX);
+      }
 
       ApplyGravity();
 
@@ -144,6 +144,12 @@ namespace ofr.grim.player {
     private void HandleGroundedControl() {
       Vector3 moveInput = GetInputDirectionByCamera();
       HandleTurning(moveInput);
+
+      if (Input.GetKeyDown(KeyCode.Alpha0)) {
+        weapon = weaponManager.Equip(0);
+      } else if (Input.GetKeyDown(KeyCode.Alpha1)) {
+        weapon = weaponManager.Equip(1);
+      }
 
       if (Input.GetButtonDown("Jump")) {
         Dodge(moveInput);
