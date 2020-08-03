@@ -2,7 +2,7 @@
 using System.Collections.Generic;
 using UnityEngine;
 
-namespace ofr.grim {
+namespace ofr.grim.combat {
   public class Health : MonoBehaviour {
     private float maxHealth = 100f;
     private float currentHealth;

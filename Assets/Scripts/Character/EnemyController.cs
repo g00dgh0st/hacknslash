@@ -1,9 +1,11 @@
 ﻿using System.Collections;
 using System.Collections.Generic;
+using ofr.grim.combat;
+using ofr.grim.core;
 using UnityEngine;
 using UnityEngine.AI;
 
-namespace ofr.grim {
+namespace ofr.grim.character {
   public enum AIState {
     Idle,
     Patrol,

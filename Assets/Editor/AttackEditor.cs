@@ -1,4 +1,5 @@
-﻿using UnityEditor;
+﻿using ofr.grim.combat;
+using UnityEditor;
 using UnityEngine;
 
 namespace ofr.grim.editor {

@@ -1,8 +1,9 @@
 ﻿using System.Collections;
 using System.Collections.Generic;
+using ofr.grim.player;
 using UnityEngine;
 
-namespace ofr.grim {
+namespace ofr.grim.core {
   [RequireComponent(typeof(EnemyManager))]
   public class GameManager : MonoBehaviour {
     [SerializeField]

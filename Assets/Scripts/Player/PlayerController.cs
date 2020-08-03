@@ -1,11 +1,13 @@
 ﻿using System;
 using System.Collections;
 using System.Collections.Generic;
+using ofr.grim.character;
+using ofr.grim.combat;
 using ofr.grim.debug;
 using UnityEngine;
 using UnityEngine.UI;
 
-namespace ofr.grim {
+namespace ofr.grim.player {
   public enum ControlState {
     Locomotion,
     Attack,
@@ -20,6 +22,7 @@ namespace ofr.grim {
     End
   }
 
+  [RequireComponent(typeof(WeaponManager))]
   public class PlayerController : CombatTarget {
     // DEBUG STUFF
     public bool debugMode = false;
@@ -32,8 +35,11 @@ namespace ofr.grim {
     private CharacterController controller;
     private Animator anim;
     private AudioSource audio;
+    private WeaponManager weaponManager;
 
     // player control config
+    [SerializeField] private LayerMask enemyLayerMask;
+    [SerializeField] private LayerMask groundCheckLayer;
     private float locomotionTransitionDampen = 0.2f;
     private float turnDamped = 10f;
     private float attackTurnTime = 0.1f;
@@ -44,22 +50,22 @@ namespace ofr.grim {
     private float lockOnCastDistance = 3.5f;
     private float parryTime = 0.2f;
     private float deflectedProjectileDamageMultiplier = 2f;
-    [SerializeField] private LayerMask enemyLayerMask;
-    [SerializeField] private LayerMask groundCheckLayer;
-
-    // This should be part of a weapon object
     float gapCloseMaxReach = 2.05f;
     float gapCloseMinReach = 1.3f;
     float gapCloseSpeed = 0.15f;
-    float attackDamage = 20f;
-    [SerializeField] private AudioClip swingAudio;
-    [SerializeField] private WeaponCollision weaponCollision;
-    [SerializeField] private GameObject hitFX;
     [SerializeField] private GameObject blockFX;
     [SerializeField] private GameObject parryFX;
+    [SerializeField] private WeaponCollision weaponCollision;
+
+    // This should be part of a weapon object
+    // float attackDamage = 20f;
+    // [SerializeField] private AudioClip swingAudio;
+    // [SerializeField] private GameObject hitFX;
+    // [SerializeField] private GameObject equippedWeaponPrefab;
     // end weapon config
 
     // state vars
+    private Weapon weapon;
     private Vector3 moveVector;
     private ControlState controlState { get; set; }
     private AttackState attackState { get; set; }
@@ -78,6 +84,7 @@ namespace ofr.grim {
       attackState = AttackState.End;
       attackHits = new List<CombatTarget>();
       controller = GetComponent<CharacterController>();
+      weaponManager = GetComponent<WeaponManager>();
       mainCam = Camera.main;
     }
 
@@ -88,6 +95,9 @@ namespace ofr.grim {
 
       if (debugMode)
         debug.SetActive(true);
+
+      /// TEMP
+      weapon = weaponManager.Equip(0);
     }
 
     void OnAnimatorMove() {
@@ -140,12 +150,15 @@ namespace ofr.grim {
         return;
       }
 
-      if (Input.GetMouseButtonDown(0)) {
+      if (Input.GetMouseButton(0)) {
+        print("charging");
+      } else if (Input.GetMouseButtonUp(0)) {
         Attack(GetInputDirectionByMouse());
         return;
       }
 
-      if (Input.GetKey(KeyCode.LeftShift)) {
+      // if (Input.GetKey(KeyCode.LeftShift)) {
+      if (Input.GetMouseButton(1)) {
         ToggleBlock(true);
         return;
       }
@@ -177,7 +190,8 @@ namespace ofr.grim {
         return;
       }
 
-      if (Input.GetKey(KeyCode.LeftShift)) {
+      // if (Input.GetKey(KeyCode.LeftShift)) {
+      if (Input.GetMouseButton(1)) {
         if (attackState != AttackState.Swing) ToggleBlock(true);
       }
     }
@@ -187,7 +201,8 @@ namespace ofr.grim {
       HandleTurning(moveInput);
       HandleMoving(Vector3.ClampMagnitude(moveInput, blockMaxMoveInput));
 
-      if (!Input.GetKey(KeyCode.LeftShift)) {
+      // if (!Input.GetKey(KeyCode.LeftShift)) {
+      if (!Input.GetMouseButton(1)) {
         ToggleBlock(false);
         return;
       }
@@ -353,7 +368,7 @@ namespace ofr.grim {
 
         if (tgt != null && !attackHits.Exists((t) => GameObject.ReferenceEquals(t, tgt))) {
           attackHits.Add(tgt);
-          tgt.GetHit(gameObject, attackDamage, false, hitFX);
+          tgt.GetHit(gameObject, weapon.attackDamage, false, weapon.hitFX);
 
         }
       }
@@ -474,7 +489,7 @@ namespace ofr.grim {
     protected void AttackEvent(string message) {
       if (message == "swing") {
         // TEMP: just trying out audio
-        audio.PlayOneShot(swingAudio);
+        audio.PlayOneShot(weapon.swingAudio);
       }
 
       if (message.Contains("collide")) {

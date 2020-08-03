@@ -1,5 +1,6 @@
 ﻿using System.Collections;
 using System.Collections.Generic;
+using ofr.grim.character;
 using UnityEngine;
 
 namespace ofr.grim {
