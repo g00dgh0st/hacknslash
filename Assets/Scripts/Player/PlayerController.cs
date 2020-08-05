@@ -97,7 +97,7 @@ namespace ofr.grim.player {
         debug.SetActive(true);
 
       /// TEMP
-      weapon = weaponManager.Equip(0);
+      // weapon = weaponManager.Equip(0);
     }
 
     void OnAnimatorMove() {
@@ -145,12 +145,6 @@ namespace ofr.grim.player {
       Vector3 moveInput = GetInputDirectionByCamera();
       HandleTurning(moveInput);
 
-      if (Input.GetKeyDown(KeyCode.Alpha0)) {
-        weapon = weaponManager.Equip(0);
-      } else if (Input.GetKeyDown(KeyCode.Alpha1)) {
-        weapon = weaponManager.Equip(1);
-      }
-
       if (Input.GetButtonDown("Jump")) {
         Dodge(moveInput);
         return;
@@ -159,12 +153,22 @@ namespace ofr.grim.player {
       if (Input.GetMouseButton(0)) {
         print("charging");
       } else if (Input.GetMouseButtonUp(0)) {
+        weapon = weaponManager.Equip(1);
+
+        Attack(GetInputDirectionByMouse());
+        return;
+      }
+      if (Input.GetMouseButton(1)) {
+        print("charging");
+      } else if (Input.GetMouseButtonUp(1)) {
+        weapon = weaponManager.Equip(2);
+
         Attack(GetInputDirectionByMouse());
         return;
       }
 
-      // if (Input.GetKey(KeyCode.LeftShift)) {
-      if (Input.GetMouseButton(1)) {
+      if (Input.GetKey(KeyCode.LeftShift)) {
+        // if (Input.GetMouseButton(1)) {
         ToggleBlock(true);
         return;
       }
@@ -196,8 +200,8 @@ namespace ofr.grim.player {
         return;
       }
 
-      // if (Input.GetKey(KeyCode.LeftShift)) {
-      if (Input.GetMouseButton(1)) {
+      if (Input.GetKey(KeyCode.LeftShift)) {
+        // if (Input.GetMouseButton(1)) {
         if (attackState != AttackState.Swing) ToggleBlock(true);
       }
     }
@@ -207,8 +211,8 @@ namespace ofr.grim.player {
       HandleTurning(moveInput);
       HandleMoving(Vector3.ClampMagnitude(moveInput, blockMaxMoveInput));
 
-      // if (!Input.GetKey(KeyCode.LeftShift)) {
-      if (!Input.GetMouseButton(1)) {
+      if (!Input.GetKey(KeyCode.LeftShift)) {
+        // if (!Input.GetMouseButton(1)) {
         ToggleBlock(false);
         return;
       }
@@ -401,25 +405,36 @@ namespace ofr.grim.player {
             deflected.Deflect(projectile, deflectedProjectileDamageMultiplier);
           } else {
             // block hit
+            anim.SetTrigger("hit");
             Destroy(Instantiate(blockFX, transform.position + (Vector3.up * 1.5f), transform.rotation), 2f);
           }
         } else {
           // block hit
+          anim.SetTrigger("hit");
           Destroy(Instantiate(blockFX, transform.position + (Vector3.up * 1.5f), transform.rotation), 2f);
         }
       } else {
         Interrupt();
         ToggleBlock(false);
+        weaponManager.Unequip();
+        weapon = null;
         TakeDamage(damage);
         controlState = ControlState.Hit;
-        if (isPowerful)
-          turnRoutine = StartCoroutine(HandleTurningAsync(hitDir, attackTurnTime));
+        hitMovement = true;
+        Vector3 hitAnimDir = transform.InverseTransformDirection(hitDir);
+        if (isPowerful) hitAnimDir *= 2;
 
-        controller.Move(hitDir * -0.1f);
-        Destroy(Instantiate(fx, transform.position + (Vector3.up * 1.5f), transform.rotation), 2f);
-        hitMovement = isPowerful;
-        anim.SetBool("bigHit", isPowerful);
         anim.SetTrigger("hit");
+        anim.SetFloat("hitX", hitAnimDir.x);
+        anim.SetFloat("hitY", hitAnimDir.z);
+        Destroy(Instantiate(fx, transform.position + (Vector3.up * 1.5f), transform.rotation), 2f);
+        // if (isPowerful)
+        //   turnRoutine = StartCoroutine(HandleTurningAsync(hitDir, attackTurnTime));
+        // controller.Move(hitDir * -0.1f);
+        // hitMovement = isPowerful;
+        // anim.SetBool("bigHit", isPowerful);
+        // temp
+
       }
     }
 
@@ -439,10 +454,13 @@ namespace ofr.grim.player {
     }
 
     protected void ToggleBlock(bool blockOn) {
-      if (blockOn) lastBlockTime = Time.time;
       anim.SetBool("block", blockOn);
-      if (blockOn) controlState = ControlState.Block;
-      else controlState = ControlState.Locomotion;
+      if (blockOn) {
+        controlState = ControlState.Block;
+        lastBlockTime = Time.time;
+
+        // if (weapon == null) weapon = weaponManager.Equip(1);
+      } else controlState = ControlState.Locomotion;
     }
 
     protected void AnimateLocomotion(float speed) {
