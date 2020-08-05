@@ -96,8 +96,9 @@ namespace ofr.grim.player {
       if (debugMode)
         debug.SetActive(true);
 
-      /// TEMP
-      // weapon = weaponManager.Equip(0);
+      /// TEMP      
+      weapon = weaponManager.Equip(1);
+
     }
 
     void OnAnimatorMove() {
@@ -145,25 +146,38 @@ namespace ofr.grim.player {
       Vector3 moveInput = GetInputDirectionByCamera();
       HandleTurning(moveInput);
 
+      if (Input.GetKeyDown(KeyCode.Alpha1)) {
+        weapon = weaponManager.Equip(1);
+      }
+      if (Input.GetKeyDown(KeyCode.Alpha2)) {
+        weapon = weaponManager.Equip(2);
+      }
+      if (Input.GetKeyDown(KeyCode.Alpha3)) {
+        weapon = weaponManager.Equip(3);
+      }
+      if (Input.GetKeyDown(KeyCode.Alpha0)) {
+        weapon = weaponManager.Equip(0);
+      }
+
       if (Input.GetButtonDown("Jump")) {
         Dodge(moveInput);
         return;
       }
 
-      if (Input.GetMouseButton(0)) {
-        print("charging");
-      } else if (Input.GetMouseButtonUp(0)) {
-        weapon = weaponManager.Equip(1);
+      // if (Input.GetMouseButton(0)) {
+      //   print("charging");
+      // } else 
 
+      if (Input.GetMouseButtonDown(0)) {
         Attack(GetInputDirectionByMouse());
         return;
       }
-      if (Input.GetMouseButton(1)) {
-        print("charging");
-      } else if (Input.GetMouseButtonUp(1)) {
-        print("attack");
-        weapon = weaponManager.Equip(3);
 
+      // if (Input.GetMouseButton(1)) {
+      //   print("charging");
+      // } else
+
+      if (Input.GetMouseButtonDown(1)) {
         Attack(GetInputDirectionByMouse());
         return;
       }
@@ -417,8 +431,6 @@ namespace ofr.grim.player {
       } else {
         Interrupt();
         ToggleBlock(false);
-        weaponManager.Unequip();
-        weapon = null;
         TakeDamage(damage);
         controlState = ControlState.Hit;
         hitMovement = true;
