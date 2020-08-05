@@ -102,6 +102,7 @@ MonoBehaviour:
   weapons:
   - {fileID: 11400000, guid: 94b1560d2e9f9554c99361b39f57b246, type: 2}
   - {fileID: 11400000, guid: bedf78c80af425d4cb791bbf4fba29aa, type: 2}
+  - {fileID: 11400000, guid: 1311216a03b76514eb8d949739842633, type: 2}
   leftHand: {fileID: 657146660313049278}
   rightHand: {fileID: 657124928206657624}
 --- !u!143 &7842574875209293745

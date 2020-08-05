@@ -115,7 +115,7 @@ namespace ofr.grim.player {
         debugText.text = controlState.ToString("g");
 
       if (Input.GetKeyDown(KeyCode.E)) {
-        GetHit(gameObject, 0, false, weapon.hitFX);
+        GetHit(gameObject, 0, false, blockFX);
       }
 
       ApplyGravity();
@@ -153,7 +153,7 @@ namespace ofr.grim.player {
       if (Input.GetMouseButton(0)) {
         print("charging");
       } else if (Input.GetMouseButtonUp(0)) {
-        weapon = weaponManager.Equip(1);
+        weapon = weaponManager.Equip(2);
 
         Attack(GetInputDirectionByMouse());
         return;
@@ -161,7 +161,7 @@ namespace ofr.grim.player {
       if (Input.GetMouseButton(1)) {
         print("charging");
       } else if (Input.GetMouseButtonUp(1)) {
-        weapon = weaponManager.Equip(2);
+        weapon = weaponManager.Equip(3);
 
         Attack(GetInputDirectionByMouse());
         return;
