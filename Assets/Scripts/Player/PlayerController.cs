@@ -97,7 +97,7 @@ namespace ofr.grim.player {
         debug.SetActive(true);
 
       /// TEMP      
-      weapon = weaponManager.Equip(1);
+      EquipWeapon(1);
 
     }
 
@@ -147,16 +147,16 @@ namespace ofr.grim.player {
       HandleTurning(moveInput);
 
       if (Input.GetKeyDown(KeyCode.Alpha1)) {
-        weapon = weaponManager.Equip(1);
+        EquipWeapon(1);
       }
       if (Input.GetKeyDown(KeyCode.Alpha2)) {
-        weapon = weaponManager.Equip(2);
+        EquipWeapon(2);
       }
       if (Input.GetKeyDown(KeyCode.Alpha3)) {
-        weapon = weaponManager.Equip(3);
+        EquipWeapon(3);
       }
       if (Input.GetKeyDown(KeyCode.Alpha0)) {
-        weapon = weaponManager.Equip(0);
+        EquipWeapon(0);
       }
 
       if (Input.GetButtonDown("Jump")) {
@@ -474,6 +474,10 @@ namespace ofr.grim.player {
 
         // if (weapon == null) weapon = weaponManager.Equip(1);
       } else controlState = ControlState.Locomotion;
+    }
+
+    protected void EquipWeapon(int wepIdx) {
+      weapon = weaponManager.Equip(wepIdx);
     }
 
     protected void AnimateLocomotion(float speed) {
