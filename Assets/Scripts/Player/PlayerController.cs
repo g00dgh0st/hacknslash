@@ -153,7 +153,7 @@ namespace ofr.grim.player {
       if (Input.GetMouseButton(0)) {
         print("charging");
       } else if (Input.GetMouseButtonUp(0)) {
-        weapon = weaponManager.Equip(2);
+        weapon = weaponManager.Equip(1);
 
         Attack(GetInputDirectionByMouse());
         return;
@@ -161,6 +161,7 @@ namespace ofr.grim.player {
       if (Input.GetMouseButton(1)) {
         print("charging");
       } else if (Input.GetMouseButtonUp(1)) {
+        print("attack");
         weapon = weaponManager.Equip(3);
 
         Attack(GetInputDirectionByMouse());
