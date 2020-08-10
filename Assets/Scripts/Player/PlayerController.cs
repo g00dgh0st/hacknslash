@@ -145,7 +145,6 @@ namespace ofr.grim.player {
 
     private void HandleGroundedControl() {
       Vector3 moveInput = GetInputDirectionByCamera();
-      HandleTurning(moveInput);
 
       if (Input.GetButtonDown("Jump")) {
         CancelCharging();
@@ -167,7 +166,7 @@ namespace ofr.grim.player {
         return;
       }
 
-      HandleMoving(moveInput.normalized);
+      HandleLocomotion(moveInput, chargingAttack);
     }
 
     private void HandleDodgeControl() {
@@ -221,15 +220,37 @@ namespace ofr.grim.player {
 
     }
 
+    private void HandleLocomotion(Vector3 moveInput, bool strafeMovement = false) {
+      // temp
+      if (!strafeMovement) {
+        HandleTurning(moveInput);
+        HandleMoving(moveInput.normalized);
+      } else {
+        HandleTurning(GetInputDirectionByMouse());
+        HandleStrafing(moveInput.normalized);
+      }
+    }
+
     private void HandleMoving(Vector3 moveInput) {
       float inputMagnitude = moveInput.magnitude;
 
       moveVector += transform.forward * inputMagnitude * moveSpeed;
-      if (chargingAttack) {
-        moveVector *= chargeSpeedDamper;
-        inputMagnitude *= chargeSpeedDamper;
-      }
+
       AnimateLocomotion(inputMagnitude);
+
+    }
+
+    private void HandleStrafing(Vector3 moveInput) {
+      Vector3 newMoveVec = moveInput * moveSpeed;
+      Vector3 animVec = transform.InverseTransformDirection(moveInput);
+
+      if (chargingAttack) {
+        newMoveVec *= chargeSpeedDamper;
+        animVec *= chargeSpeedDamper;
+      }
+
+      moveVector += newMoveVec;
+      AnimateLocomotion(animVec.x, animVec.z);
     }
 
     private IEnumerator HandleMovingAsync(Vector3 targetPosition, float timeToReach) {
@@ -301,23 +322,25 @@ namespace ofr.grim.player {
       return false;
     }
 
+    private void HandleCharging(Vector3 moveInput) {
+      chargeTime += Time.deltaTime;
+      if (moveInput.magnitude == 0)
+        HandleTurning(GetInputDirectionByMouse());
+    }
+
     private void StartCharging() {
       print("charging attack");
       chargingAttack = true;
       chargeTime = 0f;
+      anim.SetFloat("locomotionType", 1f);
       anim.SetBool("chargeAttack", true);
     }
 
     private void CancelCharging() {
       chargingAttack = false;
       chargeTime = 0f;
+      anim.SetFloat("locomotionType", 0f);
       anim.SetBool("chargeAttack", false);
-    }
-
-    private void HandleCharging(Vector3 moveInput) {
-      chargeTime += Time.deltaTime;
-      if (moveInput.magnitude == 0)
-        HandleTurning(GetInputDirectionByMouse());
     }
 
     private void Attack(Vector3 moveInput) {
@@ -531,6 +554,12 @@ namespace ofr.grim.player {
       anim.SetFloat("speed", Mathf.Lerp(anim.GetFloat("speed"), speed, locomotionTransitionDampen));
     }
 
+    protected void AnimateLocomotion(float speedX, float speedY) {
+      // TODO: this should only lerp down to 0 not always
+      anim.SetFloat("speedX", Mathf.Lerp(anim.GetFloat("speedX"), speedX, locomotionTransitionDampen));
+      anim.SetFloat("speedY", Mathf.Lerp(anim.GetFloat("speedY"), speedY, locomotionTransitionDampen));
+    }
+
     protected void AnimateDodge() {
       controlState = ControlState.Dodge;
       anim.SetTrigger("dodge");
@@ -538,8 +567,9 @@ namespace ofr.grim.player {
 
     protected void AnimateAttack() {
       chargingAttack = false;
-      anim.SetBool("chargeAttack", false);
       anim.SetTrigger("attack");
+      anim.SetBool("chargeAttack", false);
+      anim.SetFloat("locomotionType", 0f);
     }
 
     /// ANIMATION EVENTS
