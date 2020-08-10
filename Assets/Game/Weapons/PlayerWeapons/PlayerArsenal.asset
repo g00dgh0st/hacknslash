@@ -1,0 +1,18 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: b0d369ee7d3ddab4f86a8b7efe4b12e9, type: 3}
+  m_Name: PlayerArsenal
+  m_EditorClassIdentifier: 
+  weapons:
+  - {fileID: 11400000, guid: 94b1560d2e9f9554c99361b39f57b246, type: 2}
+  - {fileID: 11400000, guid: bedf78c80af425d4cb791bbf4fba29aa, type: 2}
+  - {fileID: 11400000, guid: 1311216a03b76514eb8d949739842633, type: 2}

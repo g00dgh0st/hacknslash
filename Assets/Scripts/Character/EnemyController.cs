@@ -209,6 +209,10 @@ namespace ofr.grim.character {
       if (isDead) return;
       Vector3 hitterPosition = hitter.transform.position;
 
+      if (powerful) {
+        print("BIG HIT");
+      }
+
       TakeDamage(damage);
       Destroy(Instantiate(fx, transform.position + (Vector3.up * 1.5f), transform.rotation), 2f);
 

@@ -53,6 +53,7 @@ namespace ofr.grim.player {
     float gapCloseMaxReach = 2.05f;
     float gapCloseMinReach = 1.3f;
     float gapCloseSpeed = 0.15f;
+    float chargeSpeedDamper = 0.5f;
     [SerializeField] private GameObject blockFX;
     [SerializeField] private GameObject parryFX;
     [SerializeField] private WeaponCollision weaponCollision;
@@ -65,14 +66,17 @@ namespace ofr.grim.player {
     // end weapon config
 
     // state vars
-    private Weapon weapon;
     private Vector3 moveVector;
     private ControlState controlState { get; set; }
     private AttackState attackState { get; set; }
     private bool dodgeMovement = false;
     private bool attackMovement = false;
     private bool hitMovement = false;
+    private bool chargingAttack = false;
+    private float chargeTime = 0f;
+    private bool attackIsPowerful = false;
     private float lastBlockTime;
+    private int attackComboMouseBtn;
     private List<CombatTarget> attackHits;
 
     private Coroutine moveRoutine = null;
@@ -95,9 +99,6 @@ namespace ofr.grim.player {
 
       if (debugMode)
         debug.SetActive(true);
-
-      /// TEMP      
-      EquipWeapon(1);
 
     }
 
@@ -146,39 +147,17 @@ namespace ofr.grim.player {
       Vector3 moveInput = GetInputDirectionByCamera();
       HandleTurning(moveInput);
 
-      if (Input.GetKeyDown(KeyCode.Alpha1)) {
-        EquipWeapon(1);
-      }
-      if (Input.GetKeyDown(KeyCode.Alpha2)) {
-        EquipWeapon(2);
-      }
-      if (Input.GetKeyDown(KeyCode.Alpha3)) {
-        EquipWeapon(3);
-      }
-      if (Input.GetKeyDown(KeyCode.Alpha0)) {
-        EquipWeapon(0);
-      }
-
       if (Input.GetButtonDown("Jump")) {
+        CancelCharging();
         Dodge(moveInput);
         return;
       }
 
-      // if (Input.GetMouseButton(0)) {
-      //   print("charging");
-      // } else 
-
-      if (Input.GetMouseButtonDown(0)) {
-        Attack(GetInputDirectionByMouse());
+      if (HandleAttackButtons(0, moveInput)) {
         return;
       }
 
-      // if (Input.GetMouseButton(1)) {
-      //   print("charging");
-      // } else
-
-      if (Input.GetMouseButtonDown(1)) {
-        Attack(GetInputDirectionByMouse());
+      if (HandleAttackButtons(1, moveInput)) {
         return;
       }
 
@@ -205,13 +184,15 @@ namespace ofr.grim.player {
         return;
       }
 
-      if (Input.GetMouseButtonDown(0)) {
+      if (
+        weaponManager.weapon.fireType == FireType.Repeat && Input.GetMouseButton(attackComboMouseBtn)
+        || Input.GetMouseButtonDown(attackComboMouseBtn)) {
+        print("combo");
         if (attackState == AttackState.Continue) {
           Attack(GetInputDirectionByMouse());
         } else if (attackState == AttackState.Swing) {
           /// Queue attack for next tick
         }
-
         return;
       }
 
@@ -244,6 +225,10 @@ namespace ofr.grim.player {
       float inputMagnitude = moveInput.magnitude;
 
       moveVector += transform.forward * inputMagnitude * moveSpeed;
+      if (chargingAttack) {
+        moveVector *= chargeSpeedDamper;
+        inputMagnitude *= chargeSpeedDamper;
+      }
       AnimateLocomotion(inputMagnitude);
     }
 
@@ -290,6 +275,51 @@ namespace ofr.grim.player {
       transform.rotation = Quaternion.LookRotation(moveInput);
     }
 
+    private bool HandleAttackButtons(int mouseBtn, Vector3 moveInput) {
+
+      if (chargingAttack && attackComboMouseBtn == mouseBtn) {
+        if (Input.GetMouseButton(mouseBtn)) {
+          HandleCharging(moveInput);
+        } else {
+          Attack(GetInputDirectionByMouse());
+          return true;
+        }
+        return false;
+      }
+
+      if (Input.GetMouseButton(mouseBtn)) {
+        EquipWeapon(mouseBtn == 0 ? 1 : 2);
+        attackComboMouseBtn = mouseBtn;
+        if (weaponManager.weapon.fireType == FireType.Charge) {
+          StartCharging();
+        } else {
+          Attack(GetInputDirectionByMouse());
+          return true;
+        }
+      }
+
+      return false;
+    }
+
+    private void StartCharging() {
+      print("charging attack");
+      chargingAttack = true;
+      chargeTime = 0f;
+      anim.SetBool("chargeAttack", true);
+    }
+
+    private void CancelCharging() {
+      chargingAttack = false;
+      chargeTime = 0f;
+      anim.SetBool("chargeAttack", false);
+    }
+
+    private void HandleCharging(Vector3 moveInput) {
+      chargeTime += Time.deltaTime;
+      if (moveInput.magnitude == 0)
+        HandleTurning(GetInputDirectionByMouse());
+    }
+
     private void Attack(Vector3 moveInput) {
       Vector3 castDirection = moveInput.magnitude > 0.1 ? moveInput.normalized : transform.forward;
       Vector3 castPosition = transform.position + Vector3.up;
@@ -321,14 +351,22 @@ namespace ofr.grim.player {
 
         turnRoutine = StartCoroutine(HandleTurningAsync(lockDir, attackTurnTime));
 
-        if (lockDir.magnitude > gapCloseMaxReach) {
+        if (
+          weaponManager.weapon.type == AttackType.Melee
+          && lockDir.magnitude > gapCloseMaxReach
+        ) {
           moveRoutine = StartCoroutine(HandleMovingAsync(transform.position + Vector3.ClampMagnitude(lockDir, (lockDir.magnitude - gapCloseMinReach)), gapCloseSpeed));
         }
       } else {
         turnRoutine = StartCoroutine(HandleTurningAsync((transform.position + castDirection) - transform.position, attackTurnTime));
       }
 
-      // TODO: track lock target?
+      if (weaponManager.weapon.fireType == FireType.Charge && weaponManager.weapon.chargeTime < chargeTime) {
+        print("Power attack");
+        attackIsPowerful = true;
+      } else {
+        attackIsPowerful = false;
+      }
 
       AnimateAttack();
     }
@@ -385,7 +423,7 @@ namespace ofr.grim.player {
       return forward * verticalAxis + right * horizontalAxis;
     }
 
-    private void AttackCollision(WeaponCollider collider) {
+    private void FireMeleeAttack(WeaponCollider collider) {
       Collider[] hits = Physics.OverlapSphere(collider.transform.position, collider.radius, enemyLayerMask);
 
       foreach (Collider hit in hits) {
@@ -393,10 +431,14 @@ namespace ofr.grim.player {
 
         if (tgt != null && !attackHits.Exists((t) => GameObject.ReferenceEquals(t, tgt))) {
           attackHits.Add(tgt);
-          tgt.GetHit(gameObject, weapon.attackDamage, false, weapon.hitFX);
+          tgt.GetHit(gameObject, weaponManager.weapon.attackDamage, attackIsPowerful, weaponManager.weapon.hitFX);
 
         }
       }
+    }
+
+    private void FireRangedAttack() {
+
     }
 
     public override void GetHit(GameObject hitter, float damage, bool isPowerful, GameObject fx) {
@@ -432,6 +474,7 @@ namespace ofr.grim.player {
         Interrupt();
         ToggleBlock(false);
         TakeDamage(damage);
+        weaponManager.Unequip();
         controlState = ControlState.Hit;
         hitMovement = true;
         Vector3 hitAnimDir = transform.InverseTransformDirection(hitDir);
@@ -467,6 +510,9 @@ namespace ofr.grim.player {
     }
 
     protected void ToggleBlock(bool blockOn) {
+      if (weaponManager.weapon == null) {
+        EquipWeapon(1);
+      }
       anim.SetBool("block", blockOn);
       if (blockOn) {
         controlState = ControlState.Block;
@@ -477,7 +523,7 @@ namespace ofr.grim.player {
     }
 
     protected void EquipWeapon(int wepIdx) {
-      weapon = weaponManager.Equip(wepIdx);
+      weaponManager.Equip(wepIdx);
     }
 
     protected void AnimateLocomotion(float speed) {
@@ -491,6 +537,8 @@ namespace ofr.grim.player {
     }
 
     protected void AnimateAttack() {
+      chargingAttack = false;
+      anim.SetBool("chargeAttack", false);
       anim.SetTrigger("attack");
     }
 
@@ -530,7 +578,11 @@ namespace ofr.grim.player {
     protected void AttackEvent(string message) {
       if (message == "swing") {
         // TEMP: just trying out audio
-        audio.PlayOneShot(weapon.swingAudio);
+        audio.PlayOneShot(weaponManager.weapon.swingAudio);
+      }
+
+      if (message.Contains("projectile")) {
+        FireRangedAttack();
       }
 
       if (message.Contains("collide")) {
@@ -539,17 +591,17 @@ namespace ofr.grim.player {
         if (split.Length > 1) {
           switch (split[1]) {
             case "left":
-              AttackCollision(weaponCollision.left);
+              FireMeleeAttack(weaponCollision.left);
               break;
             case "right":
-              AttackCollision(weaponCollision.right);
+              FireMeleeAttack(weaponCollision.right);
               break;
             default:
-              AttackCollision(weaponCollision.front);
+              FireMeleeAttack(weaponCollision.front);
               break;
           }
         } else {
-          AttackCollision(weaponCollision.front);
+          FireMeleeAttack(weaponCollision.front);
         }
       }
     }
