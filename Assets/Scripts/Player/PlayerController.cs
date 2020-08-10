@@ -226,7 +226,7 @@ namespace ofr.grim.player {
         HandleTurning(moveInput);
         HandleMoving(moveInput.normalized);
       } else {
-        HandleTurning(GetInputDirectionByMouse());
+        HandleTurning(GetInputDirectionByMouse(), 50f);
         HandleStrafing(moveInput.normalized);
       }
     }

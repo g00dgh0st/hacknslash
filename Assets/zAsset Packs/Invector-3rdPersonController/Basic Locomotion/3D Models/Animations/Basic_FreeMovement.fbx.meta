@@ -1025,7 +1025,7 @@ ModelImporter:
       takeName: RunTurnRight
       internalID: 0
       firstFrame: 0
-      lastFrame: 19.000002
+      lastFrame: 19
       wrapMode: 0
       orientationOffsetY: 0
       level: 0
@@ -1054,7 +1054,7 @@ ModelImporter:
       takeName: RunTurnLeft
       internalID: 0
       firstFrame: 0
-      lastFrame: 19.000002
+      lastFrame: 19
       wrapMode: 0
       orientationOffsetY: 0
       level: 0
@@ -1153,7 +1153,7 @@ ModelImporter:
       loopBlendOrientation: 1
       loopBlendPositionY: 1
       loopBlendPositionXZ: 0
-      keepOriginalOrientation: 1
+      keepOriginalOrientation: 0
       keepOriginalPositionY: 1
       keepOriginalPositionXZ: 0
       heightFromFeet: 0
