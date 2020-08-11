@@ -34,7 +34,7 @@ namespace ofr.grim.combat {
     void Start() {
       // TEMP
       primaryWeaponIdx = 0;
-      secondaryWeaponIdx = 1;
+      secondaryWeaponIdx = 2;
 
       primaryWeapon = arsenal.GetWeapons() [primaryWeaponIdx];
       secondaryWeapon = arsenal.GetWeapons() [secondaryWeaponIdx];

@@ -462,9 +462,15 @@ namespace ofr.grim.player {
     }
 
     private void FireRangedAttack() {
-      // EnemyProjectile proj = Instantiate<EnemyProjectile>(currentAttack.projectile, transform.position + transform.forward + (Vector3.up * 1.2f), transform.rotation);
-      // proj.Fire(GameManager.player.transform.position - proj.transform.position, currentAttack);
+      PlayerProjectile proj = Instantiate<PlayerProjectile>(weaponManager.weapon.projectile, transform.position + transform.forward + (Vector3.up * 1.2f), transform.rotation);
 
+      proj.Fire(
+        transform.forward,
+        weaponManager.weapon.projectileSpeed,
+        weaponManager.weapon.attackDamage,
+        weaponManager.weapon.hitFX,
+        false
+      );
     }
 
     public override void GetHit(GameObject hitter, float damage, bool isPowerful, GameObject fx) {

@@ -8,8 +8,6 @@ namespace ofr.grim.combat {
     [HideInInspector]
     public Attack attack;
 
-    // probably could use a global projectile lifetime
-    private float lifeTime = 20f;
     private bool isDeflected = false;
     private float deflectDamage;
 

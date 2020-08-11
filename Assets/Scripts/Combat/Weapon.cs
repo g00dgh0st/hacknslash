@@ -22,5 +22,7 @@ namespace ofr.grim.combat {
 
     public GameObject rightHandPrefab;
     public GameObject leftHandPrefab;
+    public PlayerProjectile projectile;
+    public float projectileSpeed;
   }
 }
