@@ -20,6 +20,9 @@ namespace ofr.grim.combat {
 
     public Weapon weapon { get; private set; }
 
+    public Weapon primaryWeapon { get; private set; }
+    public Weapon secondaryWeapon { get; private set; }
+
     private List<GameObject> equippedWeaponObjects;
 
     void Awake() {
@@ -31,16 +34,19 @@ namespace ofr.grim.combat {
     void Start() {
       // TEMP
       primaryWeaponIdx = 0;
-      secondaryWeaponIdx = 2;
+      secondaryWeaponIdx = 1;
+
+      primaryWeapon = arsenal.GetWeapons() [primaryWeaponIdx];
+      secondaryWeapon = arsenal.GetWeapons() [secondaryWeaponIdx];
     }
 
     public void Equip(int weaponId) {
       Unequip();
 
       if (weaponId == 1)
-        weapon = arsenal.GetWeapons() [primaryWeaponIdx];
+        weapon = primaryWeapon;
       else
-        weapon = arsenal.GetWeapons() [secondaryWeaponIdx];
+        weapon = secondaryWeapon;
 
       if (weapon.leftHandPrefab) {
         equippedWeaponObjects.Add(Instantiate(weapon.leftHandPrefab, leftHand));

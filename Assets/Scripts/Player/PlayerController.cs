@@ -308,7 +308,8 @@ namespace ofr.grim.player {
         return false;
       }
 
-      if (Input.GetMouseButton(mouseBtn)) {
+      if (Input.GetMouseButtonDown(mouseBtn)
+        || Input.GetMouseButton(mouseBtn) && !(mouseBtn == attackComboMouseBtn && weaponManager.weapon.fireType == FireType.Normal)) {
         EquipWeapon(mouseBtn == 0 ? 1 : 2);
         attackComboMouseBtn = mouseBtn;
         if (weaponManager.weapon.fireType == FireType.Charge) {
