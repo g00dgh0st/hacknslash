@@ -462,6 +462,8 @@ namespace ofr.grim.player {
     }
 
     private void FireRangedAttack() {
+      // EnemyProjectile proj = Instantiate<EnemyProjectile>(currentAttack.projectile, transform.position + transform.forward + (Vector3.up * 1.2f), transform.rotation);
+      // proj.Fire(GameManager.player.transform.position - proj.transform.position, currentAttack);
 
     }
 

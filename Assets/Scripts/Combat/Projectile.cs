@@ -3,7 +3,18 @@ using System.Collections.Generic;
 using UnityEngine;
 
 namespace ofr.grim.combat {
-  public class Projectile : MonoBehaviour {
 
+  [RequireComponent(typeof(Rigidbody))]
+  [RequireComponent(typeof(Collider))]
+  public class Projectile : MonoBehaviour {
+    [HideInInspector]
+    public Rigidbody rBody;
+
+    // probably could use a global projectile lifetime
+    protected float lifeTime = 20f;
+
+    void Awake() {
+      rBody = GetComponent<Rigidbody>();
+    }
   }
 }

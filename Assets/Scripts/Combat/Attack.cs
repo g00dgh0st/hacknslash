@@ -14,8 +14,8 @@ namespace ofr.grim.combat {
     public int animId;
     public AudioClip audio;
     public AttackType type;
-    public bool isPowerful;
     public bool canHitAllies;
+    public bool isPowerful;
     public float damage;
     public GameObject hitEffect;
 

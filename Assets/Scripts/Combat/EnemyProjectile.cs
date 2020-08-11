@@ -4,12 +4,7 @@ using UnityEngine;
 
 namespace ofr.grim.combat {
 
-  [RequireComponent(typeof(Rigidbody))]
-  [RequireComponent(typeof(Collider))]
   public class EnemyProjectile : Projectile {
-    [HideInInspector]
-    public Rigidbody rBody;
-
     [HideInInspector]
     public Attack attack;
 
@@ -17,10 +12,6 @@ namespace ofr.grim.combat {
     private float lifeTime = 20f;
     private bool isDeflected = false;
     private float deflectDamage;
-
-    void Awake() {
-      rBody = GetComponent<Rigidbody>();
-    }
 
     void OnTriggerEnter(Collider other) {
       CombatTarget tgt = other.GetComponent<CombatTarget>();
