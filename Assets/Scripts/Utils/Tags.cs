@@ -2,17 +2,10 @@
 using System.Collections.Generic;
 using UnityEngine;
 
-public class Tags : MonoBehaviour
-{
-    // Start is called before the first frame update
-    void Start()
-    {
-        
-    }
+namespace ofr.grim.utils {
 
-    // Update is called once per frame
-    void Update()
-    {
-        
-    }
+  public static class Tags {
+    public static string Enemy = "Enemy";
+    public static string Player = "Player";
+  }
 }

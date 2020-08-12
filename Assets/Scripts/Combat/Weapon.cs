@@ -19,6 +19,7 @@ namespace ofr.grim.combat {
     public GameObject hitFX;
     public FireType fireType;
     public AttackType type;
+    public float lockOnDist = 3.5f;
 
     public GameObject rightHandPrefab;
     public GameObject leftHandPrefab;

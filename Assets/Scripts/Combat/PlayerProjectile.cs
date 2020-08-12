@@ -1,5 +1,6 @@
 ﻿using System.Collections;
 using System.Collections.Generic;
+using ofr.grim.utils;
 using UnityEngine;
 
 namespace ofr.grim.combat {
@@ -15,7 +16,7 @@ namespace ofr.grim.combat {
       if (tgt == null) {
         Destroy(gameObject);
         return;
-      } else if (tgt.tag == "Enemy") {
+      } else if (tgt.tag == Tags.Enemy) {
         tgt.GetHit(gameObject, damage, isPowerful, hitEffect);
         Destroy(gameObject);
       }

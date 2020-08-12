@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using ofr.grim.combat;
 using ofr.grim.core;
+using ofr.grim.utils;
 using UnityEngine;
 using UnityEngine.AI;
 
@@ -74,6 +75,7 @@ namespace ofr.grim.character {
     }
 
     void Update() {
+      return;
       if (isDead) return;
 
       switch (state) {
@@ -266,7 +268,7 @@ namespace ofr.grim.character {
         type == EnemyType.Ranged ? LayerMask.NameToLayer("Enemy") : Physics.DefaultRaycastLayers
       );
 
-      if (hitSomething && hit.collider.tag == "Player") {
+      if (hitSomething && hit.collider.tag == Tags.Player) {
         return true;
       }
 

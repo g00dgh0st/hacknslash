@@ -27,7 +27,6 @@ namespace ofr.grim.player {
     // DEBUG STUFF
     public bool debugMode = false;
     [SerializeField] private GameObject debug;
-    public Text debugText;
     // END DEBUGT STUFF
 
     // dependencies
@@ -47,7 +46,6 @@ namespace ofr.grim.player {
     private float blockMaxMoveInput = 0.4f;
     private float rollSpeed = 12f;
     private float lockOnCastRadius = 1f;
-    private float lockOnCastDistance = 3.5f;
     private float parryTime = 0.2f;
     private float deflectedProjectileDamageMultiplier = 2f;
     float gapCloseMaxReach = 2.05f;
@@ -113,12 +111,9 @@ namespace ofr.grim.player {
     void Update() {
       if (isDead) return;
 
-      if (debugMode)
-        debugText.text = controlState.ToString("g");
-
-      if (Input.GetKeyDown(KeyCode.E)) {
-        GetHit(gameObject, 0, false, blockFX);
-      }
+      // if (Input.GetKeyDown(KeyCode.E)) {
+      //   GetHit(gameObject, 0, false, blockFX);
+      // }
 
       ApplyGravity();
 
@@ -186,7 +181,6 @@ namespace ofr.grim.player {
       if (
         weaponManager.weapon.fireType == FireType.Repeat && Input.GetMouseButton(attackComboMouseBtn)
         || Input.GetMouseButtonDown(attackComboMouseBtn)) {
-        print("combo");
         if (attackState == AttackState.Continue) {
           Attack(GetInputDirectionByMouse());
         } else if (attackState == AttackState.Swing) {
@@ -327,10 +321,14 @@ namespace ofr.grim.player {
       chargeTime += Time.deltaTime;
       if (moveInput.magnitude == 0)
         HandleTurning(GetInputDirectionByMouse());
+
+      if (debugMode) {
+        PlayerDebug pd = debug.GetComponent<PlayerDebug>();
+        pd.UpdateMoveLines(transform.position, transform.forward, transform.right, lockOnCastRadius, weaponManager.weapon.lockOnDist);
+      }
     }
 
     private void StartCharging() {
-      print("charging attack");
       chargingAttack = true;
       chargeTime = 0f;
       anim.SetFloat("locomotionType", 1f);
@@ -346,17 +344,17 @@ namespace ofr.grim.player {
 
     private void Attack(Vector3 moveInput) {
       Vector3 castDirection = moveInput.magnitude > 0.1 ? moveInput.normalized : transform.forward;
-      Vector3 castPosition = transform.position + Vector3.up;
+      Vector3 castPosition = transform.position; //+ Vector3.up;
 
       Vector3 castDirectionRight = Vector3.Cross(Vector3.up, castDirection).normalized;
 
-      bool centerCast = Physics.Raycast(castPosition, castDirection, out RaycastHit centerHit, lockOnCastDistance, enemyLayerMask);
-      bool leftCast = Physics.Raycast(castPosition - (castDirectionRight * lockOnCastRadius), castDirection, out RaycastHit leftHit, lockOnCastDistance, enemyLayerMask);
-      bool rightCast = Physics.Raycast(castPosition + (castDirectionRight * lockOnCastRadius), castDirection, out RaycastHit rightHit, lockOnCastDistance, enemyLayerMask);
+      bool centerCast = Physics.Raycast(castPosition, castDirection, out RaycastHit centerHit, weaponManager.weapon.lockOnDist, enemyLayerMask);
+      bool leftCast = Physics.Raycast(castPosition - (castDirectionRight * lockOnCastRadius), castDirection, out RaycastHit leftHit, weaponManager.weapon.lockOnDist, enemyLayerMask);
+      bool rightCast = Physics.Raycast(castPosition + (castDirectionRight * lockOnCastRadius), castDirection, out RaycastHit rightHit, weaponManager.weapon.lockOnDist, enemyLayerMask);
 
       if (debugMode) {
         PlayerDebug pd = debug.GetComponent<PlayerDebug>();
-        pd.UpdateMoveLines(castPosition, castDirection, castDirectionRight, lockOnCastRadius, lockOnCastDistance);
+        pd.UpdateMoveLines(castPosition, castDirection, castDirectionRight, lockOnCastRadius, weaponManager.weapon.lockOnDist);
       }
 
       Vector3 lockDir = Vector3.zero;
@@ -371,7 +369,7 @@ namespace ofr.grim.player {
 
       if (lockDir != Vector3.zero) {
         // locked on
-        if (debugMode) debug.GetComponent<PlayerDebug>().UpdateLockLine(lockDir, lockOnCastDistance);
+        if (debugMode) debug.GetComponent<PlayerDebug>().UpdateLockLine(lockDir, weaponManager.weapon.lockOnDist);
 
         turnRoutine = StartCoroutine(HandleTurningAsync(lockDir, attackTurnTime));
 
@@ -504,9 +502,7 @@ namespace ofr.grim.player {
         }
       } else {
         Interrupt();
-        ToggleBlock(false);
         TakeDamage(damage);
-        weaponManager.Unequip();
         controlState = ControlState.Hit;
         hitMovement = true;
         Vector3 hitAnimDir = transform.InverseTransformDirection(hitDir);
@@ -534,6 +530,10 @@ namespace ofr.grim.player {
     private void Interrupt() {
       attackMovement = false;
       anim.SetFloat("speed", 0);
+      attackComboMouseBtn = 9; // cant null to set to something else
+      CancelCharging();
+      ToggleBlock(false);
+      weaponManager.Unequip();
 
       if (moveRoutine != null)
         StopCoroutine(moveRoutine);

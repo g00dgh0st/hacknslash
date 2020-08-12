@@ -19,6 +19,7 @@ MonoBehaviour:
   hitFX: {fileID: 106912, guid: 18c03f316fa6d1040ab46baf6e46a105, type: 3}
   fireType: 1
   type: 0
+  lockOnDist: 8
   rightHandPrefab: {fileID: 0}
   leftHandPrefab: {fileID: 4386936584039229482, guid: e218e6b819e953c46b22bfc811c2ad67,
     type: 3}
