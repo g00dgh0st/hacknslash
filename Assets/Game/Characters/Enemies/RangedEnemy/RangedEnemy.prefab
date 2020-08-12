@@ -285,12 +285,13 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   maxHealth: 60
+  renderer: {fileID: 1571452644999386965}
   icons: {fileID: 1110483449225183842}
   type: 1
+  attemptAttackTime: 4
   repeatAttackCooldown: 3
   aggroRadius: 12
   chaseRadius: 14
-  combatRadius: 10
   attackRadius: 10
   startPosition: {fileID: 0}
   weaponCollision:
@@ -1013,7 +1014,7 @@ PrefabInstance:
     - target: {fileID: 13788616, guid: 616cc160fcb3b124b8e0fc587258594b, type: 3}
       propertyPath: m_Materials.Array.data[0]
       value: 
-      objectReference: {fileID: 2100000, guid: e3023c0182312214e86398117753528d, type: 2}
+      objectReference: {fileID: 2100000, guid: 0eff4cee60d47344a8843512080f36d2, type: 2}
     m_RemovedComponents:
     - {fileID: 11103382, guid: 616cc160fcb3b124b8e0fc587258594b, type: 3}
     - {fileID: 9581944, guid: 616cc160fcb3b124b8e0fc587258594b, type: 3}
@@ -1021,6 +1022,12 @@ PrefabInstance:
 --- !u!4 &1571452644996545295 stripped
 Transform:
   m_CorrespondingSourceObject: {fileID: 444818, guid: 616cc160fcb3b124b8e0fc587258594b,
+    type: 3}
+  m_PrefabInstance: {fileID: 1571452644996362909}
+  m_PrefabAsset: {fileID: 0}
+--- !u!137 &1571452644999386965 stripped
+SkinnedMeshRenderer:
+  m_CorrespondingSourceObject: {fileID: 13788616, guid: 616cc160fcb3b124b8e0fc587258594b,
     type: 3}
   m_PrefabInstance: {fileID: 1571452644996362909}
   m_PrefabAsset: {fileID: 0}

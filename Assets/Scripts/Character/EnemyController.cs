@@ -27,6 +27,7 @@ namespace ofr.grim.character {
     private Rigidbody rBody;
     private Animator anim;
     private AudioSource audio;
+    [SerializeField] private SkinnedMeshRenderer renderer;
     [SerializeField] private EnemyIcons icons;
 
     [SerializeField] private EnemyType type;
@@ -74,8 +75,17 @@ namespace ofr.grim.character {
         resetPosition = transform.position;
     }
 
+    private void OnMouseEnter() {
+      print(renderer.material);
+      renderer.material.SetFloat("_OutlineOn", 1);
+    }
+
+    private void OnMouseExit() {
+      print("hover out");
+      renderer.material.SetFloat("_OutlineOn", 0);
+    }
+
     void Update() {
-      return;
       if (isDead) return;
 
       switch (state) {

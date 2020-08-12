@@ -285,13 +285,13 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   maxHealth: 100
+  renderer: {fileID: 1571452644999446257}
   icons: {fileID: 1110483449225183842}
   type: 0
   attemptAttackTime: 4
   repeatAttackCooldown: 3
   aggroRadius: 8
   chaseRadius: 12
-  combatRadius: 8
   attackRadius: 2
   startPosition: {fileID: 0}
   weaponCollision:
@@ -959,6 +959,10 @@ PrefabInstance:
       propertyPath: m_LocalEulerAnglesHint.z
       value: 0
       objectReference: {fileID: 0}
+    - target: {fileID: 13700204, guid: 616cc160fcb3b124b8e0fc587258594b, type: 3}
+      propertyPath: m_Materials.Array.data[0]
+      value: 
+      objectReference: {fileID: 2100000, guid: 0eff4cee60d47344a8843512080f36d2, type: 2}
     m_RemovedComponents:
     - {fileID: 11103382, guid: 616cc160fcb3b124b8e0fc587258594b, type: 3}
     - {fileID: 9581944, guid: 616cc160fcb3b124b8e0fc587258594b, type: 3}
@@ -966,6 +970,12 @@ PrefabInstance:
 --- !u!4 &1571452644996510913 stripped
 Transform:
   m_CorrespondingSourceObject: {fileID: 411228, guid: 616cc160fcb3b124b8e0fc587258594b,
+    type: 3}
+  m_PrefabInstance: {fileID: 1571452644996362909}
+  m_PrefabAsset: {fileID: 0}
+--- !u!137 &1571452644999446257 stripped
+SkinnedMeshRenderer:
+  m_CorrespondingSourceObject: {fileID: 13700204, guid: 616cc160fcb3b124b8e0fc587258594b,
     type: 3}
   m_PrefabInstance: {fileID: 1571452644996362909}
   m_PrefabAsset: {fileID: 0}
